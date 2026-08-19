@@ -60,12 +60,12 @@ debug print: loaded object
  │  inputs
  │   │
  │   │    entry-pic.x86_64.o
- │   │  ╭─────────────────────┬───────╮
- │   │  │ Property            │ Value │
- │   │  ├─────────────────────┼───────┤
- │   │  │ X86 ISA used        │       │
- │   │  │ x86 features 2 used │ x86   │
- │   │  ╰─────────────────────┴───────╯
+ │   │  ╭─────────────────────┬──────────╮
+ │   │  │ Property            │ Value    │
+ │   │  ├─────────────────────┼──────────┤
+ │   │  │ X86 ISA used        │ baseline │
+ │   │  │ x86 features 2 used │ x86      │
+ │   │  ╰─────────────────────┴──────────╯
  │   │
  │   │  ./libdata.so (shared object ./libdata.so)
  │   │
