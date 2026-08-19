@@ -1,6 +1,6 @@
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
-use std::random::{DefaultRandomSource, RandomSource};
+use std::random::{Rng as _, SystemRng};
 
 pub fn create_temp_dir() -> Result<PathBuf, Error> {
     for _ in 0..10 {
@@ -17,7 +17,7 @@ pub fn create_temp_dir() -> Result<PathBuf, Error> {
 
 fn random_name() -> String {
     let mut buf = [0; 8];
-    DefaultRandomSource.fill_bytes(&mut buf);
+    SystemRng.fill_bytes(&mut buf);
 
     format!("plinky-{}", hex_encode(&buf))
 }

@@ -105,7 +105,7 @@ fn fn_write(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
     }
 }
 
-fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field>, Error> {
+fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>, Error> {
     let trait_ty_base = Type("plinky_utils::raw_types::RawType".parse().unwrap());
     let trait_ty_pointers = Type("plinky_utils::raw_types::RawTypeAsPointerSize".parse().unwrap());
 

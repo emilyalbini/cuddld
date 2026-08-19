@@ -119,7 +119,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
     }
 
-    fn peek(&mut self) -> Result<Option<&Token>, TemplateParseError> {
+    fn peek(&mut self) -> Result<Option<&Token<'_>>, TemplateParseError> {
         match self.lexer.peek() {
             Some(Ok(token)) => Ok(Some(token)),
             Some(Err(err)) => Err(err.clone()),

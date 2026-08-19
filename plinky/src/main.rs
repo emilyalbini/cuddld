@@ -1,5 +1,4 @@
 #![feature(error_generic_member_access)]
-#![feature(array_windows)]
 
 use crate::debug_print::DebugCallbacks;
 use crate::linker::Linker;
