@@ -1,6 +1,10 @@
 [package]
 name = "plinky_elf"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
 
 [[test]]
 name = "elftest"
@@ -18,6 +22,3 @@ insta.workspace = true
 plinky_test_harness.workspace = true
 serde.workspace = true
 toml.workspace = true
-
-[lints]
-workspace = true

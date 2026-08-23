@@ -1,7 +1,10 @@
 [package]
 name = "plinky_test_harness"
-version = "0.1.0"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
 
 [dependencies]
 anyhow.workspace = true
@@ -10,6 +13,3 @@ plinky_macros.workspace = true
 plinky_utils.workspace = true
 serde.workspace = true
 toml.workspace = true
-
-[lints]
-workspace = true

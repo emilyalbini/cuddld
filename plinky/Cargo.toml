@@ -2,7 +2,11 @@ cargo-features = ["different-binary-name"]
 
 [package]
 name = "plinky"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
 
 [[bin]]
 path = "src/main.rs"
@@ -27,6 +31,3 @@ anyhow.workspace = true
 plinky_test_harness.workspace = true
 serde.workspace = true
 toml.workspace = true
-
-[lints]
-workspace = true

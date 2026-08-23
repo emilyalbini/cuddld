@@ -1,9 +1,10 @@
 [package]
 name = "plinky_diagnostics"
-edition = "2024"
-
-[dev-dependencies]
-insta.workspace = true
+edition.workspace = true
+version.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+insta.workspace = true

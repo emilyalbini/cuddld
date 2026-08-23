@@ -1,6 +1,7 @@
 [package]
 name = "plinky_utils"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
 
 [lints]
 workspace = true

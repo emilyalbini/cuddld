@@ -1,9 +1,10 @@
 [package]
 name = "plinky_macros_quote"
-edition = "2024"
-
-[lib]
-proc-macro = true
+edition.workspace = true
+version.workspace = true
 
 [lints]
 workspace = true
+
+[lib]
+proc-macro = true

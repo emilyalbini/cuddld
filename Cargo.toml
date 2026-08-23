@@ -13,6 +13,10 @@ members = [
 ]
 default-members = ["plinky"]
 
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+
 [workspace.dependencies]
 plinky_ar = { path = "plinky_ar" }
 plinky_diagnostics = { path = "plinky_diagnostics" }

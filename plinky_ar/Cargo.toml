@@ -1,10 +1,11 @@
 [package]
 name = "plinky_ar"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
 
 [dependencies]
 plinky_macros.workspace = true
 plinky_utils.workspace = true
-
-[lints]
-workspace = true

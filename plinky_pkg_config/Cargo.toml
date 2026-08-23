@@ -1,7 +1,10 @@
 [package]
 name = "plinky_pkg_config"
-version = "0.1.0"
-edition = "2024"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
 
 [[test]]
 name = "pkgtest"
@@ -15,6 +18,3 @@ plinky_macros.workspace = true
 anyhow.workspace = true
 insta.workspace = true
 plinky_utils.workspace = true
-
-[lints]
-workspace = true
