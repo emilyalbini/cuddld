@@ -1,7 +1,7 @@
-use anyhow::{Error, bail};
 use plinky_elf::ElfReader;
 use plinky_elf::writer::Writer;
 use plinky_elf::writer::layout::Layout;
+use plinky_error::{ErasedError, erased};
 use plinky_test_harness::template::Template;
 use plinky_test_harness::{Step, TestContext};
 use std::fs::File;
@@ -20,7 +20,7 @@ struct ReadElfStep {
 }
 
 impl Step for ReadElfStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         insta::allow_duplicates! {
             let file = ctx.maybe_relative_to_src(&self.file.resolve(&*ctx.template)?);
             self.read(&ctx, &file)?;
@@ -30,7 +30,7 @@ impl Step for ReadElfStep {
                 self.read(&ctx, &roundtrip)?;
             }
 
-            Ok::<(), Error>(())
+            Ok::<(), ErasedError>(())
         }
     }
 
@@ -44,7 +44,7 @@ impl Step for ReadElfStep {
 }
 
 impl ReadElfStep {
-    fn read(&self, ctx: &TestContext<'_>, file: &Path) -> Result<(), Error> {
+    fn read(&self, ctx: &TestContext<'_>, file: &Path) -> Result<(), ErasedError> {
         println!("reading {}...", file.display());
 
         let mut command = Command::new(env!("CARGO_BIN_EXE_read-elf"));
@@ -58,13 +58,13 @@ impl ReadElfStep {
         runner.persist();
 
         if !outcome {
-            bail!("failed to read the ELF file");
+            erased!("failed to read the ELF file");
         }
 
         Ok(())
     }
 
-    fn roundtrip(&self, ctx: &TestContext<'_>, file: &Path) -> Result<PathBuf, Error> {
+    fn roundtrip(&self, ctx: &TestContext<'_>, file: &Path) -> Result<PathBuf, ErasedError> {
         println!("writing the file back for the roundtrip...");
 
         let dest = ctx.dest.join(ctx.step_name).join("roundtrip").join(file.file_name().unwrap());
@@ -89,7 +89,7 @@ struct ReadDynamicStep {
 }
 
 impl Step for ReadDynamicStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let file = ctx.maybe_relative_to_src(&self.file.resolve(&*ctx.template)?);
         println!("reading {}...", file.display());
 
@@ -101,7 +101,7 @@ impl Step for ReadDynamicStep {
         runner.persist();
 
         if !outcome {
-            bail!("failed to read the dynamic information in the ELF");
+            erased!("failed to read the dynamic information in the ELF");
         }
         Ok(())
     }

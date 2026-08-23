@@ -1,7 +1,7 @@
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
-use anyhow::Error;
+use plinky_error::ErasedError;
 use serde::Deserialize;
 use std::process::Command;
 
@@ -17,7 +17,7 @@ pub(crate) struct LdStep {
 }
 
 impl Step for LdStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let dest_name = self.output.resolve(&*ctx.template)?;
         let content = self
             .content

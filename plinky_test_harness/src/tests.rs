@@ -2,7 +2,7 @@ use crate::Step;
 use crate::builtins::register_builtins;
 use crate::template::{TemplateContext, Value};
 use crate::utils::RunAndSnapshot;
-use anyhow::{Context, Error};
+use plinky_error::{ErasedContext as _, ErasedError, bail};
 use plinky_utils::create_temp_dir;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -15,7 +15,7 @@ pub(crate) struct Test {
 }
 
 impl Test {
-    pub(crate) fn run(mut self) -> Result<(), Error> {
+    pub(crate) fn run(mut self) -> Result<(), ErasedError> {
         let mut template_ctx = TemplateContext::new();
         template_ctx.set_variable("arch", Value::String(self.arch.to_string()));
         register_builtins(&mut template_ctx);
@@ -60,10 +60,7 @@ impl Test {
                     .filter(|s| !s.completed)
                     .map(|s| s.name.as_str())
                     .collect::<Vec<_>>();
-                anyhow::bail!(
-                    "these steps have unmet dependencies: {}",
-                    unmet_dependencies.join(", ")
-                );
+                bail!("these steps have unmet dependencies: {}", unmet_dependencies.join(", "));
             } else {
                 last_number_of_completed = number_of_completed;
             }

@@ -2,16 +2,16 @@
 
 extern crate test;
 
-use anyhow::Error;
 use insta::{assert_snapshot, with_settings};
+use plinky_error::ErasedError;
 use plinky_pkg_config::PkgConfig;
+use plinky_utils::posix_shell_quote;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 use std::process::exit;
-use test::{test_main, ShouldPanic, TestDesc, TestDescAndFn, TestFn, TestName, TestType};
-use plinky_utils::posix_shell_quote;
+use test::{ShouldPanic, TestDesc, TestDescAndFn, TestFn, TestName, TestType, test_main};
 
-fn test(path: PathBuf) -> Result<(), Error> {
+fn test(path: PathBuf) -> Result<(), ErasedError> {
     let rendered = match PkgConfig::parse(&read_to_string(&path)?) {
         Ok(parsed) => {
             let PkgConfig {
@@ -65,7 +65,7 @@ fn test(path: PathBuf) -> Result<(), Error> {
             output
         }
         Err(err) => {
-            format!("Failed to parse the file:\n\n{}", format_error(err.into()))
+            format!("Failed to parse the file:\n\n{}", ErasedError::from(err).format_chain())
         }
     };
 
@@ -80,7 +80,7 @@ fn test(path: PathBuf) -> Result<(), Error> {
     Ok(())
 }
 
-fn gather(path: &Path) -> Result<Vec<TestDescAndFn>, Error> {
+fn gather(path: &Path) -> Result<Vec<TestDescAndFn>, ErasedError> {
     let mut tests = Vec::new();
     for file in path.read_dir()? {
         let entry = file?.path();
@@ -104,7 +104,7 @@ fn gather(path: &Path) -> Result<Vec<TestDescAndFn>, Error> {
                 },
                 testfn: TestFn::DynTestFn(Box::new(move || match test(entry) {
                     Ok(()) => Ok(()),
-                    Err(err) => panic!("{}", format_error(err)),
+                    Err(err) => panic!("{}", err.format_chain()),
                 })),
             });
         }
@@ -119,18 +119,8 @@ fn main() {
     match gather(&path) {
         Ok(tests) => test_main(&args, tests, None),
         Err(err) => {
-            eprintln!("{}", format_error(err));
+            eprintln!("{}", err.format_chain());
             exit(1);
         }
     }
-}
-
-fn format_error(error: Error) -> String {
-    let mut repr = format!("error: {error}\n");
-    let mut source = error.source();
-    while let Some(inner) = source {
-        repr.push_str(&format!("  cause: {inner}\n"));
-        source = inner.source();
-    }
-    repr
 }

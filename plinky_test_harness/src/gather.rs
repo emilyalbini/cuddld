@@ -1,7 +1,7 @@
 use crate::Step;
 use crate::tests::{Arch, Test, TestStep};
 use crate::utils::err_str;
-use anyhow::{Context, Error};
+use plinky_error::{ErasedContext as _, ErasedError, bail};
 use serde::de::DeserializeOwned;
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -12,7 +12,7 @@ pub(crate) fn gather(
     path: &Path,
     prefix: &str,
     define_steps: DefineStepsFn,
-) -> Result<Vec<TestDescAndFn>, Error> {
+) -> Result<Vec<TestDescAndFn>, ErasedError> {
     let mut tests = Vec::new();
 
     for entry in path.read_dir()? {
@@ -36,7 +36,7 @@ fn create_tests(
     prefix: &str,
     toml_path: &Path,
     define_steps: DefineStepsFn,
-) -> Result<(), Error> {
+) -> Result<(), ErasedError> {
     let source_dir = toml_path.parent().unwrap();
     let name = format!("{}{}", prefix, source_dir.file_name().unwrap().to_str().unwrap());
 
@@ -53,7 +53,7 @@ fn create_tests(
 
         let missing_step_kinds = definer.undefined.into_keys().collect::<Vec<_>>();
         if !missing_step_kinds.is_empty() {
-            anyhow::bail!(
+            bail!(
                 "test contains the following undefined step types: {}",
                 missing_step_kinds.join(", ")
             );
@@ -104,7 +104,7 @@ struct Toml {
     steps: BTreeMap<String, BTreeMap<String, Value>>,
 }
 
-pub(crate) type DefineStepsFn = fn(&mut DefineSteps) -> Result<&mut DefineSteps, Error>;
+pub(crate) type DefineStepsFn = fn(&mut DefineSteps) -> Result<&mut DefineSteps, ErasedError>;
 
 pub struct DefineSteps {
     undefined: BTreeMap<String, BTreeMap<String, Value>>,
@@ -113,7 +113,7 @@ pub struct DefineSteps {
 }
 
 impl DefineSteps {
-    pub fn define_builtins(&mut self) -> Result<&mut Self, Error> {
+    pub fn define_builtins(&mut self) -> Result<&mut Self, ErasedError> {
         self.define::<crate::steps::asm::AsmStep>("asm")?
             .define::<crate::steps::ld::LdStep>("ld")?
             .define::<crate::steps::c::CStep>("c")?
@@ -124,12 +124,12 @@ impl DefineSteps {
     }
 
     // Deserializing the Value into the concrete type cannot be done through dynamic dispatching.
-    // This approach is similar to the one proposed in libcore for Error's provider API, where this
+    // This approach is similar to the one proposed in libcore for ErasedError's provider API, where this
     // method is invoked for every set of steps to process.
     pub fn define<S: Step + DeserializeOwned + 'static>(
         &mut self,
         kind_name: &str,
-    ) -> Result<&mut Self, Error> {
+    ) -> Result<&mut Self, ErasedError> {
         if let Some(steps) = self.undefined.remove(kind_name) {
             for (step_name, data) in steps {
                 let name = format!("{kind_name}.{step_name}");

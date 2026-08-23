@@ -1,7 +1,7 @@
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Step, TestContext};
-use anyhow::Error;
+use plinky_error::ErasedError;
 use serde::Deserialize;
 use std::process::Command;
 
@@ -14,7 +14,7 @@ pub(crate) struct ArStep {
 }
 
 impl Step for ArStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let dest_name = self.output.resolve(ctx.template)?;
         let content =
             self.content.iter().map(|c| c.resolve(ctx.template)).collect::<Result<Vec<_>, _>>()?;

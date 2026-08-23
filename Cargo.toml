@@ -5,6 +5,7 @@ members = [
     "plinky_ar",
     "plinky_diagnostics",
     "plinky_elf",
+    "plinky_error",
     "plinky_macros",
     "plinky_macros_quote",
     "plinky_pkg_config",
@@ -21,13 +22,13 @@ edition = "2024"
 plinky_ar = { path = "plinky_ar" }
 plinky_diagnostics = { path = "plinky_diagnostics" }
 plinky_elf = { path = "plinky_elf" }
+plinky_error = { path = "plinky_error" }
 plinky_macros = { path = "plinky_macros" }
 plinky_macros_quote = { path = "plinky_macros_quote" }
 plinky_pkg_config = { path = "plinky_pkg_config"}
 plinky_test_harness = { path = "plinky_test_harness" }
 plinky_utils = { path = "plinky_utils" }
 
-anyhow = "1.0.71"
 insta = "1.30.0"
 serde = { version = "1.0.190", features = ["derive"] }
 toml = "0.8.6"

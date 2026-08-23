@@ -1,6 +1,6 @@
 use crate::template::{Template, Value};
 use crate::{Step, TestContext};
-use anyhow::Error;
+use plinky_error::ErasedError;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -10,7 +10,7 @@ pub(crate) struct RenameStep {
 }
 
 impl Step for RenameStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let from = ctx.maybe_relative_to_src(self.from.resolve(&*ctx.template)?);
         let to = self.to.resolve(&*ctx.template)?;
 

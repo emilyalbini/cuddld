@@ -1,7 +1,7 @@
 use crate::Step;
 use crate::template::{Template, Value};
 use crate::utils::file_name;
-use anyhow::Error;
+use plinky_error::ErasedError;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -11,7 +11,7 @@ pub(crate) struct DirStep {
 }
 
 impl Step for DirStep {
-    fn run(&self, ctx: crate::TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: crate::TestContext<'_>) -> Result<(), ErasedError> {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
 

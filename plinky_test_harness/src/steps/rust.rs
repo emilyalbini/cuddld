@@ -1,7 +1,7 @@
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
-use anyhow::Error;
+use plinky_error::ErasedError;
 use serde::Deserialize;
 use std::process::Command;
 
@@ -14,7 +14,7 @@ pub(crate) struct RustStep {
 }
 
 impl Step for RustStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let source = ctx.maybe_relative_to_src(self.source.resolve(&*ctx.template)?);
         let source_name = file_name(&source);
         let dest_name = format!("lib{}", file_name(&source.with_extension("a")));

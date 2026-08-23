@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail, Error};
+use plinky_error::{ErasedError, bail, erased};
 use plinky_test_harness::template::{ResolveHooks, Template, Value};
 use plinky_test_harness::utils::RunAndSnapshot;
 use plinky_test_harness::{Step, TestContext};
@@ -23,7 +23,7 @@ struct PlinkyStep {
 }
 
 impl Step for PlinkyStep {
-    fn run(&self, ctx: TestContext<'_>) -> Result<(), Error> {
+    fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let mut runner = ctx.run_and_snapshot();
         let (res, err) = match self.kind.resolve(ctx.template)?.as_str() {
             "link-fail" => {
@@ -63,7 +63,11 @@ impl Step for PlinkyStep {
 }
 
 impl PlinkyStep {
-    fn link(&self, ctx: &TestContext<'_>, runner: &mut RunAndSnapshot) -> Result<bool, Error> {
+    fn link(
+        &self,
+        ctx: &TestContext<'_>,
+        runner: &mut RunAndSnapshot,
+    ) -> Result<bool, ErasedError> {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
 
@@ -95,13 +99,13 @@ impl PlinkyStep {
         };
         command.arg("--dynamic-linker").arg(
             std::env::var_os(dynamic_linker_var)
-                .ok_or_else(|| anyhow!("missing environment variable {dynamic_linker_var}"))?,
+                .ok_or_else(|| erased!("missing environment variable {dynamic_linker_var}"))?,
         );
 
         runner.run("linking", &mut command)
     }
 
-    fn run(&self, ctx: &TestContext<'_>, runner: &mut RunAndSnapshot) -> Result<bool, Error> {
+    fn run(&self, ctx: &TestContext<'_>, runner: &mut RunAndSnapshot) -> Result<bool, ErasedError> {
         if !self.link(ctx, runner)? {
             runner.note("error: could not execute the program due to linking failing");
             return Ok(false);

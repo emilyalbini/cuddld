@@ -1,8 +1,8 @@
-use anyhow::{Error, bail};
+use plinky_error::{ErasedError, bail};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub fn run(command: &mut Command) -> Result<(), Error> {
+pub fn run(command: &mut Command) -> Result<(), ErasedError> {
     let cmd_repr = format!("{command:?}");
     let output = command.output()?;
     if !output.status.success() {
@@ -30,7 +30,7 @@ impl RunAndSnapshot {
         Self { name: name.into(), path: path.into(), output: String::new() }
     }
 
-    pub fn run(&mut self, action: &str, command: &mut Command) -> Result<bool, Error> {
+    pub fn run(&mut self, action: &str, command: &mut Command) -> Result<bool, ErasedError> {
         self.separator();
         match command.output() {
             Ok(output) => {
@@ -86,17 +86,9 @@ pub(crate) fn file_name(path: impl AsRef<Path>) -> String {
 }
 
 #[track_caller]
-pub(crate) fn err_str<T>(result: Result<T, Error>) -> Result<T, String> {
+pub(crate) fn err_str<T>(result: Result<T, ErasedError>) -> Result<T, String> {
     match result {
         Ok(ok) => Ok(ok),
-        Err(err) => {
-            let mut repr = format!("error: {err}\n");
-            let mut source = err.source();
-            while let Some(err) = source {
-                repr.push_str(&format!("  cause: {err}\n"));
-                source = err.source();
-            }
-            panic!("{repr}")
-        }
+        Err(err) => Err(err.format_chain()),
     }
 }
