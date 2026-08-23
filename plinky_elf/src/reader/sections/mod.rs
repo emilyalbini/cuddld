@@ -50,6 +50,10 @@ fn read_section_inner(
         11 => SectionType::SymbolTable { dynsym: true },
         17 => SectionType::Group,
         0x6ffffff6 => SectionType::GnuHash,
+        // 0x70000001 is SHT_X86_64_UNWIND, which is only used by newer linkers to indicate that a
+        // section is .eh_frame. Old linkers match it by name. The current implementation of plinky
+        // doesn't treat it any different tha any other data section, so mark it as program for now.
+        0x70000001 => SectionType::Program,
         other => SectionType::Unknown(other),
     };
 
