@@ -1,0 +1,18 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd  = [asm.sample32, asm.sample64]
+  kind = "link-fail"
+}
+
+asm "sample32" {
+  source = "sample.S"
+  arch   = "x86"
+  output = "sample32.o"
+}
+
+asm "sample64" {
+  source = "sample.S"
+  arch   = "x86_64"
+  output = "sample64.o"
+}

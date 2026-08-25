@@ -1,0 +1,10 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd  = [asm.code]
+  kind = "link-fail"
+}
+
+asm "code" {
+  source = "code.S"
+}

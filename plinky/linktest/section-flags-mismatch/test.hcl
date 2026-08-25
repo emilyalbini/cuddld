@@ -1,0 +1,15 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd         = [asm.rx, asm.rwx]
+  kind        = "link-pass"
+  debug-print = ["layout"]
+}
+
+asm "rx" {
+  source = "rx.S"
+}
+
+asm "rwx" {
+  source = "rwx.S"
+}

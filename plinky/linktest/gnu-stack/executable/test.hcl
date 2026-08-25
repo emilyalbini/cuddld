@@ -1,0 +1,11 @@
+archs = ["x86"]
+
+plinky "test" {
+  cmd         = [asm.stack, "-z", "execstack"]
+  kind        = "run-pass"
+  debug-print = ["final-elf=@segments"]
+}
+
+asm "stack" {
+  source = "stack.S"
+}

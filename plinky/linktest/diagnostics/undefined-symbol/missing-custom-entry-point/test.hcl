@@ -1,0 +1,10 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd  = [asm.hello, "-e", "custom_entrypoint"]
+  kind = "link-fail"
+}
+
+asm "hello" {
+  source = "hello.S"
+}

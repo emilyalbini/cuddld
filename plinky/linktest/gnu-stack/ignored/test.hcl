@@ -1,0 +1,11 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd         = [asm.foo]
+  kind        = "link-pass"
+  debug-print = ["loaded-object=@env,.note.*"]
+}
+
+asm "foo" {
+  source = "foo.S"
+}

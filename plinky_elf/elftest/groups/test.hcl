@@ -1,0 +1,10 @@
+archs = ["x86", "x86_64"]
+
+read-elf "read" {
+  file   = asm.groups
+  filter = ".group*,.rodata*,.symtab"
+}
+
+asm "groups" {
+  source = "groups.S"
+}

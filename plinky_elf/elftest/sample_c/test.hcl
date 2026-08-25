@@ -1,0 +1,10 @@
+archs = ["x86", "x86_64"]
+
+read-elf "read" {
+  file = c.hello
+}
+
+c "hello" {
+  source     = "hello.c"
+  relocation = "static"
+}

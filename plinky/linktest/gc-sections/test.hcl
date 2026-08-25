@@ -1,0 +1,11 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd         = [asm.foo, "--gc-sections"]
+  kind        = "link-pass"
+  debug-print = ["loaded-object", "gc", "relocated-object"]
+}
+
+asm "foo" {
+  source = "foo.S"
+}

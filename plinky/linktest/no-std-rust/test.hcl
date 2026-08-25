@@ -1,0 +1,10 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd  = [rust.hello]
+  kind = "run-pass"
+}
+
+rust "hello" {
+  source = "hello.rs"
+}

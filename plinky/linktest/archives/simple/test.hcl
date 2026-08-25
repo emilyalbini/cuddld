@@ -1,0 +1,24 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd         = [asm.entry, ar.archived]
+  kind        = "run-pass"
+  debug-print = ["loaded-object"]
+}
+
+ar "archived" {
+  output  = "archived.a"
+  content = [asm.hello, asm.goodbye]
+}
+
+asm "entry" {
+  source = "entry.S"
+}
+
+asm "hello" {
+  source = "hello.S"
+}
+
+asm "goodbye" {
+  source = "goodbye.S"
+}

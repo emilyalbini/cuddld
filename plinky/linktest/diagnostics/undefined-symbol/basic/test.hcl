@@ -1,0 +1,12 @@
+archs = ["x86_64"]
+
+plinky "test" {
+  cmd  = [c.test]
+  kind = "link-fail"
+}
+
+c "test" {
+  source     = "test.c"
+  libc       = "freestanding"
+  relocation = "static"
+}
