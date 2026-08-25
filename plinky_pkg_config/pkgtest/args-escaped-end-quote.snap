@@ -1,7 +1,3 @@
----
-source: plinky_pkg_config/pkgtest/harness.rs
-expression: rendered
----
 Successfully parsed the file!
 
 Libs: hello\ \"\ \'world\'

@@ -1,6 +1,3 @@
----
-source: plinky_test_harness/src/utils.rs
----
 linking exited with exit status: 1
 
 no stdout present

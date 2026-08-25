@@ -1,6 +1,3 @@
----
-source: plinky/linktest/harness/main.rs
----
 linking exited with exit status: 1
 
 no stdout present
@@ -16,5 +13,3 @@ error: the first member of the archive is not a symbol table
  │  │ ranlib archive.a
  │  ╰
  ┴
-
-

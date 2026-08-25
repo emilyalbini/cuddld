@@ -1,5 +1,1 @@
----
-source: plinky_diagnostics/src/diagnostic.rs
-expression: diagnostic.to_string()
----
 debug print: this is a debug print

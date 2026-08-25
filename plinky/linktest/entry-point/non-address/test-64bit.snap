@@ -1,11 +1,6 @@
----
-source: plinky/linktest/harness/main.rs
----
 linking exited with exit status: 1
 
 no stdout present
 
 === stderr ===
 error: entry point symbol _start is not an address
-
-

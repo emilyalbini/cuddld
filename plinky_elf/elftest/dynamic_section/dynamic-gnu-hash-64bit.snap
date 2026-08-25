@@ -1,6 +1,3 @@
----
-source: plinky_test_harness/src/utils.rs
----
 reading dynamic information exited with exit status: 0
 
 === stdout ===

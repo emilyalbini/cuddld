@@ -40,6 +40,7 @@ pub fn assert_snapshot(snapshot: &Path, expected: &str) {
                     }
                 }
                 std::fs::write(snapshot, expected.as_bytes()).expect("faileed to write snapshot");
+                return;
             }
 
             // cargo-nextest doesn't like when `diff` emits `\t`, it messes up with the layout.
