@@ -212,13 +212,10 @@ enum RowKind {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::configure_insta;
-    use insta::assert_snapshot;
+    use plinky_test_harness::assert_snapshot;
 
     #[test]
     fn test_sample_table() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.add_head(["Foo", "Bar", "Baz"]);
         table.add_body(["Hello", "super long", "world!"]);
@@ -229,8 +226,6 @@ mod tests {
 
     #[test]
     fn test_single_cell_table() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.add_body(["alone"]);
 
@@ -239,8 +234,6 @@ mod tests {
 
     #[test]
     fn test_table_with_title() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.set_title("Example title:");
         table.add_body(["a", "b", "c"]);
@@ -250,8 +243,6 @@ mod tests {
 
     #[test]
     fn test_table_with_multiple_lines() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.add_body(["a", "b", "c"]);
         table.add_body(["foo\nbar", "baz", "qu\nu\n\n\nx!!!!!!!!"]);
@@ -261,8 +252,6 @@ mod tests {
 
     #[test]
     fn test_head_and_body() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.add_head(["a", "b", "c"]);
         table.add_head(["d", "e", "f"]);

@@ -48,20 +48,15 @@ fn show_as_ascii(byte: u8) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::configure_insta;
-    use insta::assert_snapshot;
+    use plinky_test_harness::assert_snapshot;
 
     #[test]
     fn test_hex_dump_hello() {
-        let _config = configure_insta();
-
         assert_snapshot!(HexDump::new(b"Hello world").render_to_string());
     }
 
     #[test]
     fn test_hex_dump_256() {
-        let _config = configure_insta();
-
         let data = (0u8..=255u8).collect::<Vec<_>>();
         assert_snapshot!(HexDump::new(data).render_to_string());
     }

@@ -65,9 +65,8 @@ impl Widget for WidgetGroup {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::configure_insta;
     use crate::widgets::{Table, Text};
-    use insta::assert_snapshot;
+    use plinky_test_harness::assert_snapshot;
 
     #[test]
     fn test_empty_group() {
@@ -76,8 +75,6 @@ mod tests {
 
     #[test]
     fn test_multiple_widgets() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.add_body(["Foo", "Bar"]);
 
@@ -87,8 +84,6 @@ mod tests {
 
     #[test]
     fn test_with_name() {
-        let _config = configure_insta();
-
         let group =
             WidgetGroup::new().name("example name").add(Text::new("A simple text message!"));
         assert_snapshot!(group.render_to_string());

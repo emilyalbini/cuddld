@@ -65,38 +65,29 @@ impl std::fmt::Display for DiagnosticKind {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::configure_insta;
     use crate::widgets::{Table, Text};
-    use insta::assert_snapshot;
+    use plinky_test_harness::assert_snapshot;
 
     #[test]
     fn test_kind_debug_print() {
-        let _config = configure_insta();
-
         let diagnostic = Diagnostic::new(DiagnosticKind::DebugPrint, "this is a debug print");
         assert_snapshot!(diagnostic.to_string());
     }
 
     #[test]
     fn test_kind_error() {
-        let _config = configure_insta();
-
         let diagnostic = Diagnostic::new(DiagnosticKind::Error, "something went wrong");
         assert_snapshot!(diagnostic.to_string());
     }
 
     #[test]
     fn test_kind_warning() {
-        let _config = configure_insta();
-
         let diagnostic = Diagnostic::new(DiagnosticKind::Warning, "something bad might happen");
         assert_snapshot!(diagnostic.to_string());
     }
 
     #[test]
     fn test_with_children() {
-        let _config = configure_insta();
-
         let mut table = Table::new();
         table.add_body(["Foo", "Bar"]);
 

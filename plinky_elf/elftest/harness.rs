@@ -21,17 +21,15 @@ struct ReadElfStep {
 
 impl Step for ReadElfStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
-        insta::allow_duplicates! {
-            let file = ctx.maybe_relative_to_src(&self.file.resolve(&*ctx.template)?);
-            self.read(&ctx, &file)?;
+        let file = ctx.maybe_relative_to_src(&self.file.resolve(&*ctx.template)?);
+        self.read(&ctx, &file)?;
 
-            if self.roundtrip {
-                let roundtrip = self.roundtrip(&ctx, &file)?;
-                self.read(&ctx, &roundtrip)?;
-            }
-
-            Ok::<(), ErasedError>(())
+        if self.roundtrip {
+            let roundtrip = self.roundtrip(&ctx, &file)?;
+            self.read(&ctx, &roundtrip)?;
         }
+
+        Ok::<(), ErasedError>(())
     }
 
     fn templates(&self) -> Vec<Template> {

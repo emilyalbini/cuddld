@@ -2,9 +2,9 @@
 
 extern crate test;
 
-use insta::{assert_snapshot, with_settings};
 use plinky_error::ErasedError;
 use plinky_pkg_config::PkgConfig;
+use plinky_test_harness::snapshot::assert_snapshot;
 use plinky_utils::posix_shell_quote;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
@@ -69,13 +69,9 @@ fn test(path: PathBuf) -> Result<(), ErasedError> {
         }
     };
 
-    let name = path.file_stem().unwrap().to_str().unwrap().to_string();
-    with_settings!({
-        prepend_module_to_snapshot => false,
-        snapshot_path => "",
-    }, {
-        assert_snapshot!(name, rendered);
-    });
+    let mut snap = path.clone();
+    snap.set_extension("snap");
+    assert_snapshot(&snap, &rendered);
 
     Ok(())
 }

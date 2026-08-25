@@ -16,7 +16,7 @@
       {
         devShells.default = pkgs.mkShellNoCC {
           packages = [
-            pkgs.cargo-insta
+            pkgs.diffutils
             pkgs.gcc14
             pkgs.nasm
             pkgs.rustup

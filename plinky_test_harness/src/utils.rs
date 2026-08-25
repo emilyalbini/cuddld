@@ -1,3 +1,4 @@
+use crate::snapshot::assert_snapshot;
 use plinky_error::{ErasedError, bail};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -69,15 +70,10 @@ impl RunAndSnapshot {
         }
     }
 
+    #[track_caller]
     pub fn persist(self) {
-        let mut insta_settings = insta::Settings::clone_current();
-        insta_settings.set_prepend_module_to_snapshot(false);
-        insta_settings.set_omit_expression(true);
-        insta_settings.set_snapshot_path(self.path.canonicalize().unwrap());
-
-        insta_settings.bind(|| {
-            insta::assert_snapshot!(self.name, self.output.trim_ascii_end());
-        });
+        let path = self.path.join(format!("{}.snap", self.name));
+        assert_snapshot(&path, &self.output);
     }
 }
 

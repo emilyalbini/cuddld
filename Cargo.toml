@@ -28,7 +28,6 @@ plinky_pkg_config = { path = "plinky_pkg_config"}
 plinky_test_harness = { path = "plinky_test_harness" }
 plinky_utils = { path = "plinky_utils" }
 
-insta = "1.30.0"
 serde = { version = "1.0.190", features = ["derive"] }
 toml = "0.8.6"
 

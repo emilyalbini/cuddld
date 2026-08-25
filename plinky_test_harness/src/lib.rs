@@ -3,6 +3,8 @@
 
 extern crate test;
 
+#[macro_use]
+pub mod snapshot;
 mod builtins;
 mod gather;
 mod steps;

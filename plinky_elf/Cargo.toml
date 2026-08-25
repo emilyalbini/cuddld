@@ -17,7 +17,6 @@ plinky_macros.workspace = true
 plinky_utils.workspace = true
 
 [dev-dependencies]
-insta.workspace = true
 plinky_error.workspace = true
 plinky_test_harness.workspace = true
 serde.workspace = true

@@ -36,8 +36,7 @@ impl Widget for QuotedText {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::configure_insta;
-    use insta::assert_snapshot;
+    use plinky_test_harness::assert_snapshot;
 
     #[test]
     fn test_empty_content() {
@@ -46,16 +45,12 @@ mod tests {
 
     #[test]
     fn test_single_line() {
-        let _config = configure_insta();
-
         let content = QuotedText::new("Hello world");
         assert_snapshot!(content.render_to_string());
     }
 
     #[test]
     fn test_multiple_lines() {
-        let _config = configure_insta();
-
         let content = QuotedText::new("Hello world\nThis\n\n  has\n    multiple lines!");
         assert_snapshot!(content.render_to_string());
     }
