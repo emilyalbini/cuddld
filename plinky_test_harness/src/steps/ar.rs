@@ -1,3 +1,5 @@
+use crate::gather::FromHcl;
+use crate::picohcl::HclDeserializer;
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Step, TestContext};
@@ -10,7 +12,8 @@ use std::process::Command;
 pub(crate) struct ArStep {
     output: Template,
     content: Vec<Template>,
-    symbol_table: Option<bool>,
+    #[serde(default = "default_true")]
+    symbol_table: bool,
 }
 
 impl Step for ArStep {
@@ -26,9 +29,10 @@ impl Step for ArStep {
         }
 
         let mut flags = "rc".to_string();
-        match self.symbol_table {
-            None | Some(true) => flags.push('s'),
-            Some(false) => flags.push('S'),
+        if self.symbol_table {
+            flags.push('s');
+        } else {
+            flags.push('S');
         }
 
         run(Command::new("ar")
@@ -45,4 +49,18 @@ impl Step for ArStep {
     fn templates(&self) -> Vec<Template> {
         std::iter::once(self.output.clone()).chain(self.content.iter().cloned()).collect()
     }
+}
+
+impl FromHcl for ArStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            output: de.field("output")?,
+            content: de.field("content")?,
+            symbol_table: de.opt_field("symbol-table")?.unwrap_or(true),
+        })
+    }
+}
+
+fn default_true() -> bool {
+    true
 }

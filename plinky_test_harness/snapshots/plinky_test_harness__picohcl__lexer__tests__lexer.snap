@@ -1,0 +1,28 @@
+[
+    Literal(
+        "hello",
+    ) @ 0:4,
+    Equal @ 0:6,
+    Dot @ 0:20,
+    Newline @ 0:31,
+    OpenSquare @ 1:0,
+    String(
+        "world\n\\",
+    ) @ 1:11,
+    Comma @ 1:12,
+    Literal(
+        "foo",
+    ) @ 1:16,
+    Dot @ 1:17,
+    Literal(
+        "bar",
+    ) @ 1:20,
+    CloseCurly @ 1:21,
+    OpenCurly @ 1:22,
+    CloseSquare @ 1:23,
+    Newline @ 1:24,
+    Literal(
+        "BAZ",
+    ) @ 2:2,
+    EndOfInput @ 2:3,
+]

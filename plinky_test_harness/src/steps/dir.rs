@@ -1,4 +1,6 @@
 use crate::Step;
+use crate::gather::FromHcl;
+use crate::picohcl::HclDeserializer;
 use crate::template::{Template, Value};
 use crate::utils::file_name;
 use plinky_error::ErasedError;
@@ -27,5 +29,11 @@ impl Step for DirStep {
 
     fn templates(&self) -> Vec<Template> {
         self.files.clone()
+    }
+}
+
+impl FromHcl for DirStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self { files: de.field("files")? })
     }
 }

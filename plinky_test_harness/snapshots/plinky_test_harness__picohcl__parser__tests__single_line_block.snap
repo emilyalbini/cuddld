@@ -1,0 +1,76 @@
+Document {
+    contents: [
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: None,
+                contents: [
+                    Assignment(
+                        AssignmentStatement {
+                            key: "bar",
+                            value: Variable(
+                                Variable(
+                                    "baz",
+                                ),
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: Some(
+                    "bar",
+                ),
+                contents: [
+                    Assignment(
+                        AssignmentStatement {
+                            key: "baz",
+                            value: Variable(
+                                Variable(
+                                    "quux",
+                                ),
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: None,
+                contents: [
+                    Block(
+                        BlockStatement {
+                            kind: "bar",
+                            name: None,
+                            contents: [
+                                Block(
+                                    BlockStatement {
+                                        kind: "baz",
+                                        name: None,
+                                        contents: [
+                                            Assignment(
+                                                AssignmentStatement {
+                                                    key: "quux",
+                                                    value: Variable(
+                                                        Variable(
+                                                            "hello",
+                                                        ),
+                                                    ),
+                                                },
+                                            ),
+                                        ],
+                                    },
+                                ),
+                            ],
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}

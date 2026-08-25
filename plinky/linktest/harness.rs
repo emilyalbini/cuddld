@@ -1,7 +1,8 @@
 use plinky_error::{ErasedError, bail, erased};
+use plinky_test_harness::picohcl::HclDeserializer;
 use plinky_test_harness::template::{ResolveHooks, Template, Value};
 use plinky_test_harness::utils::RunAndSnapshot;
-use plinky_test_harness::{Step, TestContext};
+use plinky_test_harness::{FromHcl, Step, TestContext};
 use std::collections::BTreeMap;
 use std::iter::once;
 use std::path::Path;
@@ -59,6 +60,19 @@ impl Step for PlinkyStep {
 
     fn is_leaf(&self) -> bool {
         true
+    }
+}
+
+impl FromHcl for PlinkyStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            cmd: de.field("cmd")?,
+            kind: de.field("kind")?,
+            debug_print: de.opt_field("debug-print")?.unwrap_or_default(),
+            link_env: de.opt_field("link-env")?.unwrap_or_default(),
+            run_env: de.opt_field("run-env")?.unwrap_or_default(),
+            auxiliary_files: de.opt_field("auxiliary-files")?.unwrap_or_default(),
+        })
     }
 }
 

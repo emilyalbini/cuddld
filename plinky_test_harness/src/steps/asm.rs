@@ -1,7 +1,9 @@
+use crate::gather::FromHcl;
+use crate::picohcl::{FromHclString, HclDeserializer};
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
-use plinky_error::ErasedError;
+use plinky_error::{ErasedError, bail};
 use serde::Deserialize;
 use std::process::Command;
 
@@ -81,12 +83,35 @@ impl Step for AsmStep {
     }
 }
 
+impl FromHcl for AsmStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            source: de.field("source")?,
+            arch: de.opt_field("arch")?,
+            output: de.opt_field("output")?,
+            assembler: de.opt_field("assembler")?.unwrap_or(Assembler::Gnu),
+            auxiliary_files: de.opt_field("auxiliary-files")?.unwrap_or_else(Vec::new),
+            emit_x86_used: de.opt_field("emit-x86-used")?.unwrap_or(true),
+        })
+    }
+}
+
 #[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 enum Assembler {
     Nasm,
     #[default]
     Gnu,
+}
+
+impl FromHclString for Assembler {
+    fn from_string(input: String) -> Result<Self, ErasedError> {
+        match input.as_str() {
+            "gnu" => Ok(Assembler::Gnu),
+            "nasm" => Ok(Assembler::Nasm),
+            _ => bail!("unknown assembler: {input}"),
+        }
+    }
 }
 
 fn default_true() -> bool {

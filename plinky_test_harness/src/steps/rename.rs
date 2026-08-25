@@ -1,3 +1,5 @@
+use crate::gather::FromHcl;
+use crate::picohcl::HclDeserializer;
 use crate::template::{Template, Value};
 use crate::{Step, TestContext};
 use plinky_error::ErasedError;
@@ -25,5 +27,11 @@ impl Step for RenameStep {
 
     fn templates(&self) -> Vec<Template> {
         vec![self.from.clone(), self.to.clone()]
+    }
+}
+
+impl FromHcl for RenameStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(RenameStep { from: de.field("from")?, to: de.field("to")? })
     }
 }

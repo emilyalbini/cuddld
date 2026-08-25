@@ -1,7 +1,9 @@
+use crate::gather::FromHcl;
+use crate::picohcl::{FromHclString, HclDeserializer};
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
-use plinky_error::ErasedError;
+use plinky_error::{ErasedError, bail};
 use serde::Deserialize;
 use std::process::Command;
 
@@ -55,10 +57,30 @@ impl Step for CStep {
     }
 }
 
+impl FromHcl for CStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            source: de.field("source")?,
+            output: de.opt_field("output")?,
+            libc: de.opt_field("libc")?.unwrap_or(Libc::Freestanding),
+            relocation: de.field("relocation")?,
+        })
+    }
+}
+
 #[derive(serde::Deserialize, Debug, Clone)]
 #[serde(rename_all = "kebab-case")]
 enum Libc {
     Freestanding,
+}
+
+impl FromHclString for Libc {
+    fn from_string(input: String) -> Result<Self, ErasedError> {
+        match input.as_str() {
+            "freestanding" => Ok(Libc::Freestanding),
+            _ => bail!("unknown libc: {input}"),
+        }
+    }
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
@@ -67,4 +89,15 @@ enum Relocation {
     Static,
     PicOnlyGot,
     Pic,
+}
+
+impl FromHclString for Relocation {
+    fn from_string(input: String) -> Result<Self, ErasedError> {
+        match input.as_str() {
+            "static" => Ok(Relocation::Static),
+            "pic-only-got" => Ok(Relocation::PicOnlyGot),
+            "pic" => Ok(Relocation::Pic),
+            _ => bail!("unknown relocation: {input}"),
+        }
+    }
 }

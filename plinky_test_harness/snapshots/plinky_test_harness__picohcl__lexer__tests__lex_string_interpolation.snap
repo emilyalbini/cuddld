@@ -1,0 +1,10 @@
+[
+    Literal(
+        "hello",
+    ) @ 0:4,
+    Equal @ 0:6,
+    String(
+        "world ${foo.bar}",
+    ) @ 0:25,
+    EndOfInput @ 0:26,
+]

@@ -6,6 +6,7 @@ use plinky_error::{ErasedContext as _, ErasedError, bail};
 use plinky_utils::create_temp_dir;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use crate::picohcl::FromHclString;
 
 #[derive(Debug)]
 pub(crate) struct Test {
@@ -123,5 +124,15 @@ impl std::fmt::Display for Arch {
             Arch::X86 => f.write_str("x86"),
             Arch::X86_64 => f.write_str("x86_64"),
         }
+    }
+}
+
+impl FromHclString for Arch {
+    fn from_string(input: String) -> Result<Self, ErasedError> {
+        Ok(match input.as_str() {
+            "x86" => Arch::X86,
+            "x86_64" => Arch::X86_64,
+            other => bail!("unknown arch: {other}"),
+        })
     }
 }

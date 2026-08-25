@@ -5,6 +5,7 @@ extern crate test;
 
 #[macro_use]
 pub mod snapshot;
+pub mod picohcl;
 mod builtins;
 mod gather;
 mod steps;
@@ -12,7 +13,7 @@ pub mod template;
 mod tests;
 pub mod utils;
 
-pub use crate::gather::DefineSteps;
+pub use crate::gather::{DefineSteps, FromHcl};
 use crate::gather::{DefineStepsFn, gather};
 pub use crate::steps::Step;
 use crate::utils::err_str;

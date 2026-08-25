@@ -1,0 +1,107 @@
+Document {
+    contents: [
+        Assignment(
+            AssignmentStatement {
+                key: "a",
+                value: String(
+                    "string",
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "b",
+                value: Variable(
+                    Variable(
+                        "short-variable",
+                    ),
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "c",
+                value: Variable(
+                    Variable(
+                        "medium.variable",
+                    ),
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "d",
+                value: Variable(
+                    Variable(
+                        "long.variable.trust.me",
+                    ),
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "e",
+                value: List(
+                    [],
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "f",
+                value: List(
+                    [
+                        String(
+                            "a",
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "g",
+                value: List(
+                    [
+                        String(
+                            "a",
+                        ),
+                        Variable(
+                            Variable(
+                                "medium.variable",
+                            ),
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "h",
+                value: List(
+                    [
+                        String(
+                            "a",
+                        ),
+                    ],
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "i",
+                value: Bool(
+                    true,
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "j",
+                value: Bool(
+                    false,
+                ),
+            },
+        ),
+    ],
+}

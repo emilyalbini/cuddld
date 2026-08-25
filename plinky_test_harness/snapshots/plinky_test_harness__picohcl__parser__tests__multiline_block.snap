@@ -1,0 +1,53 @@
+Document {
+    contents: [
+        Block(
+            BlockStatement {
+                kind: "env",
+                name: None,
+                contents: [
+                    Assignment(
+                        AssignmentStatement {
+                            key: "FOO",
+                            value: String(
+                                "1",
+                            ),
+                        },
+                    ),
+                    Assignment(
+                        AssignmentStatement {
+                            key: "BAR",
+                            value: String(
+                                "2",
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+        Block(
+            BlockStatement {
+                kind: "env",
+                name: Some(
+                    "sample",
+                ),
+                contents: [
+                    Block(
+                        BlockStatement {
+                            kind: "enable",
+                            name: None,
+                            contents: [],
+                        },
+                    ),
+                    Assignment(
+                        AssignmentStatement {
+                            key: "FOO",
+                            value: String(
+                                "3",
+                            ),
+                        },
+                    ),
+                ],
+            },
+        ),
+    ],
+}

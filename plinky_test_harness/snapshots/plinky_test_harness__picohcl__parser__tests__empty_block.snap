@@ -1,0 +1,36 @@
+Document {
+    contents: [
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: None,
+                contents: [],
+            },
+        ),
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: Some(
+                    "bar",
+                ),
+                contents: [],
+            },
+        ),
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: None,
+                contents: [],
+            },
+        ),
+        Block(
+            BlockStatement {
+                kind: "foo",
+                name: Some(
+                    "bar",
+                ),
+                contents: [],
+            },
+        ),
+    ],
+}

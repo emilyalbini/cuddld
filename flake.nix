@@ -20,6 +20,7 @@
             pkgs.gcc14
             pkgs.nasm
             pkgs.rustup
+            pkgs.hclfmt
 
             # Provide headers for both 32bit and 64bit:
             pkgs32.glibc.dev

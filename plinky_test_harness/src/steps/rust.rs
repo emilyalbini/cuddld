@@ -1,7 +1,9 @@
+use crate::gather::FromHcl;
+use crate::picohcl::{FromHclString, HclDeserializer};
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
-use plinky_error::ErasedError;
+use plinky_error::{ErasedError, bail};
 use serde::Deserialize;
 use std::process::Command;
 
@@ -48,9 +50,27 @@ impl Step for RustStep {
     }
 }
 
+impl FromHcl for RustStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            source: de.field("source")?,
+            panic: de.opt_field("panic")?.unwrap_or(Panic::Abort),
+        })
+    }
+}
+
 #[derive(serde::Deserialize, Debug, Default, Clone, Copy)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 enum Panic {
     #[default]
     Abort,
+}
+
+impl FromHclString for Panic {
+    fn from_string(input: String) -> Result<Self, ErasedError> {
+        match input.as_str() {
+            "abort" => Ok(Panic::Abort),
+            other => bail!("unknown panic strategy: {other}"),
+        }
+    }
 }

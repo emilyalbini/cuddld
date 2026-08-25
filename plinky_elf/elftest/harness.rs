@@ -2,8 +2,9 @@ use plinky_elf::ElfReader;
 use plinky_elf::writer::Writer;
 use plinky_elf::writer::layout::Layout;
 use plinky_error::{ErasedError, erased};
+use plinky_test_harness::picohcl::HclDeserializer;
 use plinky_test_harness::template::Template;
-use plinky_test_harness::{Step, TestContext};
+use plinky_test_harness::{FromHcl, Step, TestContext};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
@@ -38,6 +39,16 @@ impl Step for ReadElfStep {
 
     fn is_leaf(&self) -> bool {
         true
+    }
+}
+
+impl FromHcl for ReadElfStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            file: de.field("file")?,
+            roundtrip: de.opt_field("roundtrip")?.unwrap_or(true),
+            filter: de.opt_field("filter")?,
+        })
     }
 }
 
@@ -110,6 +121,12 @@ impl Step for ReadDynamicStep {
 
     fn is_leaf(&self) -> bool {
         true
+    }
+}
+
+impl FromHcl for ReadDynamicStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self { file: de.field("file")? })
     }
 }
 

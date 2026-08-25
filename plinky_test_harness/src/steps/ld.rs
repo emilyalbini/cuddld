@@ -1,3 +1,5 @@
+use crate::gather::FromHcl;
+use crate::picohcl::HclDeserializer;
 use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
@@ -62,5 +64,16 @@ impl Step for LdStep {
             .chain(std::iter::once(self.output.clone()))
             .chain(self.extra_args.clone())
             .collect()
+    }
+}
+
+impl FromHcl for LdStep {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
+        Ok(Self {
+            output: de.field("output")?,
+            content: de.field("content")?,
+            extra_args: de.opt_field("extra-args")?.unwrap_or_else(Vec::new),
+            shared_library: de.opt_field("shared-library")?.unwrap_or(false),
+        })
     }
 }
