@@ -4,6 +4,7 @@ cargo-features = ["different-binary-name"]
 name = "plinky"
 edition.workspace = true
 version.workspace = true
+default-run = "plinky"
 
 [lints]
 workspace = true

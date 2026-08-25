@@ -12,7 +12,6 @@ members = [
     "plinky_test_harness",
     "plinky_utils",
 ]
-default-members = ["plinky"]
 
 [workspace.package]
 version = "0.0.0"
