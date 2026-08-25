@@ -19,7 +19,19 @@ section <empty> (address: 0x0)
  │  empty section
  ┴
 
-section .note.gnu.property (address: 0x80480d4)
+section .text (address: 0x8049000)
+ │
+ │  program data | permissions: R X
+ │
+ │  ╭─────────────────────────────────────────────────┬──────────────────╮
+ │  │ b8 04 00 00 00 bb 01 00 00 00 b9 28 b0 04 08 ba │ ...........(.... │
+ │  │ 0d 00 00 00 cd 80 b8 04 00 00 00 bb 01 00 00 00 │ ................ │
+ │  │ b9 35 b0 04 08 ba 0f 00 00 00 cd 80 b0 01 bb 00 │ .5.............. │
+ │  │ 00 00 00 cd 80                                  │ .....            │
+ │  ╰─────────────────────────────────────────────────┴──────────────────╯
+ ┴
+
+section .note.gnu.property (address: 0x804a000)
  │
  │  GNU properties
  │   │
@@ -32,19 +44,7 @@ section .note.gnu.property (address: 0x80480d4)
  │   ┴
  ┴
 
-section .text (address: 0x8049000)
- │
- │  program data | permissions: R X
- │
- │  ╭─────────────────────────────────────────────────┬──────────────────╮
- │  │ b8 04 00 00 00 bb 01 00 00 00 b9 00 a0 04 08 ba │ ................ │
- │  │ 0d 00 00 00 cd 80 b8 04 00 00 00 bb 01 00 00 00 │ ................ │
- │  │ b9 0d a0 04 08 ba 0f 00 00 00 cd 80 b0 01 bb 00 │ ................ │
- │  │ 00 00 00 cd 80                                  │ .....            │
- │  ╰─────────────────────────────────────────────────┴──────────────────╯
- ┴
-
-section .data (address: 0x804a000)
+section .data (address: 0x804b028)
  │
  │  program data | permissions: RW
  │
@@ -54,7 +54,7 @@ section .data (address: 0x804a000)
  │  ╰─────────────────────────────────────────────────┴──────────────────╯
  ┴
 
-section .bss (address: 0x804a020)
+section .bss (address: 0x804b048)
  │
  │  uninitialized | len: 0x8 | permissions: RW 
  ┴
@@ -67,15 +67,15 @@ section .symtab (address: 0x0)
  │  ├─────────────┼─────────┼────────┼────────────┼────────────┼───────────┼──────┤
  │  │ <empty>     │ Local   │ -      │ Default    │ Undefined  │ 0x0       │ 0x0  │
  │  │ hello.S     │ Local   │ File   │ Default    │ Absolute   │ 0x0       │ 0x0  │
- │  │ msg_hello   │ Local   │ -      │ Default    │ .data      │ 0x804a000 │ 0x0  │
+ │  │ msg_hello   │ Local   │ -      │ Default    │ .data      │ 0x804b028 │ 0x0  │
  │  │ len_hello   │ Local   │ -      │ Default    │ Absolute   │ 0xd       │ 0x0  │
- │  │ msg_goodbye │ Local   │ -      │ Default    │ .data      │ 0x804a00d │ 0x0  │
+ │  │ msg_goodbye │ Local   │ -      │ Default    │ .data      │ 0x804b035 │ 0x0  │
  │  │ len_goodbye │ Local   │ -      │ Default    │ Absolute   │ 0xf       │ 0x0  │
- │  │ uninit      │ Local   │ Object │ Default    │ .bss       │ 0x804a020 │ 0x8  │
+ │  │ uninit      │ Local   │ Object │ Default    │ .bss       │ 0x804b048 │ 0x8  │
  │  │ _start      │ Global  │ -      │ Default    │ .text      │ 0x8049000 │ 0x0  │
- │  │ __bss_start │ Global  │ -      │ Default    │ .bss       │ 0x804a01c │ 0x0  │
- │  │ _edata      │ Global  │ -      │ Default    │ .data      │ 0x804a01c │ 0x0  │
- │  │ _end        │ Global  │ -      │ Default    │ .bss       │ 0x804a028 │ 0x0  │
+ │  │ __bss_start │ Global  │ -      │ Default    │ .bss       │ 0x804b048 │ 0x0  │
+ │  │ _edata      │ Global  │ -      │ Default    │ .data      │ 0x804b044 │ 0x0  │
+ │  │ _end        │ Global  │ -      │ Default    │ .bss       │ 0x804b050 │ 0x0  │
  │  ╰─────────────┴─────────┴────────┴────────────┴────────────┴───────────┴──────╯
  ┴
 
@@ -104,8 +104,8 @@ section .shstrtab (address: 0x0)
  │  │ 0x1  │ .symtab            │
  │  │ 0x9  │ .strtab            │
  │  │ 0x11 │ .shstrtab          │
- │  │ 0x1b │ .note.gnu.property │
- │  │ 0x2e │ .text              │
+ │  │ 0x1b │ .text              │
+ │  │ 0x21 │ .note.gnu.property │
  │  │ 0x34 │ .data              │
  │  │ 0x3a │ .bss               │
  │  ╰──────┴────────────────────╯
@@ -115,11 +115,12 @@ section .shstrtab (address: 0x0)
 ╭──────────────┬───────┬──────────┬─────────────┬──────────┬────────────────┬────────────╮
 │ Type         │ Perms │ Aligment │ File offset │ File len │ Memory address │ Memory len │
 ├──────────────┼───────┼──────────┼─────────────┼──────────┼────────────────┼────────────┤
-│ Load         │ R     │ 0x1000   │ 0x0         │ 0xfc     │ 0x8048000      │ 0xfc       │
+│ Load         │ R     │ 0x1000   │ 0x0         │ 0xf4     │ 0x8048000      │ 0xf4       │
 │ Load         │ R X   │ 0x1000   │ 0x1000      │ 0x35     │ 0x8049000      │ 0x35       │
-│ Load         │ RW    │ 0x1000   │ 0x2000      │ 0x1c     │ 0x804a000      │ 0x28       │
-│ Note         │ R     │ 0x4      │ 0xd4        │ 0x28     │ 0x80480d4      │ 0x28       │
-│ GNU property │ R     │ 0x4      │ 0xd4        │ 0x28     │ 0x80480d4      │ 0x28       │
+│ Load         │ R     │ 0x1000   │ 0x2000      │ 0x28     │ 0x804a000      │ 0x28       │
+│ Load         │ RW    │ 0x1000   │ 0x2028      │ 0x1c     │ 0x804b028      │ 0x28       │
+│ Note         │ R     │ 0x4      │ 0x2000      │ 0x28     │ 0x804a000      │ 0x28       │
+│ GNU property │ R     │ 0x4      │ 0x2000      │ 0x28     │ 0x804a000      │ 0x28       │
 ╰──────────────┴───────┴──────────┴─────────────┴──────────┴────────────────┴────────────╯
 
 no stderr present
