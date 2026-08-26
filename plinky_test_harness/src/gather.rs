@@ -23,8 +23,12 @@ pub(crate) fn gather(
         if toml.is_file() {
             bail!("toml tests are no longer supported: {toml:?}");
         } else if hcl.is_file() {
-            create_tests(&mut tests, prefix, &hcl, define_steps)
-                .with_context(|| format!("failed to create tests from {}", hcl.display()))?;
+            let result = create_tests(&mut tests, prefix, &hcl, define_steps)
+                .with_context(|| format!("failed to create tests from {}", hcl.display()));
+            match result {
+                Ok(()) => {}
+                Err(err) => create_failing_test(&mut tests, &hcl, err),
+            }
         } else if entry.is_dir() {
             let prefix = format!("{}{}/", prefix, entry.file_name().unwrap().to_str().unwrap());
             tests.extend(gather(&entry, &prefix, define_steps)?);
@@ -124,6 +128,29 @@ fn create_tests(
     }
 
     Ok(())
+}
+
+fn create_failing_test(tests: &mut Vec<TestDescAndFn>, file: &Path, err: ErasedError) {
+    tests.push(TestDescAndFn {
+        desc: TestDesc {
+            name: TestName::DynTestName(file.to_string_lossy().to_string()),
+            ignore: false,
+            ignore_message: None,
+            source_file: "",
+            start_line: 0,
+            start_col: 0,
+            end_line: 0,
+            end_col: 0,
+            should_panic: ShouldPanic::No,
+            compile_fail: false,
+            no_run: false,
+            test_type: TestType::IntegrationTest,
+        },
+        testfn: TestFn::DynTestFn(Box::new(move || {
+            eprintln!("{}", err.format_chain());
+            panic!("test file failed to initialize");
+        })),
+    })
 }
 
 pub(crate) type DefineStepsFn = fn(&mut DefineSteps) -> Result<&mut DefineSteps, ErasedError>;
