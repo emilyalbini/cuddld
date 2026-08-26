@@ -7,16 +7,16 @@ pub(crate) mod rename;
 pub(crate) mod rust;
 
 use crate::TestContext;
-use crate::template::Template;
 use plinky_error::ErasedError;
 use std::fmt::Debug;
 
 pub trait Step: Debug + Send + Sync {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError>;
-    fn templates(&self) -> Vec<Template>;
 
-    /// Each leaf step will generate a new test variation.
-    fn is_leaf(&self) -> bool {
+    fn is_leaf() -> bool
+    where
+        Self: Sized,
+    {
         false
     }
 }

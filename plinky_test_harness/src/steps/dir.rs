@@ -1,13 +1,13 @@
 use crate::Step;
-use crate::gather::FromHcl;
-use crate::picohcl::HclDeserializer;
-use crate::template::{Template, Value};
+use crate::picohcl::ast::ResolvedExpression;
+use crate::picohcl::{FromHcl, HclDeserializer};
 use crate::utils::file_name;
 use plinky_error::ErasedError;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub(crate) struct DirStep {
-    files: Vec<Template>,
+    files: Vec<PathBuf>,
 }
 
 impl Step for DirStep {
@@ -15,18 +15,13 @@ impl Step for DirStep {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
 
-        for template in &self.files {
-            let resolved = template.resolve(&*ctx.template)?;
-            std::fs::copy(ctx.maybe_relative_to_src(&resolved), dest.join(file_name(&resolved)))?;
+        for file in &self.files {
+            std::fs::copy(ctx.maybe_relative_to_src(&file), dest.join(file_name(&file)))?;
         }
 
-        ctx.template.set_variable(ctx.step_name, Value::Path(dest));
+        ctx.hcl.set_variable(ctx.step_name, ResolvedExpression::Path(dest));
 
         Ok(())
-    }
-
-    fn templates(&self) -> Vec<Template> {
-        self.files.clone()
     }
 }
 

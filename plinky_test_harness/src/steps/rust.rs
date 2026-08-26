@@ -1,20 +1,20 @@
-use crate::gather::FromHcl;
-use crate::picohcl::{FromHclString, HclDeserializer};
-use crate::template::{Template, Value};
+use crate::picohcl::{FromHcl, FromHclString, HclDeserializer};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use plinky_error::{ErasedError, bail};
+use std::path::PathBuf;
 use std::process::Command;
+use crate::picohcl::ast::ResolvedExpression;
 
 #[derive(Debug)]
 pub(crate) struct RustStep {
-    source: Template,
+    source: PathBuf,
     panic: Panic,
 }
 
 impl Step for RustStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
-        let source = ctx.maybe_relative_to_src(self.source.resolve(&*ctx.template)?);
+        let source = ctx.maybe_relative_to_src(&self.source);
         let source_name = file_name(&source);
         let dest_name = format!("lib{}", file_name(&source.with_extension("a")));
 
@@ -37,13 +37,9 @@ impl Step for RustStep {
             .arg(&dest_name)
             .arg(&source_name))?;
 
-        ctx.template.set_variable(ctx.step_name, Value::Path(dest.join(dest_name)));
+        ctx.hcl.set_variable(ctx.step_name, ResolvedExpression::Path(dest.join(dest_name)));
 
         Ok(())
-    }
-
-    fn templates(&self) -> Vec<Template> {
-        vec![self.source.clone()]
     }
 }
 

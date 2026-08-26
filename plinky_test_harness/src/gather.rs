@@ -1,9 +1,9 @@
 use crate::Step;
 use crate::picohcl::ast::Statement;
-use crate::picohcl::{HclDeserializer, parse_picohcl};
+use crate::picohcl::{FromHcl, HclContext, HclDeserializer, HclResolver, parse_picohcl};
 use crate::tests::{Arch, Test, TestStep};
 use crate::utils::err_str;
-use plinky_error::{ErasedContext as _, ErasedError, bail};
+use plinky_error::{ErasedContext as _, ErasedError, bail, erased};
 use std::collections::BTreeMap;
 use std::path::Path;
 use test::{ShouldPanic, TestDesc, TestDescAndFn, TestFn, TestName, TestType};
@@ -41,52 +41,23 @@ pub(crate) fn gather(
 fn create_tests(
     tests: &mut Vec<TestDescAndFn>,
     prefix: &str,
-    hcl_path: &Path,
+    path: &Path,
     define_steps: DefineStepsFn,
 ) -> Result<(), ErasedError> {
-    let source_dir = hcl_path.parent().unwrap();
+    let source_dir = path.parent().unwrap();
     let name = format!("{}{}", prefix, source_dir.file_name().unwrap().to_str().unwrap());
 
-    let mut definers = Vec::new();
-    let raw = std::fs::read_to_string(hcl_path)?;
-    let parsed = parse_picohcl(&raw)?;
-
-    let mut de = HclDeserializer::from_statements(parsed.contents.clone());
-    let archs: Vec<Arch> = de.field("archs")?;
-    let ignore = de.opt_field("ignore")?;
-
-    let mut undefined_hcl: BTreeMap<_, BTreeMap<_, _>> = BTreeMap::new();
-    for statement in de.remaining() {
-        let block = match statement {
-            Statement::Assignment(assignment) => {
-                bail!("unsupported top-level key: {}", assignment.key);
-            }
-            Statement::Block(block) => block,
-        };
-        let Some(step_name) = block.name else {
-            bail!("step {} is missing a name", block.kind);
-        };
-        undefined_hcl
-            .entry(block.kind)
-            .or_default()
-            .insert(step_name, HclDeserializer::from_statements(block.contents));
-    }
-
-    for arch in archs {
-        definers.push(DefineSteps {
-            arch,
-            ignore: ignore.clone(),
-            undefined_hcl: undefined_hcl.clone(),
+    let hcl = parse_hcl(path).with_context(|| format!("failed to parse {}", path.display()))?;
+    for arch in hcl.archs {
+        // We first define the steps to figure out what the leafs are and to do validation.
+        let mut definer = DefineSteps {
+            undefined: hcl.steps.clone(),
             defined: Vec::new(),
             defined_leafs: Vec::new(),
-        })
-    }
-
-    for mut definer in definers {
-        let arch = definer.arch;
+        };
         define_steps(&mut definer)?;
 
-        let missing_step_kinds = definer.undefined_hcl.into_keys().collect::<Vec<_>>();
+        let missing_step_kinds = definer.undefined.into_keys().collect::<Vec<_>>();
         if !missing_step_kinds.is_empty() {
             bail!(
                 "test contains the following undefined step types: {}",
@@ -94,12 +65,23 @@ fn create_tests(
             );
         }
 
-        for leaf in &definer.defined_leafs {
-            let mut steps = definer.defined.clone();
-            steps.push(leaf.clone());
+        for leaf in definer.defined_leafs {
+            let leaf_name = leaf.name.clone();
+
+            // Then, as unfortunately we cannot clone test steps, we re-define them and only extract
+            // the steps we care about out of it.
+            let mut definer = DefineSteps {
+                undefined: hcl.steps.clone(),
+                defined: Vec::new(),
+                defined_leafs: Vec::new(),
+            };
+            define_steps(&mut definer)?;
+
+            let mut steps = definer.defined;
+            steps.push(leaf);
 
             let leaf_name = if definer.defined_leafs.len() > 1 {
-                let name = leaf.name.split_once('.').expect("bad step name").1;
+                let name = leaf_name.split_once('.').expect("bad step name").1;
                 format!("{name}, ")
             } else {
                 String::new()
@@ -110,8 +92,8 @@ fn create_tests(
             tests.push(TestDescAndFn {
                 desc: TestDesc {
                     name: TestName::DynTestName(format!("{name} ({leaf_name}{arch})")),
-                    ignore: definer.ignore.is_some(),
-                    ignore_message: definer.ignore.clone().map(leak),
+                    ignore: hcl.ignore.is_some(),
+                    ignore_message: hcl.ignore.clone().map(leak),
                     source_file: "",
                     start_line: 0,
                     start_col: 0,
@@ -153,12 +135,52 @@ fn create_failing_test(tests: &mut Vec<TestDescAndFn>, file: &Path, err: ErasedE
     })
 }
 
+struct ParsedHcl {
+    archs: Vec<Arch>,
+    ignore: Option<String>,
+    steps: BTreeMap<String, BTreeMap<String, HclResolver>>,
+}
+
+fn parse_hcl(path: &Path) -> Result<ParsedHcl, ErasedError> {
+    let raw = std::fs::read_to_string(path)?;
+    let parsed = parse_picohcl(&raw)?;
+
+    // Top-level assignments shouldn't rely on anything non-builtin, so they can be resolved
+    // immediately. Steps should be collected for later resolution.
+    let mut assignments = Vec::new();
+    let mut steps: BTreeMap<_, BTreeMap<_, _>> = BTreeMap::new();
+    for statement in parsed.contents {
+        match statement {
+            Statement::Assignment(_) => assignments.push(statement),
+            Statement::Block(block) => {
+                let Some(name) = block.name else {
+                    bail!("block {} doesn't have a name", block.kind);
+                };
+                steps.entry(block.kind).or_default().insert(name, HclResolver::new(block.contents));
+            }
+        }
+    }
+    let mut assignments = HclResolver::new(assignments);
+    assignments.try_resolve(&HclContext::builtin())?;
+    let mut assignments = HclDeserializer::from_statements(
+        assignments
+            .resolved()
+            .ok_or_else(|| erased!("not all top-level assignments could be resolved"))?,
+    );
+
+    let parsed = ParsedHcl {
+        archs: assignments.field("archs")?,
+        ignore: assignments.opt_field("ignore")?,
+        steps,
+    };
+    assignments.ensure_exhaustive()?;
+    Ok(parsed)
+}
+
 pub(crate) type DefineStepsFn = fn(&mut DefineSteps) -> Result<&mut DefineSteps, ErasedError>;
 
 pub struct DefineSteps {
-    arch: Arch,
-    ignore: Option<String>,
-    undefined_hcl: BTreeMap<String, BTreeMap<String, HclDeserializer>>,
+    undefined: BTreeMap<String, BTreeMap<String, HclResolver>>,
     defined: Vec<TestStep>,
     defined_leafs: Vec<TestStep>,
 }
@@ -181,14 +203,30 @@ impl DefineSteps {
         &mut self,
         kind_name: &str,
     ) -> Result<&mut Self, ErasedError> {
-        if let Some(steps) = self.undefined_hcl.remove(kind_name) {
-            for (step_name, mut de) in steps {
+        if let Some(steps) = self.undefined.remove(kind_name) {
+            for (step_name, mut resolver) in steps {
                 let name = format!("{kind_name}.{step_name}");
+
+                let name_clone = name.clone();
                 let step = Box::new(
-                    S::from_hcl(&mut de).with_context(|| format!("failed to parse step {name}"))?,
+                    move |ctx: &HclContext| -> Result<Option<Box<dyn Step>>, ErasedError> {
+                        resolver.try_resolve(ctx)?;
+                        if let Some(resolved) = resolver.resolved() {
+                            let mut de = HclDeserializer::from_statements(resolved);
+                            let step =
+                                Box::new(S::from_hcl(&mut de).with_context(|| {
+                                    format!("failed to parse step {name_clone}")
+                                })?);
+                            de.ensure_exhaustive().with_context(|| {
+                                format!("step {name_clone} contains unknown fields")
+                            })?;
+                            Ok(Some(step))
+                        } else {
+                            Ok(None)
+                        }
+                    },
                 );
-                de.ensure_exhaustive()?;
-                if step.is_leaf() {
+                if S::is_leaf() {
                     self.defined_leafs.push(TestStep::new(&name, step));
                 } else {
                     self.defined.push(TestStep::new(&name, step));
@@ -197,10 +235,6 @@ impl DefineSteps {
         }
         Ok(self)
     }
-}
-
-pub trait FromHcl: Sized {
-    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError>;
 }
 
 fn leak(string: String) -> &'static str {

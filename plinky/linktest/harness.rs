@@ -1,27 +1,27 @@
 use plinky_error::{ErasedError, bail, erased};
-use plinky_test_harness::picohcl::HclDeserializer;
-use plinky_test_harness::template::{ResolveHooks, Template, Value};
+use plinky_test_harness::picohcl::ast::{ResolvedInterpolation, ResolvedInterpolationChunk};
+use plinky_test_harness::picohcl::{FromHcl, HclDeserializer};
 use plinky_test_harness::utils::RunAndSnapshot;
-use plinky_test_harness::{FromHcl, Step, TestContext};
+use plinky_test_harness::{Step, TestContext};
 use std::collections::BTreeMap;
-use std::iter::once;
-use std::path::Path;
+use std::ffi::OsString;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 #[derive(Debug)]
 struct PlinkyStep {
-    cmd: Vec<Template>,
-    kind: Template,
+    cmd: Vec<ResolvedInterpolation>,
+    kind: String,
     debug_print: Vec<String>,
-    link_env: BTreeMap<String, Template>,
-    run_env: BTreeMap<String, Template>,
-    auxiliary_files: Vec<Template>,
+    link_env: BTreeMap<String, ResolvedInterpolation>,
+    run_env: BTreeMap<String, ResolvedInterpolation>,
+    auxiliary_files: Vec<PathBuf>,
 }
 
 impl Step for PlinkyStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let mut runner = ctx.run_and_snapshot();
-        let (res, err) = match self.kind.resolve(ctx.template)?.as_str() {
+        let (res, err) = match self.kind.as_str() {
             "link-fail" => {
                 (!self.link(&ctx, &mut runner)?, "linking was supposed to fail but passed!")
             }
@@ -44,16 +44,7 @@ impl Step for PlinkyStep {
         Ok(())
     }
 
-    fn templates(&self) -> Vec<Template> {
-        once(self.kind.clone())
-            .chain(self.cmd.iter().cloned())
-            .chain(self.link_env.values().cloned())
-            .chain(self.run_env.values().cloned())
-            .chain(self.auxiliary_files.iter().cloned())
-            .collect()
-    }
-
-    fn is_leaf(&self) -> bool {
+    fn is_leaf() -> bool {
         true
     }
 }
@@ -80,23 +71,19 @@ impl PlinkyStep {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
 
-        let hooks = ResolveHooks::new().expression_resolved(|value| copy_argument(&dest, value));
-        let cmd = self
-            .cmd
-            .iter()
-            .map(|c| c.resolve_with(&*ctx.template, &hooks))
-            .collect::<Result<Vec<_>, _>>()?;
+        let cmd = self.cmd.iter().map(|ps| handle_interpolation(&dest, ps)).collect::<Vec<_>>();
 
         let mut command = Command::new(env!("CARGO_BIN_EXE_ld.plinky"));
-        command.current_dir(&dest).args(&cmd).env("RUST_BACKTRACE", "1");
+        command.current_dir(&dest).args(cmd).env("RUST_BACKTRACE", "1");
         for debug_print in &self.debug_print {
             command.args(["--debug-print", debug_print]);
         }
         for (key, value) in &self.link_env {
-            command.env(key, value.resolve_with(&*ctx.template, &hooks)?);
+            command.env(key, handle_interpolation(&dest, value));
         }
         for file in &self.auxiliary_files {
-            file.resolve_with(&*ctx.template, &hooks)?;
+            let name = file.file_name().unwrap();
+            std::fs::copy(file, dest.join(name))?;
         }
 
         // In NixOS, the default linker is just a stub that errors out (since you are not supposed
@@ -125,24 +112,31 @@ impl PlinkyStep {
         let mut command = Command::new(dest.join("a.out"));
         command.current_dir(&dest);
         for (key, value) in &self.run_env {
-            command.env(key, value.resolve(&*ctx.template)?);
+            command.env(key, handle_interpolation(&dest, value));
         }
 
         runner.run("running", &mut command)
     }
 }
 
-fn copy_argument(dest: &Path, value: Value) -> Value {
-    match value {
-        Value::Path(path) => {
-            let name = path.file_name().expect("path without name");
-            if !dest.join(name).exists() {
-                copy_recursive(&path, dest).expect("failed to copy source element");
+// To ensure we have consistent output in snapshot tests we want to move all of the input files in
+// the destination directory, and replace their path in the command line. That's why we process
+// the interpolation of paths and strings here.
+fn handle_interpolation(dest: &Path, value: &ResolvedInterpolation) -> OsString {
+    let mut result = OsString::new();
+    for chunk in &value.0 {
+        match chunk {
+            ResolvedInterpolationChunk::String(s) => result.push(s),
+            ResolvedInterpolationChunk::Path(path) => {
+                let name = path.file_name().expect("path without name");
+                if !dest.join(name).exists() {
+                    copy_recursive(&path, dest).expect("failed to copy source element");
+                }
+                result.push(name);
             }
-            Value::Path(name.into())
         }
-        _ => value,
     }
+    result
 }
 
 fn copy_recursive(from: &Path, dest_dir: &Path) -> Result<(), std::io::Error> {

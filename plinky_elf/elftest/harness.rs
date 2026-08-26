@@ -2,9 +2,8 @@ use plinky_elf::ElfReader;
 use plinky_elf::writer::Writer;
 use plinky_elf::writer::layout::Layout;
 use plinky_error::{ErasedError, erased};
-use plinky_test_harness::picohcl::HclDeserializer;
-use plinky_test_harness::template::Template;
-use plinky_test_harness::{FromHcl, Step, TestContext};
+use plinky_test_harness::picohcl::{FromHcl, HclDeserializer};
+use plinky_test_harness::{Step, TestContext};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
@@ -12,14 +11,14 @@ use std::process::Command;
 
 #[derive(Debug)]
 struct ReadElfStep {
-    file: Template,
+    file: PathBuf,
     roundtrip: bool,
     filter: Option<String>,
 }
 
 impl Step for ReadElfStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
-        let file = ctx.maybe_relative_to_src(&self.file.resolve(&*ctx.template)?);
+        let file = ctx.maybe_relative_to_src(&self.file);
         self.read(&ctx, &file)?;
 
         if self.roundtrip {
@@ -30,11 +29,7 @@ impl Step for ReadElfStep {
         Ok::<(), ErasedError>(())
     }
 
-    fn templates(&self) -> Vec<Template> {
-        vec![self.file.clone()]
-    }
-
-    fn is_leaf(&self) -> bool {
+    fn is_leaf() -> bool {
         true
     }
 }
@@ -90,12 +85,12 @@ impl ReadElfStep {
 
 #[derive(Debug)]
 struct ReadDynamicStep {
-    file: Template,
+    file: PathBuf,
 }
 
 impl Step for ReadDynamicStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
-        let file = ctx.maybe_relative_to_src(&self.file.resolve(&*ctx.template)?);
+        let file = ctx.maybe_relative_to_src(&self.file);
         println!("reading {}...", file.display());
 
         let mut command = Command::new(env!("CARGO_BIN_EXE_read-dynamic"));
@@ -111,11 +106,7 @@ impl Step for ReadDynamicStep {
         Ok(())
     }
 
-    fn templates(&self) -> Vec<Template> {
-        vec![self.file.clone()]
-    }
-
-    fn is_leaf(&self) -> bool {
+    fn is_leaf() -> bool {
         true
     }
 }

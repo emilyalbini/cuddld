@@ -11,18 +11,23 @@ impl ErasedError {
         ErasedError { inner, contexts: VecDeque::new() }
     }
 
-    pub fn format_chain(self) -> String {
-        let mut parts = self.contexts;
-        parts.push_back(self.inner.to_string());
+    fn parts(&self) -> Vec<String> {
+        let mut parts = self.contexts.iter().cloned().collect::<Vec<_>>();
+        parts.push(self.inner.to_string());
 
         let mut source = self.inner.source();
         while let Some(inner) = source {
-            parts.push_back(inner.to_string());
+            parts.push(inner.to_string());
             source = inner.source();
         }
 
+        parts
+    }
+
+    pub fn format_chain(&self) -> String {
+        let mut parts = self.parts();
         let mut repr = String::new();
-        if let Some(error) = parts.pop_front() {
+        if let Some(error) = parts.pop() {
             repr.push_str(&format!("error: {error}\n"));
         }
         for cause in parts {
@@ -30,17 +35,28 @@ impl ErasedError {
         }
         repr
     }
+
+    fn format_compact(&self) -> String {
+        let mut repr = String::new();
+        for part in self.parts() {
+            if !repr.is_empty() {
+                repr.push_str(": ");
+            }
+            repr.push_str(&part);
+        }
+        repr
+    }
 }
 
 impl std::fmt::Display for ErasedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Display::fmt(&self.inner, f)
+        f.write_str(&self.format_compact())
     }
 }
 
 impl std::fmt::Debug for ErasedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        std::fmt::Debug::fmt(&self.inner, f)
+        f.write_str(&self.format_compact())
     }
 }
 

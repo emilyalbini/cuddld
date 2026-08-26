@@ -1,28 +1,28 @@
-use crate::gather::FromHcl;
-use crate::picohcl::{FromHclString, HclDeserializer};
-use crate::template::{Template, Value};
+use crate::picohcl::{FromHcl, FromHclString, HclDeserializer};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use plinky_error::{ErasedError, bail};
+use std::path::PathBuf;
 use std::process::Command;
+use crate::picohcl::ast::ResolvedExpression;
 
 #[derive(Debug)]
 pub(crate) struct AsmStep {
-    source: Template,
+    source: PathBuf,
     arch: Option<Arch>,
-    output: Option<Template>,
+    output: Option<String>,
     assembler: Assembler,
-    auxiliary_files: Vec<Template>,
+    auxiliary_files: Vec<PathBuf>,
     emit_x86_used: bool,
 }
 
 impl Step for AsmStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
-        let source = ctx.maybe_relative_to_src(self.source.resolve(&*ctx.template)?);
+        let source = ctx.maybe_relative_to_src(&self.source);
         let source_name = file_name(&source);
 
         let dest_name = match &self.output {
-            Some(template) => template.resolve(&*ctx.template)?,
+            Some(name) => name.clone(),
             None => file_name(&source.with_extension("o")),
         };
 
@@ -31,7 +31,7 @@ impl Step for AsmStep {
         std::fs::copy(&source, dest.join(&source_name))?;
 
         for auxiliary in &self.auxiliary_files {
-            let auxiliary = ctx.maybe_relative_to_src(auxiliary.resolve(&*ctx.template)?);
+            let auxiliary = ctx.maybe_relative_to_src(auxiliary);
             std::fs::copy(&auxiliary, dest.join(file_name(&auxiliary)))?;
         }
 
@@ -68,13 +68,9 @@ impl Step for AsmStep {
             }
         }
 
-        ctx.template.set_variable(ctx.step_name, Value::Path(dest.join(dest_name)));
+        ctx.hcl.set_variable(ctx.step_name, ResolvedExpression::Path(dest.join(dest_name)));
 
         Ok(())
-    }
-
-    fn templates(&self) -> Vec<Template> {
-        std::iter::once(self.source.clone()).chain(self.auxiliary_files.iter().cloned()).collect()
     }
 }
 

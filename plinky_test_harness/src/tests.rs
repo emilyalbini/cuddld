@@ -1,12 +1,10 @@
 use crate::Step;
-use crate::builtins::register_builtins;
-use crate::template::{TemplateContext, Value};
+use crate::picohcl::ast::ResolvedExpression;
+use crate::picohcl::{FromHclString, HclContext};
 use crate::utils::RunAndSnapshot;
 use plinky_error::{ErasedContext as _, ErasedError, bail};
 use plinky_utils::create_temp_dir;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use crate::picohcl::FromHclString;
 
 #[derive(Debug)]
 pub(crate) struct Test {
@@ -17,53 +15,57 @@ pub(crate) struct Test {
 
 impl Test {
     pub(crate) fn run(mut self) -> Result<(), ErasedError> {
-        let mut template_ctx = TemplateContext::new();
-        template_ctx.set_variable("arch", Value::String(self.arch.to_string()));
-        register_builtins(&mut template_ctx);
+        let mut ctx = HclContext::builtin();
+        ctx.set_variable("arch", ResolvedExpression::String(self.arch.to_string()));
 
         // Cleanup for the temporary directory is done manually at the end, to ensure that the
         // build artifacts are present for inspection during a failure.
         let dest = create_temp_dir()?;
         eprintln!("output directory: {}", dest.display());
 
-        let mut last_number_of_completed = usize::MAX;
         loop {
+            let mut progressed = false;
             let mut number_of_completed = 0;
             for step in &mut self.steps {
-                if step.completed {
-                    number_of_completed += 1;
-                    continue;
-                }
-
-                if step.step.templates().iter().all(|t| t.will_resolve(&template_ctx)) {
-                    eprintln!("===> running step {}", step.name);
-                    step.step
-                        .run(TestContext {
-                            step_name: &step.name,
-                            src: &self.source_dir,
-                            dest: &dest,
-                            arch: self.arch,
-                            template: &mut template_ctx,
-                        })
-                        .with_context(|| format!("failed to execute step {}", step.name))?;
-                    step.completed = true;
+                match &mut step.stage {
+                    StepStage::ToBeResolved(tbr) => {
+                        if let Some(resolved) = tbr(&ctx)? {
+                            step.stage = StepStage::Resolved(resolved);
+                            progressed = true;
+                        }
+                    }
+                    StepStage::Resolved(resolved) => {
+                        resolved
+                            .run(TestContext {
+                                step_name: &step.name,
+                                src: &self.source_dir,
+                                dest: &dest,
+                                arch: self.arch,
+                                hcl: &mut ctx,
+                            })
+                            .with_context(|| format!("failed to execute step {}", step.name))?;
+                        step.stage = StepStage::Complete;
+                        progressed = true;
+                    }
+                    StepStage::Complete => {
+                        number_of_completed += 1;
+                    }
                 }
             }
 
             if number_of_completed == self.steps.len() {
                 // We are done!
                 break;
-            } else if number_of_completed == last_number_of_completed {
+            } else if !progressed {
                 // There are either variables pointing to missing steps, or circular dependencies.
                 let unmet_dependencies = self
                     .steps
                     .iter()
-                    .filter(|s| !s.completed)
+                    .filter(|s| !matches!(s.stage, StepStage::Complete))
                     .map(|s| s.name.as_str())
                     .collect::<Vec<_>>();
-                bail!("these steps have unmet dependencies: {}", unmet_dependencies.join(", "));
-            } else {
-                last_number_of_completed = number_of_completed;
+                eprintln!("these steps have unmet dependencies: {}", unmet_dependencies.join(", "));
+                bail!("made no progress");
             }
         }
 
@@ -77,7 +79,7 @@ pub struct TestContext<'a> {
     pub src: &'a Path,
     pub dest: &'a Path,
     pub arch: Arch,
-    pub template: &'a mut TemplateContext,
+    pub hcl: &'a mut HclContext,
 }
 
 impl TestContext<'_> {
@@ -97,18 +99,36 @@ impl TestContext<'_> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct TestStep {
     pub(crate) name: String,
-    step: Arc<Box<dyn Step>>,
-    completed: bool,
+    stage: StepStage,
 }
 
 impl TestStep {
-    pub(crate) fn new(name: &str, step: Box<dyn Step>) -> Self {
-        Self { name: name.into(), step: Arc::new(step), completed: false }
+    pub(crate) fn new(name: &str, resolve: ResolveStepFn) -> Self {
+        Self { name: name.into(), stage: StepStage::ToBeResolved(resolve) }
     }
 }
+
+enum StepStage {
+    ToBeResolved(ResolveStepFn),
+    Resolved(Box<dyn Step>),
+    Complete,
+}
+
+impl std::fmt::Debug for StepStage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ToBeResolved(_) => write!(f, "ToBeResolved(...)"),
+            Self::Resolved(step) => f.debug_tuple("Resolved").field(step).finish(),
+            Self::Complete => write!(f, "Complete"),
+        }
+    }
+}
+
+type ResolveStepFn =
+    Box<dyn FnMut(&HclContext) -> Result<Option<Box<dyn Step>>, ErasedError> + Send>;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Arch {

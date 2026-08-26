@@ -1,7 +1,6 @@
-use super::ast::Variable;
 use crate::picohcl::ast::{
-    AssignmentStatement, BlockStatement, Document, Expression, Interpolation, Span, Spanned,
-    Statement,
+    AssignmentStatement, BlockStatement, Document, Expression, FunctionCall, Span, Spanned,
+    Statement, Variable,
 };
 use crate::picohcl::lexer::{Lexer, LexerError, Token};
 use plinky_macros::{Display, Error};
@@ -107,7 +106,7 @@ impl Parser<'_> {
                 self.lexer.next()?;
                 Ok(Expression::Bool(false))
             } else {
-                Ok(Expression::Variable(self.parse_variable()?))
+                Ok(self.parse_variable()?)
             }
         } else if let Token::OpenSquare = &peeked.item {
             Ok(Expression::List(self.parse_list()?))
@@ -116,22 +115,40 @@ impl Parser<'_> {
         }
     }
 
-    fn parse_variable(&mut self) -> Result<Variable, ParseError> {
+    fn parse_variable(&mut self) -> Result<Expression, ParseError> {
         let mut variable = self.expect_literal()?;
+        if let Token::OpenParen = self.lexer.peek()?.item {
+            return self.parse_function(variable);
+        }
         while let Token::Dot = self.lexer.peek()?.item {
             let _ = self.lexer.next()?;
             variable.push('.');
             variable.push_str(&self.expect_literal()?);
         }
-        Ok(Variable(variable))
+        Ok(Expression::Variable(Variable(variable)))
+    }
+
+    fn parse_function(&mut self, name: String) -> Result<Expression, ParseError> {
+        Ok(Expression::Call(FunctionCall {
+            name,
+            args: self.parse_comma_separated(Token::OpenParen, Token::CloseParen)?,
+        }))
     }
 
     fn parse_list(&mut self) -> Result<Vec<Expression>, ParseError> {
+        self.parse_comma_separated(Token::OpenSquare, Token::CloseSquare)
+    }
+
+    fn parse_comma_separated(
+        &mut self,
+        open: Token,
+        close: Token,
+    ) -> Result<Vec<Expression>, ParseError> {
         let mut result = Vec::new();
-        self.expect_token(Token::OpenSquare)?;
+        self.expect_token(open)?;
 
         loop {
-            if let Token::CloseSquare = self.lexer.peek()?.item {
+            if self.lexer.peek()?.item == close {
                 self.lexer.next()?;
                 return Ok(result);
             }
@@ -140,11 +157,11 @@ impl Parser<'_> {
             let peeked = self.lexer.peek()?;
             if let Token::Comma = &peeked.item {
                 self.lexer.next()?;
-            } else if let Token::CloseSquare = &peeked.item {
+            } else if peeked.item == close {
                 self.lexer.next()?;
                 return Ok(result);
             } else {
-                return Err(ParseError::unexpected("end of list or comma", peeked));
+                return Err(ParseError::unexpected("end or comma", peeked));
             }
         }
     }
@@ -168,7 +185,7 @@ impl Parser<'_> {
         loop {
             if let Token::CloseString = self.lexer.peek()?.item {
                 self.expect_token(Token::CloseString)?;
-                return Ok(Expression::Interpolation(Interpolation(interpolation)));
+                return Ok(Expression::Interpolation(interpolation));
             }
             interpolation.push(self.parse_expression()?);
 
@@ -332,6 +349,17 @@ mod tests {
             c = "${foo}"
             d = "${"bar"}"
             e = "${"bar ${baz}"}"
+            "#
+        ))
+    }
+
+    #[test]
+    fn test_function_call() {
+        assert_snapshot!(parse(
+            r#"
+            a = foo()
+            b = bar("a")
+            c = baz("a", "b",)
             "#
         ))
     }

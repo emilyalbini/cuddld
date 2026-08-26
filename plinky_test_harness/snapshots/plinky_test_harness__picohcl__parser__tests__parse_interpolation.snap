@@ -12,21 +12,19 @@ Document {
             AssignmentStatement {
                 key: "b",
                 value: Interpolation(
-                    Interpolation(
-                        [
-                            String(
-                                "hello ",
-                            ),
+                    [
+                        String(
+                            "hello ",
+                        ),
+                        Variable(
                             Variable(
-                                Variable(
-                                    "user.name",
-                                ),
+                                "user.name",
                             ),
-                            String(
-                                " world",
-                            ),
-                        ],
-                    ),
+                        ),
+                        String(
+                            " world",
+                        ),
+                    ],
                 ),
             },
         ),
@@ -34,21 +32,19 @@ Document {
             AssignmentStatement {
                 key: "c",
                 value: Interpolation(
-                    Interpolation(
-                        [
-                            String(
-                                "",
-                            ),
+                    [
+                        String(
+                            "",
+                        ),
+                        Variable(
                             Variable(
-                                Variable(
-                                    "foo",
-                                ),
+                                "foo",
                             ),
-                            String(
-                                "",
-                            ),
-                        ],
-                    ),
+                        ),
+                        String(
+                            "",
+                        ),
+                    ],
                 ),
             },
         ),
@@ -56,19 +52,17 @@ Document {
             AssignmentStatement {
                 key: "d",
                 value: Interpolation(
-                    Interpolation(
-                        [
-                            String(
-                                "",
-                            ),
-                            String(
-                                "bar",
-                            ),
-                            String(
-                                "",
-                            ),
-                        ],
-                    ),
+                    [
+                        String(
+                            "",
+                        ),
+                        String(
+                            "bar",
+                        ),
+                        String(
+                            "",
+                        ),
+                    ],
                 ),
             },
         ),
@@ -76,33 +70,29 @@ Document {
             AssignmentStatement {
                 key: "e",
                 value: Interpolation(
-                    Interpolation(
-                        [
-                            String(
-                                "",
-                            ),
-                            Interpolation(
-                                Interpolation(
-                                    [
-                                        String(
-                                            "bar ",
-                                        ),
-                                        Variable(
-                                            Variable(
-                                                "baz",
-                                            ),
-                                        ),
-                                        String(
-                                            "",
-                                        ),
-                                    ],
+                    [
+                        String(
+                            "",
+                        ),
+                        Interpolation(
+                            [
+                                String(
+                                    "bar ",
                                 ),
-                            ),
-                            String(
-                                "",
-                            ),
-                        ],
-                    ),
+                                Variable(
+                                    Variable(
+                                        "baz",
+                                    ),
+                                ),
+                                String(
+                                    "",
+                                ),
+                            ],
+                        ),
+                        String(
+                            "",
+                        ),
+                    ],
                 ),
             },
         ),

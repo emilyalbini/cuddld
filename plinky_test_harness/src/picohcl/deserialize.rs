@@ -1,16 +1,24 @@
-use crate::picohcl::ast::{Expression, Statement};
-use crate::template::Template;
+use super::ast::ResolvedInterpolationChunk;
+use crate::picohcl::ast::{
+    ResolvedExpression, ResolvedInterpolation, ResolvedStatement, Statement,
+};
 use plinky_error::{ErasedContext as _, ErasedError, bail};
 use plinky_macros::{Display, Error};
 use std::collections::{BTreeMap, HashMap};
+use std::ffi::OsString;
+use std::path::PathBuf;
+
+pub trait FromHcl: Sized {
+    fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError>;
+}
 
 #[derive(Clone)]
 pub struct HclDeserializer {
-    statements: HashMap<(String, Option<String>), Statement>,
+    statements: HashMap<(String, Option<String>), ResolvedStatement>,
 }
 
 impl HclDeserializer {
-    pub(crate) fn from_statements(statements: Vec<Statement>) -> Self {
+    pub(crate) fn from_statements(statements: Vec<ResolvedStatement>) -> Self {
         Self {
             statements: statements
                 .into_iter()
@@ -42,10 +50,6 @@ impl HclDeserializer {
         }
     }
 
-    pub fn remaining(self) -> impl Iterator<Item = Statement> {
-        self.statements.into_values()
-    }
-
     pub fn ensure_exhaustive(&self) -> Result<(), ErasedError> {
         if !self.statements.is_empty() {
             let mut extra = Vec::new();
@@ -64,11 +68,11 @@ impl HclDeserializer {
 }
 
 pub trait FromHclStatement: Sized {
-    fn from_statement(statement: Option<Statement>) -> Result<Self, FromHclError>;
+    fn from_statement(statement: Option<ResolvedStatement>) -> Result<Self, FromHclError>;
 }
 
 impl<T: FromHclExpression> FromHclStatement for T {
-    fn from_statement(statement: Option<Statement>) -> Result<Self, FromHclError> {
+    fn from_statement(statement: Option<ResolvedStatement>) -> Result<Self, FromHclError> {
         match statement {
             Some(Statement::Assignment(expr)) => T::from_expression(expr.value),
             Some(Statement::Block(_)) => Err(FromHclError::InvalidType),
@@ -78,7 +82,7 @@ impl<T: FromHclExpression> FromHclStatement for T {
 }
 
 impl<T: FromHclExpression> FromHclStatement for BTreeMap<String, T> {
-    fn from_statement(statement: Option<Statement>) -> Result<Self, FromHclError> {
+    fn from_statement(statement: Option<ResolvedStatement>) -> Result<Self, FromHclError> {
         match statement {
             Some(Statement::Assignment(_)) => Err(FromHclError::InvalidType),
             Some(Statement::Block(block)) => {
@@ -102,52 +106,88 @@ impl<T: FromHclExpression> FromHclStatement for BTreeMap<String, T> {
 }
 
 pub trait FromHclExpression: Sized {
-    fn from_expression(expr: Expression) -> Result<Self, FromHclError>;
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError>;
 }
 
-impl FromHclExpression for Template {
-    fn from_expression(expr: Expression) -> Result<Self, FromHclError> {
+impl FromHclExpression for String {
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError> {
         match expr {
-            Expression::String(s) => Ok(Template::parse(&s).expect("invalid legacy template")),
-            Expression::Variable(v) => {
-                Ok(Template::parse(&format!("${{{}}}", v.0)).expect("invalid legacy template"))
+            ResolvedExpression::String(s) => Ok(s),
+            ResolvedExpression::Path(p) => {
+                Ok(p.to_str().ok_or(FromHclError::NonUtf8Path)?.to_string())
+            }
+            ResolvedExpression::ResolvedInterpolation(ri) => {
+                let mut result = String::new();
+                for chunk in &ri.0 {
+                    result.push_str(match chunk {
+                        ResolvedInterpolationChunk::String(s) => s,
+                        ResolvedInterpolationChunk::Path(p) => {
+                            p.to_str().ok_or(FromHclError::NonUtf8Path)?
+                        }
+                    });
+                }
+                Ok(result)
             }
             _ => Err(FromHclError::InvalidType),
         }
     }
 }
 
-impl FromHclExpression for String {
-    fn from_expression(expr: Expression) -> Result<Self, FromHclError> {
+impl FromHclExpression for PathBuf {
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError> {
         match expr {
-            Expression::String(s) => Ok(s),
+            ResolvedExpression::String(s) => Ok(s.into()),
+            ResolvedExpression::Path(p) => Ok(p),
+            ResolvedExpression::ResolvedInterpolation(ri) => {
+                let mut output = OsString::new();
+                for chunk in &ri.0 {
+                    match chunk {
+                        ResolvedInterpolationChunk::String(s) => output.push(s),
+                        ResolvedInterpolationChunk::Path(p) => output.push(p),
+                    }
+                }
+                Ok(PathBuf::from(output))
+            }
+            _ => Err(FromHclError::InvalidType),
+        }
+    }
+}
+
+impl FromHclExpression for ResolvedInterpolation {
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError> {
+        match expr {
+            ResolvedExpression::String(s) => {
+                Ok(ResolvedInterpolation(vec![ResolvedInterpolationChunk::String(s)]))
+            }
+            ResolvedExpression::Path(p) => {
+                Ok(ResolvedInterpolation(vec![ResolvedInterpolationChunk::Path(p)]))
+            }
+            ResolvedExpression::ResolvedInterpolation(ps) => Ok(ps),
             _ => Err(FromHclError::InvalidType),
         }
     }
 }
 
 impl<T: FromHclString> FromHclExpression for T {
-    fn from_expression(expr: Expression) -> Result<Self, FromHclError> {
-        match expr {
-            Expression::String(s) => T::from_string(s).map_err(FromHclError::Parse),
-            _ => Err(FromHclError::InvalidType),
-        }
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError> {
+        let string = String::from_expression(expr)?;
+        T::from_string(string).map_err(FromHclError::Parse)
     }
 }
 
 impl FromHclExpression for bool {
-    fn from_expression(expr: Expression) -> Result<Self, FromHclError> {
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError> {
         match expr {
-            Expression::Bool(b) => Ok(b),
+            ResolvedExpression::Bool(b) => Ok(b),
             _ => Err(FromHclError::InvalidType),
         }
     }
 }
 
 impl<T: FromHclExpression> FromHclExpression for Vec<T> {
-    fn from_expression(expr: Expression) -> Result<Self, FromHclError> {
+    fn from_expression(expr: ResolvedExpression) -> Result<Self, FromHclError> {
         match expr {
-            Expression::List(expressions) => {
+            ResolvedExpression::List(expressions) => {
                 let mut result = Vec::new();
                 for expr in expressions {
                     result.push(T::from_expression(expr)?);
@@ -169,6 +209,8 @@ pub enum FromHclError {
     InvalidType,
     #[display("required field is missing")]
     MissingField,
+    #[display("the path is not UTF-8 encoded")]
+    NonUtf8Path,
     #[display("failed to parse field: {f0}")]
     Parse(ErasedError),
 }

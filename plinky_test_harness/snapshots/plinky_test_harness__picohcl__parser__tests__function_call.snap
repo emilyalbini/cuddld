@@ -1,0 +1,48 @@
+Document {
+    contents: [
+        Assignment(
+            AssignmentStatement {
+                key: "a",
+                value: Call(
+                    FunctionCall {
+                        name: "foo",
+                        args: [],
+                    },
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "b",
+                value: Call(
+                    FunctionCall {
+                        name: "bar",
+                        args: [
+                            String(
+                                "a",
+                            ),
+                        ],
+                    },
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "c",
+                value: Call(
+                    FunctionCall {
+                        name: "baz",
+                        args: [
+                            String(
+                                "a",
+                            ),
+                            String(
+                                "b",
+                            ),
+                        ],
+                    },
+                ),
+            },
+        ),
+    ],
+}

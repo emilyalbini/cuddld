@@ -10,6 +10,8 @@ pub(super) enum Token {
     RawString(String),
     OpenString,
     CloseString,
+    OpenParen,
+    CloseParen,
     OpenSquare,
     CloseSquare,
     OpenCurly,
@@ -98,6 +100,8 @@ impl Lexer<'_> {
                 // Symbols
                 Some('[') => return Ok(self.spanned(Token::OpenSquare)),
                 Some(']') => return Ok(self.spanned(Token::CloseSquare)),
+                Some('(') => return Ok(self.spanned(Token::OpenParen)),
+                Some(')') => return Ok(self.spanned(Token::CloseParen)),
                 Some('=') => return Ok(self.spanned(Token::Equal)),
                 Some('.') => return Ok(self.spanned(Token::Dot)),
                 Some(',') => return Ok(self.spanned(Token::Comma)),
@@ -266,7 +270,7 @@ mod tests {
 
     #[test]
     fn test_lexer() {
-        let test = "hello =    /* [] */ . // hello \n[\"world\\n\\\\\", foo.bar}{]\nBAZ";
+        let test = "hello =  ()  /* [] */ . // hello \n[\"world\\n\\\\\", foo.bar}{]\nBAZ";
         assert_snapshot!(lex(test));
     }
 

@@ -1,27 +1,23 @@
-use crate::gather::FromHcl;
-use crate::picohcl::HclDeserializer;
-use crate::template::{Template, Value};
+use crate::picohcl::ast::ResolvedExpression;
+use crate::picohcl::{FromHcl, HclDeserializer};
 use crate::utils::{file_name, run};
 use crate::{Step, TestContext};
 use plinky_error::ErasedError;
+use std::path::PathBuf;
 use std::process::Command;
 
 #[derive(Debug)]
 pub(crate) struct ArStep {
-    output: Template,
-    content: Vec<Template>,
+    output: PathBuf,
+    content: Vec<PathBuf>,
     symbol_table: bool,
 }
 
 impl Step for ArStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
-        let dest_name = self.output.resolve(ctx.template)?;
-        let content =
-            self.content.iter().map(|c| c.resolve(ctx.template)).collect::<Result<Vec<_>, _>>()?;
-
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
-        for input in &content {
+        for input in &self.content {
             std::fs::copy(ctx.maybe_relative_to_src(&input), dest.join(file_name(input)))?;
         }
 
@@ -35,16 +31,12 @@ impl Step for ArStep {
         run(Command::new("ar")
             .current_dir(&dest)
             .arg(flags)
-            .arg(&dest_name)
-            .args(content.iter().map(|c| file_name(c)).collect::<Vec<_>>()))?;
+            .arg(&self.output)
+            .args(self.content.iter().map(|c| file_name(c)).collect::<Vec<_>>()))?;
 
-        ctx.template.set_variable(ctx.step_name, Value::Path(dest.join(dest_name)));
+        ctx.hcl.set_variable(ctx.step_name, ResolvedExpression::Path(dest.join(&self.output)));
 
         Ok(())
-    }
-
-    fn templates(&self) -> Vec<Template> {
-        std::iter::once(self.output.clone()).chain(self.content.iter().cloned()).collect()
     }
 }
 

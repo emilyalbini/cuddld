@@ -1,7 +1,11 @@
 pub mod ast;
-mod lexer;
-mod parser;
 mod deserialize;
+mod functions;
+mod lexer;
+mod builtins;
+mod parser;
+mod resolve;
 
+pub use deserialize::{FromHcl, FromHclString, HclDeserializer};
 pub use parser::parse_picohcl;
-pub use deserialize::{HclDeserializer, FromHclString};
+pub(crate) use resolve::{HclContext, HclResolver};

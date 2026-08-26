@@ -4,7 +4,7 @@ plinky "test" {
   cmd  = [c.entry, ld.syscalls]
   kind = "run-pass"
   run-env {
-    LD_LIBRARY_PATH = "${dirname(rename.syscalls)}"
+    LD_LIBRARY_PATH = dirname(rename.syscalls)
   }
   debug-print = ["loaded-object=@inputs", "final-elf=.dynamic"]
 }

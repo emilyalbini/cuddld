@@ -85,6 +85,10 @@ pub(crate) fn file_name(path: impl AsRef<Path>) -> String {
 pub(crate) fn err_str<T>(result: Result<T, ErasedError>) -> Result<T, String> {
     match result {
         Ok(ok) => Ok(ok),
-        Err(err) => Err(err.format_chain()),
+        Err(err) => {
+            let formatted = err.format_chain();
+            eprintln!("{formatted}");
+            Err(formatted)
+        },
     }
 }

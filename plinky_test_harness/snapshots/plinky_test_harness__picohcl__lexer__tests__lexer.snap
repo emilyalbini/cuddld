@@ -3,8 +3,10 @@
         "hello",
     ) @ 0:4,
     Equal @ 0:6,
-    Dot @ 0:20,
-    Newline @ 0:31,
+    OpenParen @ 0:9,
+    CloseParen @ 0:10,
+    Dot @ 0:22,
+    Newline @ 0:33,
     OpenSquare @ 1:0,
     OpenString @ 1:1,
     RawString(
