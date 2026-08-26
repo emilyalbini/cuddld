@@ -8,18 +8,13 @@ use std::iter::once;
 use std::path::Path;
 use std::process::Command;
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[derive(Debug)]
 struct PlinkyStep {
     cmd: Vec<Template>,
     kind: Template,
-    #[serde(default)]
     debug_print: Vec<String>,
-    #[serde(default)]
     link_env: BTreeMap<String, Template>,
-    #[serde(default)]
     run_env: BTreeMap<String, Template>,
-    #[serde(default)]
     auxiliary_files: Vec<Template>,
 }
 

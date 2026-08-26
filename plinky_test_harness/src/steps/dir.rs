@@ -4,10 +4,8 @@ use crate::picohcl::HclDeserializer;
 use crate::template::{Template, Value};
 use crate::utils::file_name;
 use plinky_error::ErasedError;
-use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug)]
 pub(crate) struct DirStep {
     files: Vec<Template>,
 }

@@ -1,7 +1,6 @@
 mod functions;
 mod lexer;
 mod parser;
-mod serde;
 
 use crate::template::lexer::Lexer;
 use crate::template::parser::Parser;

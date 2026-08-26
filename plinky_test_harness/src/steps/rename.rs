@@ -4,8 +4,7 @@ use crate::template::{Template, Value};
 use crate::{Step, TestContext};
 use plinky_error::ErasedError;
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug)]
 pub(crate) struct RenameStep {
     from: Template,
     to: Template,

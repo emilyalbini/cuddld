@@ -4,14 +4,11 @@ use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use plinky_error::{ErasedError, bail};
-use serde::Deserialize;
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug)]
 pub(crate) struct RustStep {
     source: Template,
-    #[serde(default)]
     panic: Panic,
 }
 
@@ -52,15 +49,11 @@ impl Step for RustStep {
 
 impl FromHcl for RustStep {
     fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
-        Ok(Self {
-            source: de.field("source")?,
-            panic: de.opt_field("panic")?.unwrap_or(Panic::Abort),
-        })
+        Ok(Self { source: de.field("source")?, panic: de.opt_field("panic")?.unwrap_or_default() })
     }
 }
 
-#[derive(serde::Deserialize, Debug, Default, Clone, Copy)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[derive(Debug, Default, Clone, Copy)]
 enum Panic {
     #[default]
     Abort,

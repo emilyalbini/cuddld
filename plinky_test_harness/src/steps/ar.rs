@@ -4,15 +4,12 @@ use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Step, TestContext};
 use plinky_error::ErasedError;
-use serde::Deserialize;
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[derive(Debug)]
 pub(crate) struct ArStep {
     output: Template,
     content: Vec<Template>,
-    #[serde(default = "default_true")]
     symbol_table: bool,
 }
 
@@ -59,8 +56,4 @@ impl FromHcl for ArStep {
             symbol_table: de.opt_field("symbol-table")?.unwrap_or(true),
         })
     }
-}
-
-fn default_true() -> bool {
-    true
 }

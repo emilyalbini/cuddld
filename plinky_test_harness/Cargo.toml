@@ -10,5 +10,3 @@ workspace = true
 plinky_error.workspace = true
 plinky_macros.workspace = true
 plinky_utils.workspace = true
-serde.workspace = true
-toml.workspace = true

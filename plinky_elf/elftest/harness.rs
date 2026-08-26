@@ -10,13 +10,10 @@ use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug)]
 struct ReadElfStep {
     file: Template,
-    #[serde(default = "default_true")]
     roundtrip: bool,
-    #[serde(default)]
     filter: Option<String>,
 }
 
@@ -91,8 +88,7 @@ impl ReadElfStep {
     }
 }
 
-#[derive(Debug, serde::Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug)]
 struct ReadDynamicStep {
     file: Template,
 }
@@ -128,10 +124,6 @@ impl FromHcl for ReadDynamicStep {
     fn from_hcl(de: &mut HclDeserializer) -> Result<Self, ErasedError> {
         Ok(Self { file: de.field("file")? })
     }
-}
-
-fn default_true() -> bool {
-    true
 }
 
 fn main() {

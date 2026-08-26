@@ -4,20 +4,15 @@ use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use plinky_error::{ErasedError, bail};
-use serde::Deserialize;
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[derive(Debug)]
 pub(crate) struct AsmStep {
     source: Template,
     arch: Option<Arch>,
     output: Option<Template>,
-    #[serde(default)]
     assembler: Assembler,
-    #[serde(default)]
     auxiliary_files: Vec<Template>,
-    #[serde(default = "default_true")]
     emit_x86_used: bool,
 }
 
@@ -96,8 +91,7 @@ impl FromHcl for AsmStep {
     }
 }
 
-#[derive(Debug, Deserialize, Default)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Default)]
 enum Assembler {
     Nasm,
     #[default]
@@ -112,8 +106,4 @@ impl FromHclString for Assembler {
             _ => bail!("unknown assembler: {input}"),
         }
     }
-}
-
-fn default_true() -> bool {
-    true
 }

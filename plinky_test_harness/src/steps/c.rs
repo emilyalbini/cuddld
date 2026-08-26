@@ -4,11 +4,9 @@ use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use plinky_error::{ErasedError, bail};
-use serde::Deserialize;
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[derive(Debug)]
 pub(crate) struct CStep {
     source: Template,
     output: Option<Template>,
@@ -68,8 +66,7 @@ impl FromHcl for CStep {
     }
 }
 
-#[derive(serde::Deserialize, Debug, Clone)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Clone)]
 enum Libc {
     Freestanding,
 }
@@ -83,8 +80,7 @@ impl FromHclString for Libc {
     }
 }
 
-#[derive(serde::Deserialize, Debug, Clone)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Clone)]
 enum Relocation {
     Static,
     PicOnlyGot,

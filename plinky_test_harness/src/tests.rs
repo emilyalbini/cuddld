@@ -110,11 +110,9 @@ impl TestStep {
     }
 }
 
-#[derive(Debug, Clone, Copy, serde::Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub enum Arch {
-    #[serde(rename = "x86")]
     X86,
-    #[serde(rename = "x86_64")]
     X86_64,
 }
 

@@ -4,17 +4,13 @@ use crate::template::{Template, Value};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use plinky_error::ErasedError;
-use serde::Deserialize;
 use std::process::Command;
 
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[derive(Debug)]
 pub(crate) struct LdStep {
     output: Template,
     content: Vec<Template>,
-    #[serde(default)]
     extra_args: Vec<Template>,
-    #[serde(default)]
     shared_library: bool,
 }
 
