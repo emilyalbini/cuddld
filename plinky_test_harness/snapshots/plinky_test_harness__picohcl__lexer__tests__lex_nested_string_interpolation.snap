@@ -1,0 +1,31 @@
+[
+    Literal(
+        "hello",
+    ) @ 0:4,
+    Equal @ 0:6,
+    OpenString @ 0:8,
+    RawString(
+        "world ",
+    ) @ 0:16,
+    Literal(
+        "foo",
+    ) @ 0:19,
+    OpenString @ 0:21,
+    RawString(
+        "bar ",
+    ) @ 0:27,
+    OpenCurly @ 0:28,
+    Literal(
+        "baz",
+    ) @ 0:32,
+    CloseCurly @ 0:34,
+    RawString(
+        "",
+    ) @ 0:36,
+    CloseString @ 0:36,
+    RawString(
+        "",
+    ) @ 0:38,
+    CloseString @ 0:38,
+    EndOfInput @ 0:39,
+]

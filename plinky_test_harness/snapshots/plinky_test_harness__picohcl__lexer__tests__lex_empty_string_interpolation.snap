@@ -1,0 +1,18 @@
+[
+    Literal(
+        "hello",
+    ) @ 0:4,
+    Equal @ 0:6,
+    OpenString @ 0:8,
+    RawString(
+        "",
+    ) @ 0:10,
+    Literal(
+        "foo",
+    ) @ 0:13,
+    RawString(
+        "",
+    ) @ 0:15,
+    CloseString @ 0:15,
+    EndOfInput @ 0:16,
+]

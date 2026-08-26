@@ -3,8 +3,20 @@
         "hello",
     ) @ 0:4,
     Equal @ 0:6,
-    String(
-        "world ${foo.bar}",
+    OpenString @ 0:8,
+    RawString(
+        "world ",
+    ) @ 0:16,
+    Literal(
+        "foo",
+    ) @ 0:19,
+    Dot @ 0:20,
+    Literal(
+        "bar",
+    ) @ 0:23,
+    RawString(
+        "",
     ) @ 0:25,
+    CloseString @ 0:25,
     EndOfInput @ 0:26,
 ]

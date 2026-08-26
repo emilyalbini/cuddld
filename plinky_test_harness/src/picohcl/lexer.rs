@@ -7,7 +7,9 @@ use std::str::Chars;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) enum Token {
     Literal(String),
-    String(String),
+    RawString(String),
+    OpenString,
+    CloseString,
     OpenSquare,
     CloseSquare,
     OpenCurly,
@@ -23,7 +25,10 @@ pub(super) struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
     span: Span,
     next_span: Span,
+    string_state: Vec<StringState>,
+    curly_level: u32,
     queued_tokens: VecDeque<Result<Spanned<Token>, LexerError>>,
+    peeked_tokens: VecDeque<Result<Spanned<Token>, LexerError>>,
 }
 
 impl<'a> Lexer<'a> {
@@ -32,17 +37,58 @@ impl<'a> Lexer<'a> {
             input: input.chars().peekable(),
             span: Span { line: 0, col: 0 },
             next_span: Span { line: 0, col: 0 },
+            string_state: Vec::new(),
+            curly_level: 0,
             queued_tokens: VecDeque::new(),
+            peeked_tokens: VecDeque::new(),
         }
     }
 }
 
 impl Lexer<'_> {
     pub(super) fn next(&mut self) -> Result<Spanned<Token>, LexerError> {
+        if let Some(peeked) = self.peeked_tokens.pop_front() {
+            return peeked;
+        }
         if let Some(queued) = self.queued_tokens.pop_front() {
             return queued;
         }
+
         'lexer: loop {
+            if let Some(StringState::Raw) = self.string_state.last() {
+                let mut string = String::new();
+                let mut escape = false;
+                loop {
+                    let Some(chr) = self.next_char() else {
+                        return Err(self.err(LexerErrorKind::UnterminatedString));
+                    };
+                    if escape {
+                        escape = false;
+                        match chr {
+                            'n' => string.push('\n'),
+                            't' => string.push('\t'),
+                            '"' => string.push('"'),
+                            '$' => string.push('$'),
+                            '\\' => string.push('\\'),
+                            _ => return Err(self.err(LexerErrorKind::InvalidEscape(chr))),
+                        }
+                    } else if chr == '\\' {
+                        escape = true;
+                    } else if chr == '$' && self.peek_char() == Some('{') {
+                        self.next_char();
+                        *self.string_state.last_mut().unwrap() =
+                            StringState::Interpolation(self.curly_level);
+                        return Ok(self.spanned(Token::RawString(string)));
+                    } else if chr == '"' {
+                        self.string_state.pop();
+                        self.queued_tokens.push_back(Ok(self.spanned(Token::CloseString)));
+                        return Ok(self.spanned(Token::RawString(string)));
+                    } else {
+                        string.push(chr);
+                    }
+                }
+            }
+
             match self.next_char() {
                 None => return Ok(self.spanned(Token::EndOfInput)),
 
@@ -50,13 +96,29 @@ impl Lexer<'_> {
                 Some('\n') => return Ok(self.spanned(Token::Newline)),
 
                 // Symbols
-                Some('{') => return Ok(self.spanned(Token::OpenCurly)),
-                Some('}') => return Ok(self.spanned(Token::CloseCurly)),
                 Some('[') => return Ok(self.spanned(Token::OpenSquare)),
                 Some(']') => return Ok(self.spanned(Token::CloseSquare)),
                 Some('=') => return Ok(self.spanned(Token::Equal)),
                 Some('.') => return Ok(self.spanned(Token::Dot)),
                 Some(',') => return Ok(self.spanned(Token::Comma)),
+
+                Some('{') => {
+                    self.curly_level += 1;
+                    return Ok(self.spanned(Token::OpenCurly));
+                }
+                Some('}') => {
+                    if let Some(state) = self.string_state.last_mut() {
+                        if let StringState::Interpolation(curly_level) = state {
+                            // Prevent the curly close at the wrong nesting depth to close.
+                            if *curly_level == self.curly_level {
+                                *state = StringState::Raw;
+                                continue 'lexer;
+                            }
+                        }
+                    }
+                    self.curly_level = self.curly_level.saturating_sub(1);
+                    return Ok(self.spanned(Token::CloseCurly));
+                }
 
                 // Literals
                 Some(c) if is_literal_start(c) => {
@@ -72,29 +134,8 @@ impl Lexer<'_> {
 
                 // Strings
                 Some('"') => {
-                    let mut string = String::new();
-                    let mut escape = false;
-                    loop {
-                        let Some(chr) = self.next_char() else {
-                            return Err(self.err(LexerErrorKind::UnterminatedString));
-                        };
-                        if escape {
-                            escape = false;
-                            match chr {
-                                'n' => string.push('\n'),
-                                't' => string.push('\t'),
-                                '"' => string.push('"'),
-                                '\\' => string.push('\\'),
-                                _ => return Err(self.err(LexerErrorKind::InvalidEscape(chr))),
-                            }
-                        } else if chr == '\\' {
-                            escape = true;
-                        } else if chr == '"' {
-                            return Ok(self.spanned(Token::String(string)));
-                        } else {
-                            string.push(chr);
-                        }
-                    }
+                    self.string_state.push(StringState::Raw);
+                    return Ok(self.spanned(Token::OpenString));
                 }
 
                 // Whitespace
@@ -134,11 +175,11 @@ impl Lexer<'_> {
     }
 
     pub(super) fn peek(&mut self) -> Result<Spanned<Token>, LexerError> {
-        if self.queued_tokens.len() == 0 {
+        if self.peeked_tokens.len() == 0 {
             let token = self.next();
-            self.queued_tokens.push_back(token);
+            self.peeked_tokens.push_back(token);
         }
-        self.queued_tokens.front().unwrap().clone()
+        self.peeked_tokens.front().unwrap().clone()
     }
 
     fn next_char(&mut self) -> Option<char> {
@@ -168,6 +209,11 @@ impl Lexer<'_> {
     fn spanned<T>(&self, item: T) -> Spanned<T> {
         Spanned { item, span: self.span }
     }
+}
+
+enum StringState {
+    Raw,
+    Interpolation(u32),
 }
 
 #[derive(Debug, Error, Display, Clone)]
@@ -227,6 +273,18 @@ mod tests {
     #[test]
     fn test_lex_string_interpolation() {
         let test = "hello = \"world ${foo.bar}\"";
+        assert_snapshot!(lex(test));
+    }
+
+    #[test]
+    fn test_lex_nested_string_interpolation() {
+        let test = "hello = \"world ${foo \"bar ${{ baz }}\"}\"";
+        assert_snapshot!(lex(test));
+    }
+
+    #[test]
+    fn test_lex_empty_string_interpolation() {
+        let test = "hello = \"${foo}\"";
         assert_snapshot!(lex(test));
     }
 }

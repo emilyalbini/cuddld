@@ -1,0 +1,110 @@
+Document {
+    contents: [
+        Assignment(
+            AssignmentStatement {
+                key: "a",
+                value: String(
+                    "hello",
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "b",
+                value: Interpolation(
+                    Interpolation(
+                        [
+                            String(
+                                "hello ",
+                            ),
+                            Variable(
+                                Variable(
+                                    "user.name",
+                                ),
+                            ),
+                            String(
+                                " world",
+                            ),
+                        ],
+                    ),
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "c",
+                value: Interpolation(
+                    Interpolation(
+                        [
+                            String(
+                                "",
+                            ),
+                            Variable(
+                                Variable(
+                                    "foo",
+                                ),
+                            ),
+                            String(
+                                "",
+                            ),
+                        ],
+                    ),
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "d",
+                value: Interpolation(
+                    Interpolation(
+                        [
+                            String(
+                                "",
+                            ),
+                            String(
+                                "bar",
+                            ),
+                            String(
+                                "",
+                            ),
+                        ],
+                    ),
+                ),
+            },
+        ),
+        Assignment(
+            AssignmentStatement {
+                key: "e",
+                value: Interpolation(
+                    Interpolation(
+                        [
+                            String(
+                                "",
+                            ),
+                            Interpolation(
+                                Interpolation(
+                                    [
+                                        String(
+                                            "bar ",
+                                        ),
+                                        Variable(
+                                            Variable(
+                                                "baz",
+                                            ),
+                                        ),
+                                        String(
+                                            "",
+                                        ),
+                                    ],
+                                ),
+                            ),
+                            String(
+                                "",
+                            ),
+                        ],
+                    ),
+                ),
+            },
+        ),
+    ],
+}

@@ -28,7 +28,11 @@ pub enum Expression {
     Bool(bool),
     List(Vec<Expression>),
     Variable(Variable),
+    Interpolation(Interpolation),
 }
+
+#[derive(Debug, Clone)]
+pub struct Interpolation(pub Vec<Expression>);
 
 #[derive(Debug, Clone)]
 pub struct Variable(pub String);

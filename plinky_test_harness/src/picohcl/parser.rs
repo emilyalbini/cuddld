@@ -1,6 +1,7 @@
 use super::ast::Variable;
 use crate::picohcl::ast::{
-    AssignmentStatement, BlockStatement, Document, Expression, Span, Spanned, Statement,
+    AssignmentStatement, BlockStatement, Document, Expression, Interpolation, Span, Spanned,
+    Statement,
 };
 use crate::picohcl::lexer::{Lexer, LexerError, Token};
 use plinky_macros::{Display, Error};
@@ -43,7 +44,7 @@ impl Parser<'_> {
         let peek = self.lexer.peek()?;
         if let Token::Equal = &peek.item {
             Ok(Statement::Assignment(self.parse_assignment(literal)?))
-        } else if let Token::OpenCurly | Token::String(_) = &peek.item {
+        } else if let Token::OpenCurly | Token::OpenString = &peek.item {
             Ok(Statement::Block(self.parse_block(literal)?))
         } else {
             Err(ParseError::unexpected("statement", peek))
@@ -57,8 +58,15 @@ impl Parser<'_> {
     }
 
     fn parse_block(&mut self, kind: String) -> Result<BlockStatement, ParseError> {
-        let name = if let Token::String(_) = self.lexer.peek()?.item {
-            Some(self.expect_string()?)
+        let name = if let Token::OpenString = self.lexer.peek()?.item {
+            // We don't allow interpolations in block names, so we ensure it's a simple string.
+            self.lexer.next()?;
+            let string_token = self.lexer.next()?;
+            let Token::RawString(name) = string_token.item else {
+                return Err(ParseError::unexpected("non-interpolated string", string_token));
+            };
+            self.expect_token(Token::CloseString)?;
+            Some(name)
         } else {
             None
         };
@@ -89,8 +97,8 @@ impl Parser<'_> {
 
     fn parse_expression(&mut self) -> Result<Expression, ParseError> {
         let peeked = self.lexer.peek()?;
-        if let Token::String(_) = &peeked.item {
-            Ok(Expression::String(self.expect_string()?))
+        if let Token::OpenString = &peeked.item {
+            Ok(self.parse_string_or_interpolation()?)
         } else if let Token::Literal(literal) = &peeked.item {
             if literal == "true" {
                 self.lexer.next()?;
@@ -141,12 +149,34 @@ impl Parser<'_> {
         }
     }
 
-    fn expect_string(&mut self) -> Result<String, ParseError> {
+    fn parse_string_or_interpolation(&mut self) -> Result<Expression, ParseError> {
+        self.expect_token(Token::OpenString)?;
+
         let next = self.lexer.next()?;
-        if let Token::String(string) = next.item {
-            Ok(string)
+        let mut interpolation = Vec::new();
+        if let Token::RawString(string) = next.item {
+            if let Token::CloseString = self.lexer.peek()?.item {
+                self.expect_token(Token::CloseString)?;
+                return Ok(Expression::String(string));
+            } else {
+                interpolation.push(Expression::String(string));
+            }
         } else {
-            Err(ParseError::unexpected("string", next))
+            return Err(ParseError::unexpected("string", next));
+        }
+
+        loop {
+            if let Token::CloseString = self.lexer.peek()?.item {
+                self.expect_token(Token::CloseString)?;
+                return Ok(Expression::Interpolation(Interpolation(interpolation)));
+            }
+            interpolation.push(self.parse_expression()?);
+
+            let next = self.lexer.next()?;
+            let Token::RawString(string) = next.item else {
+                return Err(ParseError::unexpected("multiple exprs in interpolation", next));
+            };
+            interpolation.push(Expression::String(string));
         }
     }
 
@@ -291,5 +321,18 @@ mod tests {
         parse_error("a = [,]");
         parse_error("a = [foo bar]");
         parse_error("a = [foo,bar,,]");
+    }
+
+    #[test]
+    fn test_parse_interpolation() {
+        assert_snapshot!(parse(
+            r#"
+            a = "hello"
+            b = "hello ${user.name} world"
+            c = "${foo}"
+            d = "${"bar"}"
+            e = "${"bar ${baz}"}"
+            "#
+        ))
     }
 }

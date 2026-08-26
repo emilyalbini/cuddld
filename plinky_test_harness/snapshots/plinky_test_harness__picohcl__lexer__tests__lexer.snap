@@ -6,9 +6,11 @@
     Dot @ 0:20,
     Newline @ 0:31,
     OpenSquare @ 1:0,
-    String(
+    OpenString @ 1:1,
+    RawString(
         "world\n\\",
     ) @ 1:11,
+    CloseString @ 1:11,
     Comma @ 1:12,
     Literal(
         "foo",
