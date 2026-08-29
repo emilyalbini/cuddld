@@ -1,0 +1,183 @@
+linking exited with exit status: 0
+
+no stdout present
+
+=== stderr ===
+debug print: loaded object
+ │
+ │  section .text (perms: rx) in entry-pic.x86.o
+ │   │
+ │   │  ╭─────────────────────────────────────────────────┬──────────────────╮
+ │   │  │ e8 fc ff ff ff 81 c3 02 00 00 00 e9 fc ff ff ff │ ................ │
+ │   │  ╰─────────────────────────────────────────────────┴──────────────────╯
+ │   │
+ │   │    Relocations:
+ │   │  ╭───────────────────────┬───────────────────────┬────────┬──────────╮
+ │   │  │ Type                  │ Symbol                │ Offset │ Addend   │
+ │   │  ├───────────────────────┼───────────────────────┼────────┼──────────┤
+ │   │  │ Relative32            │ __x86.get_pc_thunk.bx │ 0x1    │ <inline> │
+ │   │  │ GOTLocationRelative32 │ _GLOBAL_OFFSET_TABLE_ │ 0x7    │ <inline> │
+ │   │  │ PLT32                 │ main                  │ 0xc    │ <inline> │
+ │   │  ╰───────────────────────┴───────────────────────┴────────┴──────────╯
+ │   ┴
+ │
+ │  section .text.main (perms: rx) in entry-pic.x86.o
+ │   │
+ │   │  ╭─────────────────────────────────────────────────┬──────────────────╮
+ │   │  │ 8b 83 00 00 00 00 ff 30 ff b3 00 00 00 00 6a 01 │ .......0......j. │
+ │   │  │ e8 fc ff ff ff 8b 83 00 00 00 00 ff 30 e8 fc ff │ ............0... │
+ │   │  │ ff ff                                           │ ..               │
+ │   │  ╰─────────────────────────────────────────────────┴──────────────────╯
+ │   │
+ │   │    Relocations:
+ │   │  ╭────────────┬─────────────┬────────┬──────────╮
+ │   │  │ Type       │ Symbol      │ Offset │ Addend   │
+ │   │  ├────────────┼─────────────┼────────┼──────────┤
+ │   │  │ GOTIndex32 │ message_len │ 0x2    │ <inline> │
+ │   │  │ GOTIndex32 │ message     │ 0xa    │ <inline> │
+ │   │  │ PLT32      │ write       │ 0x11   │ <inline> │
+ │   │  │ GOTIndex32 │ exit_code   │ 0x17   │ <inline> │
+ │   │  │ PLT32      │ exit        │ 0x1e   │ <inline> │
+ │   │  ╰────────────┴─────────────┴────────┴──────────╯
+ │   ┴
+ │
+ │    Symbols:
+ │  ╭───────────────────────┬──────┬──────────────────┬────────────┬───────────────────────────────────╮
+ │  │ Name                  │ Type │ Source           │ Visibility │ Value                             │
+ │  ├───────────────────────┼──────┼──────────────────┼────────────┼───────────────────────────────────┤
+ │  │ <empty>               │ none │ <cuddld>         │ local      │ <null>                            │
+ │  │ _GLOBAL_OFFSET_TABLE_ │ none │ entry-pic.x86.o  │ global     │ <undefined>                       │
+ │  │ __x86.get_pc_thunk.bx │ none │ entry-pic.x86.o  │ local      │ .text.__x86.get_pc_thunk.bx + 0x0 │
+ │  │ _start                │ none │ entry-pic.x86.o  │ global     │ .text + 0x0                       │
+ │  │ exit                  │ none │ ./libsyscalls.so │ global     │ <externally defined>              │
+ │  │ exit_code             │ none │ ./libdata.so     │ global     │ <externally defined>              │
+ │  │ main                  │ none │ entry-pic.x86.o  │ global     │ .text.main + 0x0                  │
+ │  │ message               │ none │ ./libdata.so     │ global     │ <externally defined>              │
+ │  │ message_len           │ none │ ./libdata.so     │ global     │ <externally defined>              │
+ │  │ write                 │ none │ ./libsyscalls.so │ global     │ <externally defined>              │
+ │  ╰───────────────────────┴──────┴──────────────────┴────────────┴───────────────────────────────────╯
+ │
+ │  inputs
+ │   │
+ │   │    entry-pic.x86.o
+ │   │  ╭─────────────────────┬───────╮
+ │   │  │ Property            │ Value │
+ │   │  ├─────────────────────┼───────┤
+ │   │  │ X86 ISA used        │       │
+ │   │  │ x86 features 2 used │ x86   │
+ │   │  ╰─────────────────────┴───────╯
+ │   │
+ │   │  ./libdata.so (shared object ./libdata.so)
+ │   │
+ │   │  ./libsyscalls.so (shared object ./libsyscalls.so)
+ │   ┴
+ ┴
+
+debug print: relocations analysis
+ │
+ │  global offset table .got.plt
+ │   │
+ │   │    Symbols:
+ │   │  ╭─────────────┬─────────────╮
+ │   │  │ Name        │ Resolved at │
+ │   │  ├─────────────┼─────────────┤
+ │   │  │ message_len │ runtime     │
+ │   │  │ message     │ runtime     │
+ │   │  │ exit_code   │ runtime     │
+ │   │  ╰─────────────┴─────────────╯
+ │   ┴
+ │
+ │  global offset table .got.plt
+ │   │
+ │   │    Symbols:
+ │   │  ╭───────┬─────────────╮
+ │   │  │ Name  │ Resolved at │
+ │   │  ├───────┼─────────────┤
+ │   │  │ main  │ link time   │
+ │   │  │ write │ runtime     │
+ │   │  │ exit  │ runtime     │
+ │   │  ╰───────┴─────────────╯
+ │   ┴
+ ┴
+
+debug print: built elf
+ │
+ │  section .dynsym (address: 0x4001e9)
+ │   │
+ │   │    Dynamic symbol table:
+ │   │  ╭───────────────┬─────────┬──────┬────────────┬────────────┬───────┬──────╮
+ │   │  │ Name          │ Binding │ Type │ Visibility │ Definition │ Value │ Size │
+ │   │  ├───────────────┼─────────┼──────┼────────────┼────────────┼───────┼──────┤
+ │   │  │ <empty>#1     │ Local   │ -    │ Default    │ Undefined  │ 0x0   │ 0x0  │
+ │   │  │ message_len#1 │ Global  │ -    │ Default    │ Undefined  │ 0x0   │ 0x0  │
+ │   │  │ message#1     │ Global  │ -    │ Default    │ Undefined  │ 0x0   │ 0x0  │
+ │   │  │ write#1       │ Global  │ -    │ Default    │ Undefined  │ 0x0   │ 0x0  │
+ │   │  │ exit_code#1   │ Global  │ -    │ Default    │ Undefined  │ 0x0   │ 0x0  │
+ │   │  │ exit#1        │ Global  │ -    │ Default    │ Undefined  │ 0x0   │ 0x0  │
+ │   │  ╰───────────────┴─────────┴──────┴────────────┴────────────┴───────┴──────╯
+ │   ┴
+ │
+ │  section .dynamic (address: 0x4002a9)
+ │   │
+ │   │  dynamic information | string table: .dynstr
+ │   │
+ │   │  ╭──────────────────────────────┬──────────────────────────────╮
+ │   │  │ Kind                         │ Value                        │
+ │   │  ├──────────────────────────────┼──────────────────────────────┤
+ │   │  │ Needed libraries             │ string 0x1: ./libdata.so     │
+ │   │  │ Needed libraries             │ string 0xe: ./libsyscalls.so │
+ │   │  │ String table                 │ address 0x4001a0             │
+ │   │  │ String table size            │ 73 bytes                     │
+ │   │  │ Symbol table                 │ address 0x4001e9             │
+ │   │  │ Symbol table entry size      │ 16 bytes                     │
+ │   │  │ Hash table                   │ address 0x400249             │
+ │   │  │ GNU hash table               │ address 0x400275             │
+ │   │  │ Relocations table            │ address 0x400329             │
+ │   │  │ Relocations table size       │ 24 bytes                     │
+ │   │  │ Relocations table entry size │ 8 bytes                      │
+ │   │  │ Jump PLT relocations         │ address 0x400341             │
+ │   │  │ PLT relocations size         │ 16 bytes                     │
+ │   │  │ PLT relocations type         │ Relocations                  │
+ │   │  │ PLT GOT                      │ address 0x40200c             │
+ │   │  │ Null                         │ -                            │
+ │   │  ╰──────────────────────────────┴──────────────────────────────╯
+ │   ┴
+ │
+ │  section .rel.got (address: 0x400329)
+ │   │
+ │   │  symbol table:       .dynsym
+ │   │  applies to section: .got
+ │   │
+ │   │    Relocations:
+ │   │  ╭─────────────┬───────────────┬──────────╮
+ │   │  │ Type        │ Symbol        │ Offset   │
+ │   │  ├─────────────┼───────────────┼──────────┤
+ │   │  │ X86_GlobDat │ message_len#1 │ 0x402000 │
+ │   │  │ X86_GlobDat │ message#1     │ 0x402004 │
+ │   │  │ X86_GlobDat │ exit_code#1   │ 0x402008 │
+ │   │  ╰─────────────┴───────────────┴──────────╯
+ │   ┴
+ │
+ │  section .rel.plt (address: 0x400341)
+ │   │
+ │   │  symbol table:       .dynsym
+ │   │  applies to section: .got.plt
+ │   │
+ │   │    Relocations:
+ │   │  ╭──────────────┬─────────┬──────────╮
+ │   │  │ Type         │ Symbol  │ Offset   │
+ │   │  ├──────────────┼─────────┼──────────┤
+ │   │  │ X86_JumpSlot │ write#1 │ 0x40201c │
+ │   │  │ X86_JumpSlot │ exit#1  │ 0x402020 │
+ │   │  ╰──────────────┴─────────┴──────────╯
+ │   ┴
+ ┴
+
+==============
+
+running exited with exit status: 0
+
+=== stdout ===
+Hello world!
+
+no stderr present

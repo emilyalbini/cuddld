@@ -27,8 +27,8 @@
             pkgs64.glibc.dev
           ];
 
-          PLINKY_TEST_DYNAMIC_LINKER_32 = "${pkgs32.glibc}/lib/ld-linux.so.2";
-          PLINKY_TEST_DYNAMIC_LINKER_64 = "${pkgs64.glibc}/lib/ld-linux-x86-64.so.2";
+          CUDDLD_TEST_DYNAMIC_LINKER_32 = "${pkgs32.glibc}/lib/ld-linux.so.2";
+          CUDDLD_TEST_DYNAMIC_LINKER_64 = "${pkgs64.glibc}/lib/ld-linux-x86-64.so.2";
 
           shellHook = ''
             # Prevent nix from messing with the test suite.

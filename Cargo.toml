@@ -1,16 +1,16 @@
 [workspace]
 resolver = "3"
 members = [
-    "plinky",
-    "plinky_ar",
-    "plinky_diagnostics",
-    "plinky_elf",
-    "plinky_error",
-    "plinky_macros",
-    "plinky_macros_quote",
-    "plinky_pkg_config",
-    "plinky_test_harness",
-    "plinky_utils",
+    "cuddld",
+    "cuddld_ar",
+    "cuddld_diagnostics",
+    "cuddld_elf",
+    "cuddld_error",
+    "cuddld_macros",
+    "cuddld_macros_quote",
+    "cuddld_pkg_config",
+    "cuddld_test_harness",
+    "cuddld_utils",
 ]
 
 [workspace.package]
@@ -18,15 +18,15 @@ version = "0.0.0"
 edition = "2024"
 
 [workspace.dependencies]
-plinky_ar = { path = "plinky_ar" }
-plinky_diagnostics = { path = "plinky_diagnostics" }
-plinky_elf = { path = "plinky_elf" }
-plinky_error = { path = "plinky_error" }
-plinky_macros = { path = "plinky_macros" }
-plinky_macros_quote = { path = "plinky_macros_quote" }
-plinky_pkg_config = { path = "plinky_pkg_config"}
-plinky_test_harness = { path = "plinky_test_harness" }
-plinky_utils = { path = "plinky_utils" }
+cuddld_ar = { path = "cuddld_ar" }
+cuddld_diagnostics = { path = "cuddld_diagnostics" }
+cuddld_elf = { path = "cuddld_elf" }
+cuddld_error = { path = "cuddld_error" }
+cuddld_macros = { path = "cuddld_macros" }
+cuddld_macros_quote = { path = "cuddld_macros_quote" }
+cuddld_pkg_config = { path = "cuddld_pkg_config"}
+cuddld_test_harness = { path = "cuddld_test_harness" }
+cuddld_utils = { path = "cuddld_utils" }
 
 [workspace.lints.clippy]
 new_without_default = "allow"

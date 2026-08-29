@@ -3,80 +3,80 @@
 version = 4
 
 [[package]]
-name = "plinky"
+name = "cuddld"
 version = "0.0.0"
 dependencies = [
- "plinky_ar",
- "plinky_diagnostics",
- "plinky_elf",
- "plinky_error",
- "plinky_macros",
- "plinky_pkg_config",
- "plinky_test_harness",
- "plinky_utils",
+ "cuddld_ar",
+ "cuddld_diagnostics",
+ "cuddld_elf",
+ "cuddld_error",
+ "cuddld_macros",
+ "cuddld_pkg_config",
+ "cuddld_test_harness",
+ "cuddld_utils",
 ]
 
 [[package]]
-name = "plinky_ar"
+name = "cuddld_ar"
 version = "0.0.0"
 dependencies = [
- "plinky_macros",
- "plinky_utils",
+ "cuddld_macros",
+ "cuddld_utils",
 ]
 
 [[package]]
-name = "plinky_diagnostics"
+name = "cuddld_diagnostics"
 version = "0.0.0"
 dependencies = [
- "plinky_test_harness",
+ "cuddld_test_harness",
 ]
 
 [[package]]
-name = "plinky_elf"
+name = "cuddld_elf"
 version = "0.0.0"
 dependencies = [
- "plinky_diagnostics",
- "plinky_error",
- "plinky_macros",
- "plinky_test_harness",
- "plinky_utils",
+ "cuddld_diagnostics",
+ "cuddld_error",
+ "cuddld_macros",
+ "cuddld_test_harness",
+ "cuddld_utils",
 ]
 
 [[package]]
-name = "plinky_error"
+name = "cuddld_error"
 version = "0.0.0"
 
 [[package]]
-name = "plinky_macros"
+name = "cuddld_macros"
 version = "0.0.0"
 dependencies = [
- "plinky_macros_quote",
- "plinky_utils",
+ "cuddld_macros_quote",
+ "cuddld_utils",
 ]
 
 [[package]]
-name = "plinky_macros_quote"
+name = "cuddld_macros_quote"
 version = "0.0.0"
 
 [[package]]
-name = "plinky_pkg_config"
+name = "cuddld_pkg_config"
 version = "0.0.0"
 dependencies = [
- "plinky_error",
- "plinky_macros",
- "plinky_test_harness",
- "plinky_utils",
+ "cuddld_error",
+ "cuddld_macros",
+ "cuddld_test_harness",
+ "cuddld_utils",
 ]
 
 [[package]]
-name = "plinky_test_harness"
+name = "cuddld_test_harness"
 version = "0.0.0"
 dependencies = [
- "plinky_error",
- "plinky_macros",
- "plinky_utils",
+ "cuddld_error",
+ "cuddld_macros",
+ "cuddld_utils",
 ]
 
 [[package]]
-name = "plinky_utils"
+name = "cuddld_utils"
 version = "0.0.0"

@@ -1,0 +1,12 @@
+[package]
+name = "cuddld_test_harness"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cuddld_error.workspace = true
+cuddld_macros.workspace = true
+cuddld_utils.workspace = true

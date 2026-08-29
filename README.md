@@ -1,4 +1,4 @@
-# plinky
+# cuddld
 
 > [!CAUTION]
 >
@@ -6,14 +6,14 @@
 > intend to provide any support or compatibility guarantee for it, nor accept
 > third party contributors. Use it at your own risk.
 
-plinky is an x86 and x86-64 ELF linker targeting Linux systems you probably
+cuddld is an x86 and x86-64 ELF linker targeting Linux systems you probably
 should **not** use.
 
 This is a side project of mine, with the goal of better understanding how
 linkers work. I am learning the world of linkers as I develop this, so parts of
 the implementation are probably incorrect or badly architected.
 
-As an additional challenge for me, I am trying to develop plinky without
+As an additional challenge for me, I am trying to develop cuddld without
 relying on third party dependencies in build scripts and runtime code
 (dependency in tests are fine), because why not.
 

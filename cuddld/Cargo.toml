@@ -1,0 +1,32 @@
+cargo-features = ["different-binary-name"]
+
+[package]
+name = "cuddld"
+edition.workspace = true
+version.workspace = true
+default-run = "cuddld"
+
+[lints]
+workspace = true
+
+[[bin]]
+path = "src/main.rs"
+name = "cuddld"
+filename = "ld.cuddld"
+
+[[test]]
+name = "linktest"
+path = "linktest/harness.rs"
+harness = false
+
+[dependencies]
+cuddld_ar.workspace = true
+cuddld_diagnostics.workspace = true
+cuddld_macros.workspace = true
+cuddld_pkg_config.workspace = true
+cuddld_elf.workspace = true
+cuddld_utils.workspace = true
+
+[dev-dependencies]
+cuddld_error.workspace = true
+cuddld_test_harness.workspace = true

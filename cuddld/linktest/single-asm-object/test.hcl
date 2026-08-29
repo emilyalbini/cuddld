@@ -1,0 +1,11 @@
+archs = ["x86", "x86_64"]
+
+cuddld "test" {
+  cmd         = [asm.hello]
+  kind        = "run-pass"
+  debug-print = ["loaded-object", "relocated-object", "layout", "final-elf"]
+}
+
+asm "hello" {
+  source = "hello.S"
+}

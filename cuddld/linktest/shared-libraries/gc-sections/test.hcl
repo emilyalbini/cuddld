@@ -1,0 +1,11 @@
+archs = ["x86", "x86_64"]
+
+cuddld "test" {
+  cmd         = [asm.foo, "-shared", "--gc-sections"]
+  kind        = "link-pass"
+  debug-print = ["gc"]
+}
+
+asm "foo" {
+  source = "foo.S"
+}

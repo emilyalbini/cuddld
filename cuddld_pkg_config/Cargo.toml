@@ -1,0 +1,20 @@
+[package]
+name = "cuddld_pkg_config"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[[test]]
+name = "pkgtest"
+path = "pkgtest/harness.rs"
+harness = false
+
+[dependencies]
+cuddld_macros.workspace = true
+
+[dev-dependencies]
+cuddld_error.workspace = true
+cuddld_test_harness.workspace = true
+cuddld_utils.workspace = true

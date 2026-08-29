@@ -1,0 +1,7 @@
+[package]
+name = "cuddld_utils"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,14 @@
+[package]
+name = "cuddld_macros"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cuddld_macros_quote.workspace = true
+cuddld_utils.workspace = true
+
+[lib]
+proc-macro = true

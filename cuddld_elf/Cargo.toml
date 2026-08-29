@@ -1,0 +1,21 @@
+[package]
+name = "cuddld_elf"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[[test]]
+name = "elftest"
+path = "elftest/harness.rs"
+harness = false
+
+[dependencies]
+cuddld_diagnostics.workspace = true
+cuddld_macros.workspace = true
+cuddld_utils.workspace = true
+
+[dev-dependencies]
+cuddld_error.workspace = true
+cuddld_test_harness.workspace = true

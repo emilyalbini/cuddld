@@ -1,0 +1,78 @@
+archs = ["x86", "x86_64"]
+
+cuddld "archive" {
+  cmd         = [c.hello, "-L${dir.archive}", "-lsyscalls"]
+  kind        = "run-pass"
+  debug-print = ["loaded-object=@inputs"]
+}
+
+cuddld "shared_object" {
+  cmd  = [c.hello, "-L${dir.shared_object}", "-lsyscalls"]
+  kind = "run-pass"
+  run-env {
+    LD_LIBRARY_PATH = dir.shared_object
+  }
+  debug-print = ["loaded-object=@inputs", "final-elf=.dynamic"]
+}
+
+cuddld "precedence" {
+  cmd  = [c.hello, "-L${dir.both}", "-lsyscalls"]
+  kind = "run-pass"
+  run-env {
+    LD_LIBRARY_PATH = dir.shared_object
+  }
+  debug-print = ["loaded-object=@inputs"]
+}
+
+cuddld "precedence_Bstatic" {
+  cmd         = [c.hello, "-L${dir.both}", "-Bstatic", "-lsyscalls"]
+  kind        = "run-pass"
+  debug-print = ["loaded-object=@inputs"]
+}
+
+cuddld "multiple_search_paths" {
+  cmd         = [c.hello, "-L${dir.empty}", "-L${dir.archive}", "-lsyscalls"]
+  kind        = "run-pass"
+  debug-print = ["loaded-object=@inputs"]
+}
+
+dir "archive" {
+  files = [ar.syscalls]
+}
+
+dir "shared_object" {
+  files = [ld.syscalls]
+}
+
+dir "both" {
+  files = [ld.syscalls, ar.syscalls]
+}
+
+dir "empty" {
+  files = []
+}
+
+c "hello" {
+  source     = "../_shared/hello-world.c"
+  libc       = "freestanding"
+  relocation = "pic"
+}
+
+ar "syscalls" {
+  output  = "libsyscalls.a"
+  content = [asm.syscall_exit, asm.syscall_write]
+}
+
+ld "syscalls" {
+  output         = "libsyscalls.so"
+  content        = [asm.syscall_exit, asm.syscall_write]
+  shared-library = true
+}
+
+asm "syscall_exit" {
+  source = "../_shared/syscall.exit.${arch}.S"
+}
+
+asm "syscall_write" {
+  source = "../_shared/syscall.write.${arch}.S"
+}

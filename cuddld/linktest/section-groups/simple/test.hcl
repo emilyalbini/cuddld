@@ -1,0 +1,15 @@
+archs = ["x86", "x86_64"]
+
+cuddld "test" {
+  cmd         = [asm.foo, asm.bar]
+  kind        = "link-pass"
+  debug-print = ["loaded-object"]
+}
+
+asm "foo" {
+  source = "foo.S"
+}
+
+asm "bar" {
+  source = "bar.S"
+}

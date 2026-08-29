@@ -1,0 +1,10 @@
+[package]
+name = "cuddld_diagnostics"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+cuddld_test_harness.workspace = true

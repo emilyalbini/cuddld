@@ -1,0 +1,11 @@
+[package]
+name = "cuddld_ar"
+edition.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cuddld_macros.workspace = true
+cuddld_utils.workspace = true
