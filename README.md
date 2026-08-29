@@ -14,8 +14,7 @@ linkers work. I am learning the world of linkers as I develop this, so parts of
 the implementation are probably incorrect or badly architected.
 
 As an additional challenge for me, I am trying to develop cuddld without
-relying on third party dependencies in build scripts and runtime code
-(dependency in tests are fine), because why not.
+relying on third party dependencies, because why not.
 
 Licensed under either of [Apache License, Version 2.0](./LICENSE-APACHE) or
 [MIT License](./LICENSE-MIT), at your option.
