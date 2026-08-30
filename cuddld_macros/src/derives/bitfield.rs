@@ -222,7 +222,7 @@ fn generate_rwfields(struct_: &Struct) -> Result<RWFields, Error> {
 }
 
 fn generate_condition(attrs: &Attributes) -> Result<TokenStream, Error> {
-    if let Some(attr) = attrs.get("bitfield_only_on_api")? {
+    if let Some(attr) = attrs.get("bitfield_only_on_abi")? {
         let variant = attr.get_parenthesis_one_expr()?;
         Ok(quote!(ctx.os_abi == cuddld_utils::OsAbi::#variant))
     } else {
