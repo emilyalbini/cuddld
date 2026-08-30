@@ -2,10 +2,10 @@ use crate::ids::ElfSectionId;
 use crate::render_elf::names::Names;
 use crate::render_elf::utils::render_perms;
 use crate::{
-    ElfClass, ElfDeduplication, ElfDynamic, ElfDynamicDirective, ElfGnuHash, ElfGnuProperty,
-    ElfGroup, ElfHash, ElfNote, ElfNotesTable, ElfObject, ElfPLTRelocationsMode, ElfProgramSection,
-    ElfRelTable, ElfRelaTable, ElfSection, ElfSectionContent, ElfStringTable, ElfSymbolDefinition,
-    ElfSymbolTable, ElfSymbolType, ElfUninitializedSection, ElfUnknownSection,
+    ElfClass, ElfDeduplication, ElfDynamic, ElfDynamicDirective, ElfEhFrameHdr, ElfGnuHash,
+    ElfGnuProperty, ElfGroup, ElfHash, ElfNote, ElfNotesTable, ElfObject, ElfPLTRelocationsMode,
+    ElfProgramSection, ElfRelTable, ElfRelaTable, ElfSection, ElfSectionContent, ElfStringTable,
+    ElfSymbolDefinition, ElfSymbolTable, ElfSymbolType, ElfUninitializedSection, ElfUnknownSection,
 };
 use cuddld_diagnostics::widgets::{HexDump, Table, Text, Widget, WidgetGroup};
 
@@ -27,6 +27,7 @@ pub(super) fn render_section(
         ElfSectionContent::Hash(hash) => render_section_hash(names, object, hash),
         ElfSectionContent::GnuHash(gnu_hash) => render_section_gnu_hash(names, object, gnu_hash),
         ElfSectionContent::Note(notes) => render_section_notes(notes),
+        ElfSectionContent::EhFrameHdr(efh) => render_section_eh_frame_hdr(section, efh),
         ElfSectionContent::Dynamic(dynamic) => render_section_dynamic(names, object, dynamic),
         ElfSectionContent::Unknown(unknown) => render_section_unknown(unknown),
     };
@@ -325,6 +326,37 @@ pub fn render_note(note: &ElfNote) -> Box<dyn Widget> {
             Box::new(WidgetGroup::new().name("GNU properties").add(table))
         }
     }
+}
+
+fn render_section_eh_frame_hdr(section: &ElfSection, efh: &ElfEhFrameHdr) -> Vec<Box<dyn Widget>> {
+    let intro = Text::new("EH Frame Header");
+    let encodings = Text::new(format!(
+        "\
+         .eh_frame pointer encoding: {:?}\n\
+         entries encoding:           {:?}\n\
+         entries count encoding:     {:?}",
+        efh.frame_pointer_encoding, efh.entry_encoding, efh.entry_count_encoding,
+    ));
+
+    let eh_frame_ptr = Text::new(format!(
+        ".eh_frame pointer: {:#x} (raw offset: {:#x})",
+        section.memory_address as i64 + efh.frame_pointer + 4,
+        efh.frame_pointer,
+    ));
+
+    let entries = if !efh.entries.is_empty() {
+        let mut entries = Table::new();
+        entries.set_title("Binary search entries:");
+        entries.add_head(["Pointer", "Info"]);
+        for entry in &efh.entries {
+            entries.add_body([format!("{:#x}", entry.pointer), format!("{:#x}", entry.info)]);
+        }
+        Box::new(entries) as Box<dyn Widget>
+    } else {
+        Box::new(Text::new("There are no entries stored in the binary search table"))
+    };
+
+    vec![Box::new(intro), Box::new(encodings), Box::new(eh_frame_ptr), entries]
 }
 
 fn render_section_dynamic(

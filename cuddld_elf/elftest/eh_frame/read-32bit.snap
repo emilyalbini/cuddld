@@ -3,12 +3,21 @@ reading ELF exited with exit status: 0
 === stdout ===
 section .eh_frame_hdr (address: 0x804a000)
  │
- │  program data | permissions: R
+ │  EH Frame Header
  │
- │  ╭─────────────────────────────────────────────────┬──────────────────╮
- │  │ 01 1b 03 3b 18 00 00 00 02 00 00 00 00 f0 ff ff │ ...;............ │
- │  │ 34 00 00 00 04 f0 ff ff 48 00 00 00             │ 4.......H...     │
- │  ╰─────────────────────────────────────────────────┴──────────────────╯
+ │  .eh_frame pointer encoding: I32 | PcRel
+ │  entries encoding:           I32 | DataRel
+ │  entries count encoding:     U32 | Absolute
+ │
+ │  .eh_frame pointer: 0x804a01c (raw offset: 0x18)
+ │
+ │    Binary search entries:
+ │  ╭────────────────────┬──────╮
+ │  │ Pointer            │ Info │
+ │  ├────────────────────┼──────┤
+ │  │ 0xfffffffffffff000 │ 0x34 │
+ │  │ 0xfffffffffffff004 │ 0x48 │
+ │  ╰────────────────────┴──────╯
  ┴
 
 section .eh_frame (address: 0x804a01c)

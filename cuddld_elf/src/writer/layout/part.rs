@@ -19,6 +19,7 @@ pub enum Part<S> {
     Dynamic(S),
     Note(S),
     GnuHash(S),
+    EhFrameHdr(S),
     Padding { id: PaddingId, len: usize },
 }
 
@@ -39,6 +40,7 @@ impl<S> Part<S> {
             Part::Group(id) => Some(id),
             Part::Dynamic(id) => Some(id),
             Part::Note(id) => Some(id),
+            Part::EhFrameHdr(id) => Some(id),
             Part::Padding { .. } => None,
         }
     }
@@ -64,6 +66,7 @@ impl<S> Part<S> {
             Part::Group(id) => Part::Group(c(id)),
             Part::Dynamic(id) => Part::Dynamic(c(id)),
             Part::Note(id) => Part::Note(c(id)),
+            Part::EhFrameHdr(id) => Part::EhFrameHdr(c(id)),
             Part::Padding { id, len } => Part::Padding { id, len },
         }
     }

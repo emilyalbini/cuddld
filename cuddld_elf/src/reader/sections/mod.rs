@@ -1,4 +1,5 @@
 pub(super) mod dynamic;
+mod eh_frame_hdr;
 mod gnu_hash;
 mod group;
 mod hash;
@@ -36,13 +37,18 @@ pub(super) fn read_section(
 fn read_section_inner(
     cursor: &mut ReadCursor<'_>,
     section_names_table_id: ElfSectionId,
-    _section_names: Option<&ElfStringTable>,
+    section_names: Option<&ElfStringTable>,
     current_section: ElfSectionId,
     header: RawSectionHeader,
 ) -> Result<ElfSection, LoadError> {
+    let name_str = section_names.and_then(|n| n.get(header.name_offset));
+
     let ty = match header.type_ {
         0 => SectionType::Null,
-        1 => SectionType::Program,
+        1 => match name_str {
+            Some(".eh_frame_hdr") => SectionType::EhFrameHdr,
+            _ => SectionType::Program,
+        },
         2 => SectionType::SymbolTable { dynsym: false },
         3 => SectionType::StringTable,
         4 => SectionType::Rela,
@@ -126,6 +132,7 @@ fn read_section_inner(
         SectionType::Group => ElfSectionContent::Group(group::read(&mut reader, &meta)?),
         SectionType::Hash => ElfSectionContent::Hash(hash::read(&mut reader, &meta)?),
         SectionType::GnuHash => ElfSectionContent::GnuHash(gnu_hash::read(&mut reader, &meta)?),
+        SectionType::EhFrameHdr => ElfSectionContent::EhFrameHdr(eh_frame_hdr::read(&mut reader)?),
         SectionType::Dynamic => ElfSectionContent::Dynamic(dynamic::read(&mut reader, &meta)?),
         SectionType::Unknown(other) => {
             ElfSectionContent::Unknown(unknown::read(&mut reader, other)?)
@@ -158,4 +165,5 @@ enum SectionType {
     GnuHash,
     Dynamic,
     Unknown(u32),
+    EhFrameHdr,
 }

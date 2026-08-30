@@ -3,9 +3,12 @@ mod string_table;
 pub use self::string_table::ElfStringTable;
 
 use crate::ids::{ElfSectionId, ElfStringId, ElfSymbolId};
-use crate::raw::{RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawRel, RawRela, RawSymbol};
+use crate::raw::{
+    RawEhFrameHdrHeader, RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawRel, RawRela, RawSymbol,
+};
+use cuddld_dwarf::eh_encoding::DwarfEhEncoding;
 use cuddld_macros::Bitfield;
-use cuddld_utils::raw_types::{PointerSize, SizedRawType, RawTypeContext};
+use cuddld_utils::raw_types::{PointerSize, RawTypeContext, SizedRawType};
 use cuddld_utils::{Bits, Endian, OsAbi};
 use std::collections::BTreeMap;
 use std::num::NonZeroU64;
@@ -107,6 +110,7 @@ pub enum ElfSectionContent {
     Hash(ElfHash),
     GnuHash(ElfGnuHash),
     Dynamic(ElfDynamic),
+    EhFrameHdr(ElfEhFrameHdr),
     Unknown(ElfUnknownSection),
 }
 
@@ -138,6 +142,12 @@ impl ElfSectionContent {
             ElfSectionContent::Dynamic(d) => {
                 let size = u64::size(&PointerSize(ctx)) * 2;
                 d.directives.len() * size
+            }
+            ElfSectionContent::EhFrameHdr(efh) => {
+                RawEhFrameHdrHeader::size(ctx)
+                    + efh.frame_pointer_encoding.value_size(ctx)
+                    + efh.entry_count_encoding.value_size(ctx)
+                    + efh.entries.len() * (efh.entry_encoding.value_size(ctx) * 2)
             }
             ElfSectionContent::Note(_) => unimplemented!(),
             ElfSectionContent::Unknown(_) => unimplemented!(),
@@ -473,6 +483,21 @@ pub struct ElfGnuHash {
     pub bloom: Vec<u64>,
     pub buckets: Vec<u32>,
     pub chain: Vec<u32>,
+}
+
+#[derive(Debug)]
+pub struct ElfEhFrameHdr {
+    pub frame_pointer_encoding: DwarfEhEncoding,
+    pub entry_count_encoding: DwarfEhEncoding,
+    pub entry_encoding: DwarfEhEncoding,
+    pub frame_pointer: i64,
+    pub entries: Vec<ElfEhFrameHdrEntry>,
+}
+
+#[derive(Debug)]
+pub struct ElfEhFrameHdrEntry {
+    pub pointer: i64,
+    pub info: i64,
 }
 
 #[derive(Debug)]

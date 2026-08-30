@@ -4,6 +4,7 @@ mod part;
 pub use self::details_provider::*;
 pub use self::part::*;
 
+use crate::raw::RawEhFrameHdrHeader;
 use crate::raw::RawGnuHashHeader;
 use crate::raw::RawNoteHeader;
 use crate::raw::{
@@ -216,6 +217,14 @@ fn part_len<S: Copy>(details: &dyn LayoutDetailsProvider<S>, part: Part<S>) -> L
                         + align(note.value_len)
                 })
                 .sum()
+        }
+
+        Part::EhFrameHdr(id) => {
+            let efh = details.eh_frame_hdr_details(id);
+            RawEhFrameHdrHeader::size(&ctx)
+                + efh.frame_pointer_encoding.value_size(&ctx)
+                + efh.entry_count_encoding.value_size(&ctx)
+                + efh.entries_count * (efh.entry_encoding.value_size(&ctx) * 2)
         }
 
         Part::Group(id) => {

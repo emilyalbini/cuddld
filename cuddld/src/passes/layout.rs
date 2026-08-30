@@ -8,8 +8,8 @@ use crate::repr::sections::{Section, SectionContent, SectionId};
 use crate::repr::segments::{SegmentContent, SegmentType};
 use crate::repr::symbols::SymbolVisibility;
 use cuddld_elf::writer::layout::{
-    Layout, LayoutDetailsGnuHash, LayoutDetailsHash, LayoutDetailsNote, LayoutDetailsProvider,
-    LayoutError, LayoutPartsGroup, Part,
+    Layout, LayoutDetailsEhFrameHdr, LayoutDetailsGnuHash, LayoutDetailsHash, LayoutDetailsNote,
+    LayoutDetailsProvider, LayoutError, LayoutPartsGroup, Part,
 };
 use cuddld_elf::{ElfABI, ElfClass, ElfEndian};
 use cuddld_utils::ints::{Address, ExtractNumber};
@@ -149,6 +149,10 @@ impl LayoutDetailsProvider<SectionId> for Object {
                 value_len: note.value_len(&self.raw_type_context()),
             })
             .collect()
+    }
+
+    fn eh_frame_hdr_details(&self, _id: SectionId) -> LayoutDetailsEhFrameHdr {
+        unimplemented!()
     }
 
     fn parts_for_sections(&self) -> Result<Vec<Part<SectionId>>, LayoutError> {

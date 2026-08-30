@@ -4,6 +4,7 @@ use crate::writer::layout::Part;
 use crate::{
     ElfABI, ElfClass, ElfEndian, ElfObject, ElfSection, ElfSectionContent, ElfSegmentType,
 };
+use cuddld_dwarf::eh_encoding::DwarfEhEncoding;
 use cuddld_utils::raw_types::RawTypeContext;
 
 pub trait LayoutDetailsProvider<S: Copy> {
@@ -24,6 +25,7 @@ pub trait LayoutDetailsProvider<S: Copy> {
     fn hash_details(&self, id: S) -> LayoutDetailsHash;
     fn gnu_hash_details(&self, id: S) -> LayoutDetailsGnuHash;
     fn note_details(&self, id: S) -> Vec<LayoutDetailsNote>;
+    fn eh_frame_hdr_details(&self, id: S) -> LayoutDetailsEhFrameHdr;
 
     fn parts_for_sections(&self) -> Result<Vec<Part<S>>, LayoutError>;
     fn parts_groups(&self) -> Result<Vec<LayoutPartsGroup<S>>, LayoutError>;
@@ -47,6 +49,13 @@ pub struct LayoutDetailsGnuHash {
 pub struct LayoutDetailsNote {
     pub name_len: usize,
     pub value_len: usize,
+}
+
+pub struct LayoutDetailsEhFrameHdr {
+    pub frame_pointer_encoding: DwarfEhEncoding,
+    pub entry_count_encoding: DwarfEhEncoding,
+    pub entry_encoding: DwarfEhEncoding,
+    pub entries_count: usize,
 }
 
 pub struct LayoutPartsGroup<S> {
@@ -143,6 +152,16 @@ impl LayoutDetailsProvider<ElfSectionId> for ElfObject {
             .collect()
     }
 
+    fn eh_frame_hdr_details(&self, id: ElfSectionId) -> LayoutDetailsEhFrameHdr {
+        let eh_frame_hdr = cast_section!(self, id, EhFrameHdr);
+        LayoutDetailsEhFrameHdr {
+            frame_pointer_encoding: eh_frame_hdr.frame_pointer_encoding,
+            entry_count_encoding: eh_frame_hdr.entry_count_encoding,
+            entry_encoding: eh_frame_hdr.entry_encoding,
+            entries_count: eh_frame_hdr.entries.len(),
+        }
+    }
+
     fn parts_for_sections(&self) -> Result<Vec<Part<ElfSectionId>>, LayoutError> {
         let mut result = Vec::new();
 
@@ -206,6 +225,7 @@ fn part_for_section(
         ElfSectionContent::Hash(_) => Part::Hash(id.clone()),
         ElfSectionContent::Dynamic(_) => Part::Dynamic(id.clone()),
         ElfSectionContent::GnuHash(_) => Part::GnuHash(id.clone()),
+        ElfSectionContent::EhFrameHdr(_) => Part::EhFrameHdr(id.clone()),
 
         ElfSectionContent::Note(_) => Part::Note(id.clone()),
         ElfSectionContent::Unknown(_) => {

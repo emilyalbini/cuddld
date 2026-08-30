@@ -68,6 +68,7 @@ pub(super) fn merge_elf(
             ElfSectionContent::Hash(_) | ElfSectionContent::GnuHash(_) => {
                 // We don't need hash tables imported from the ELF file, we build our own.
             }
+            ElfSectionContent::EhFrameHdr(_) => return Err(MergeElfError::UnsupportedEhFrameHdr),
             ElfSectionContent::Dynamic(_) => {
                 return Err(MergeElfError::UnsupportedDynamicSection);
             }
@@ -308,4 +309,6 @@ pub(crate) enum MergeElfError {
     DuplicateGnuProperty,
     #[transparent]
     SectionGroups(SectionGroupsError),
+    #[display("unsupported .eh_frame_hdr in input objects")]
+    UnsupportedEhFrameHdr,
 }

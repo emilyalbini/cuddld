@@ -32,6 +32,7 @@ pub(super) fn render_layout(object: &Object, layout: &Layout<SectionId>) -> Diag
                 | Part::Rela(id)
                 | Part::Group(id)
                 | Part::Dynamic(id)
+                | Part::EhFrameHdr(id)
                 | Part::Note(id) => names.section(*id).into(),
             },
             meta.file.as_ref().map(|m| m.offset.to_string()).unwrap_or_else(|| "-".into()),

@@ -6,9 +6,9 @@ pub(crate) use self::layout::LayoutError;
 use crate::errors::WriteError;
 use crate::ids::{ElfSectionId, ElfSymbolId};
 use crate::raw::{
-    RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawHeader, RawHeaderFlags, RawIdentification,
-    RawNoteHeader, RawProgramHeader, RawProgramHeaderFlags, RawRel, RawRela, RawSectionHeader,
-    RawSectionHeaderFlags, RawSymbol,
+    RawEhFrameHdrHeader, RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawHeader, RawHeaderFlags,
+    RawIdentification, RawNoteHeader, RawProgramHeader, RawProgramHeaderFlags, RawRel, RawRela,
+    RawSectionHeader, RawSectionHeaderFlags, RawSymbol,
 };
 use crate::writer::layout::{Layout, Part};
 use crate::writer::write_counter::WriteCounter;
@@ -20,7 +20,7 @@ use crate::{
 };
 use cuddld_utils::bitfields::Bitfield;
 use cuddld_utils::ints::ExtractNumber;
-use cuddld_utils::raw_types::{RawPadding, RawType, SizedRawType, RawTypeContext};
+use cuddld_utils::raw_types::{ContextFrom, RawPadding, RawType, RawTypeContext, SizedRawType};
 use std::collections::BTreeMap;
 use std::io::Write;
 
@@ -89,6 +89,7 @@ impl<'a> Writer<'a> {
                 Part::GnuHash(id) => self.write_gnu_hash(id)?,
                 Part::Dynamic(id) => self.write_dynamic(id)?,
                 Part::Note(id) => self.write_notes(id)?,
+                Part::EhFrameHdr(id) => self.write_eh_frame_hdr(id)?,
                 Part::Padding { .. } => self.write_padding(part)?,
             }
 
@@ -210,6 +211,7 @@ impl<'a> Writer<'a> {
                 ElfSectionContent::Note(_) => 7,
                 ElfSectionContent::Rel(_) => 9,
                 ElfSectionContent::Group(_) => 17,
+                ElfSectionContent::EhFrameHdr(_) => 1,
                 ElfSectionContent::Unknown(_) => panic!("unknown section"),
             };
 
@@ -543,6 +545,24 @@ impl<'a> Writer<'a> {
         Ok(())
     }
 
+    fn write_eh_frame_hdr(&mut self, id: ElfSectionId) -> Result<(), WriteError> {
+        let section = cast_section!(self, id, EhFrameHdr);
+        self.write_raw(RawEhFrameHdrHeader {
+            version: 1,
+            eh_frame_ptr_enc: section.frame_pointer_encoding,
+            fde_count_enc: section.entry_count_encoding,
+            table_enc: section.entry_encoding,
+        })?;
+        self.write_raw_ctx(&section.frame_pointer_encoding, section.frame_pointer)?;
+        self.write_raw_ctx(&section.entry_count_encoding, section.entries.len() as u64)?;
+        for entry in &section.entries {
+            self.write_raw_ctx(&section.entry_encoding, entry.pointer)?;
+            self.write_raw_ctx(&section.entry_encoding, entry.info)?;
+        }
+
+        Ok(())
+    }
+
     fn write_dynamic(&mut self, id: ElfSectionId) -> Result<(), WriteError> {
         let dynamic = cast_section!(self, id, Dynamic);
         for directive in &dynamic.directives {
@@ -627,10 +647,8 @@ impl<'a> Writer<'a> {
         for note in &notes.notes {
             let name = note.name();
             let name_size = u32::try_from(name.len()).map_err(|_| WriteError::NoteTooLong)? + 1;
-            let value_size: u32 = note
-                .value_len(&self.raw_ctx)
-                .try_into()
-                .map_err(|_| WriteError::NoteTooLong)?;
+            let value_size: u32 =
+                note.value_len(&self.raw_ctx).try_into().map_err(|_| WriteError::NoteTooLong)?;
 
             self.write_raw(RawNoteHeader { name_size, value_size, type_: note.type_() })?;
 
@@ -720,6 +738,15 @@ impl<'a> Writer<'a> {
 
     fn write_raw<T: RawType>(&mut self, value: T) -> Result<(), WriteError> {
         value.write(&self.raw_ctx, &mut self.writer)?;
+        Ok(())
+    }
+
+    fn write_raw_ctx<T, C>(&mut self, ctx: &C, value: T) -> Result<(), WriteError>
+    where
+        C: ContextFrom,
+        T: for<'c> RawType<C::Context<'c>>,
+    {
+        value.write(&C::context_from(&self.raw_ctx, ctx), &mut self.writer)?;
         Ok(())
     }
 }

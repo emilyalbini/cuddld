@@ -32,10 +32,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cuddld_dwarf"
+version = "0.0.0"
+dependencies = [
+ "cuddld_utils",
+]
+
+[[package]]
 name = "cuddld_elf"
 version = "0.0.0"
 dependencies = [
  "cuddld_diagnostics",
+ "cuddld_dwarf",
  "cuddld_error",
  "cuddld_macros",
  "cuddld_test_harness",

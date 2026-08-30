@@ -1,0 +1,10 @@
+[package]
+name = "cuddld_dwarf"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+cuddld_utils.workspace = true
+
+[lints]
+workspace = true

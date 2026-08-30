@@ -1,5 +1,6 @@
 use cuddld_macros::{Bitfield, RawType};
 use cuddld_utils::raw_types::RawPadding;
+use cuddld_dwarf::eh_encoding::DwarfEhEncoding;
 
 #[derive(RawType)]
 pub struct RawIdentification {
@@ -160,4 +161,12 @@ pub struct RawGnuHashHeader {
 #[bitfield_repr(u32)]
 pub struct RawGroupFlags {
     pub comdat: bool,
+}
+
+#[derive(RawType)]
+pub struct RawEhFrameHdrHeader {
+    pub version: u8,
+    pub eh_frame_ptr_enc: DwarfEhEncoding,
+    pub fde_count_enc: DwarfEhEncoding,
+    pub table_enc: DwarfEhEncoding,
 }

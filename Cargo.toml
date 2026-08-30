@@ -4,6 +4,7 @@ members = [
     "cuddld",
     "cuddld_ar",
     "cuddld_diagnostics",
+    "cuddld_dwarf",
     "cuddld_elf",
     "cuddld_error",
     "cuddld_macros",
@@ -20,6 +21,7 @@ edition = "2024"
 [workspace.dependencies]
 cuddld_ar = { path = "cuddld_ar" }
 cuddld_diagnostics = { path = "cuddld_diagnostics" }
+cuddld_dwarf = { path = "cuddld_dwarf" }
 cuddld_elf = { path = "cuddld_elf" }
 cuddld_error = { path = "cuddld_error" }
 cuddld_macros = { path = "cuddld_macros" }

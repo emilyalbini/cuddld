@@ -1,7 +1,7 @@
 use crate::errors::LoadError;
 use crate::{ElfABI, ElfClass, ElfEndian};
 use cuddld_utils::Bits;
-use cuddld_utils::raw_types::{RawType, RawTypeContext};
+use cuddld_utils::raw_types::{ContextFrom, RawType, RawTypeContext};
 use std::io::{Read, Seek, SeekFrom};
 
 pub(super) struct ReadCursor<'a> {
@@ -36,6 +36,14 @@ impl<'a> ReadCursor<'a> {
 
     pub(super) fn read_raw<T: RawType>(&mut self) -> Result<T, LoadError> {
         Ok(T::read(&self.raw_ctx, self.reader.get())?)
+    }
+
+    pub(super) fn read_raw_ctx<C, T>(&mut self, ctx: &C) -> Result<T, LoadError>
+    where
+        C: ContextFrom,
+        T: for<'c> RawType<C::Context<'c>>,
+    {
+        Ok(T::read(&C::context_from(&self.raw_ctx, ctx), self.reader.get())?)
     }
 
     pub(super) fn align_with_padding(&mut self, align: u64) -> Result<(), LoadError> {

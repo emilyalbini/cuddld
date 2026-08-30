@@ -240,6 +240,13 @@ impl RawWriteError {
         }
     }
 
+    pub fn custom<T>(err: String) -> Self {
+        Self {
+            source: ErrorSource::Type(std::any::type_name::<T>()),
+            inner: RawWriteErrorInner::Custom(CustomError(err)),
+        }
+    }
+
     pub fn wrap_type<T, R>(result: Result<R, RawWriteError>) -> Result<R, RawWriteError> {
         match result {
             Ok(ok) => Ok(ok),
@@ -269,6 +276,7 @@ impl std::error::Error for RawWriteError {
         match &self.inner {
             RawWriteErrorInner::Itself(itself) => Some(itself),
             RawWriteErrorInner::IO(io) => Some(io),
+            RawWriteErrorInner::Custom(custom) => Some(custom),
         }
     }
 }
@@ -283,6 +291,7 @@ impl std::fmt::Display for RawWriteError {
 enum RawWriteErrorInner {
     Itself(Box<RawWriteError>),
     IO(std::io::Error),
+    Custom(CustomError),
 }
 
 #[derive(Debug)]
@@ -300,4 +309,12 @@ impl std::fmt::Display for ErrorSource {
             }
         }
     }
+}
+
+pub trait ContextFrom: Sized {
+    type Context<'a>
+    where
+        Self: 'a;
+
+    fn context_from<'a>(ctx: &'a RawTypeContext, value: &'a Self) -> Self::Context<'a>;
 }

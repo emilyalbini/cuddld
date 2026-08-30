@@ -84,6 +84,8 @@ pub enum LoadError {
     LenNotMultipleOfEntrySize { len: u64, entry_len: u64 },
     #[display("no section present at address {f0:#x}")]
     NoSectionAtAddress(u64),
+    #[display("unsupported .eh_frame_hdr version: {f0}")]
+    BadEhFrameHdrVersion(u8),
 }
 
 #[derive(Debug, Error, Display)]
