@@ -8,7 +8,7 @@ use crate::{
     ElfSymbolDefinition, ElfSymbolVisibility, LoadError,
 };
 use cuddld_macros::{Display, Error};
-use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize};
+use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize, RawTypeContext};
 
 pub struct ElfDynamicReader<'reader, 'src> {
     reader: &'reader mut ElfReader<'src>,
@@ -129,13 +129,18 @@ impl<'reader, 'src> ElfDynamicReader<'reader, 'src> {
     }
 
     fn parse_symbol_count_from_gnu_hash(&mut self, gnu_hash_addr: u64) -> Result<u32, LoadError> {
+        let ctx = RawTypeContext::new(
+            self.reader.env().class,
+            self.reader.env().endian,
+            self.reader.env().abi,
+        );
+
         self.reader.cursor.seek_to(gnu_hash_addr)?;
         let header = self.reader.cursor.read_raw::<RawGnuHashHeader>()?;
 
-        self.reader.cursor.skip(
-            <u64 as RawTypeAsPointerSize>::size(self.reader.cursor.bits()) as u64
-                * header.bloom_count as u64,
-        )?;
+        self.reader
+            .cursor
+            .skip(<u64 as RawTypeAsPointerSize>::size(ctx) as u64 * header.bloom_count as u64)?;
 
         let mut max_chain = None;
         for _ in 0..header.buckets_count {
@@ -151,10 +156,9 @@ impl<'reader, 'src> ElfDynamicReader<'reader, 'src> {
         }
         let Some(max_chain) = max_chain else { return Ok(header.symbols_offset) };
 
-        self.reader.cursor.skip(
-            (max_chain - header.symbols_offset) as u64
-                * u32::size(self.reader.cursor.bits()) as u64,
-        )?;
+        self.reader
+            .cursor
+            .skip((max_chain - header.symbols_offset) as u64 * u32::size(ctx) as u64)?;
         let mut symbols_count = max_chain;
         loop {
             symbols_count += 1;

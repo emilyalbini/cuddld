@@ -9,6 +9,7 @@ use crate::repr::segments::Segments;
 use crate::repr::symbols::{SymbolId, Symbols};
 use cuddld_diagnostics::{DiagnosticContext, ObjectSpan};
 use cuddld_elf::{ElfEnvironment, ElfMachine, ElfX86Features2, ElfX86Isa};
+use cuddld_utils::raw_types::RawTypeContext;
 
 #[derive(Debug)]
 pub(crate) struct Object {
@@ -33,6 +34,10 @@ impl Object {
             ElfMachine::X86 => RelocationMode::Rel,
             ElfMachine::X86_64 => RelocationMode::Rela,
         }
+    }
+
+    pub(crate) fn raw_type_context(&self) -> RawTypeContext {
+        RawTypeContext::new(self.env.class, self.env.endian, self.env.abi)
     }
 }
 

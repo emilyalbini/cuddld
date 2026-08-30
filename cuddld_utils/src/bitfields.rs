@@ -1,7 +1,7 @@
+use crate::OsAbi;
 use crate::raw_types::{
     RawReadError, RawType, RawTypeAsPointerSize, RawTypeContext, RawWriteError,
 };
-use crate::{Bits, OsAbi};
 use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Copy)]
@@ -33,8 +33,8 @@ where
     T: Bitfield,
     T::Repr: RawType,
 {
-    fn size(bits: Bits) -> usize {
-        T::Repr::size(bits)
+    fn size(ctx: RawTypeContext) -> usize {
+        T::Repr::size(ctx)
     }
 
     fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
@@ -53,8 +53,8 @@ where
     T: Bitfield,
     T::Repr: RawTypeAsPointerSize,
 {
-    fn size(bits: Bits) -> usize {
-        T::Repr::size(bits)
+    fn size(ctx: RawTypeContext) -> usize {
+        T::Repr::size(ctx)
     }
 
     fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {

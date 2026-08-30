@@ -165,6 +165,8 @@ impl<'a> Writer<'a> {
     }
 
     fn write_section_headers(&mut self) -> Result<(), WriteError> {
+        let ctx = self.raw_type_context();
+
         for (id, section) in &self.object.sections {
             let type_ = match &section.content {
                 ElfSectionContent::Null => {
@@ -305,11 +307,9 @@ impl<'a> Writer<'a> {
                         deduplication: ElfDeduplication::ZeroTerminatedStrings,
                         ..
                     }) => 1,
-                    ElfSectionContent::SymbolTable(_) => {
-                        RawSymbol::size(self.object.env.class.into()) as _
-                    }
-                    ElfSectionContent::Rel(_) => RawRel::size(self.object.env.class.into()) as _,
-                    ElfSectionContent::Rela(_) => RawRela::size(self.object.env.class.into()) as _,
+                    ElfSectionContent::SymbolTable(_) => RawSymbol::size(ctx) as _,
+                    ElfSectionContent::Rel(_) => RawRel::size(ctx) as _,
+                    ElfSectionContent::Rela(_) => RawRela::size(ctx) as _,
                     _ => 0,
                 },
             })?;
@@ -630,7 +630,7 @@ impl<'a> Writer<'a> {
             let name = note.name();
             let name_size = u32::try_from(name.len()).map_err(|_| WriteError::NoteTooLong)? + 1;
             let value_size: u32 = note
-                .value_len(self.object.env.class)
+                .value_len(self.raw_type_context())
                 .try_into()
                 .map_err(|_| WriteError::NoteTooLong)?;
 
@@ -717,7 +717,11 @@ impl<'a> Writer<'a> {
     }
 
     fn raw_type_size<T: RawType>(&self) -> u16 {
-        T::size(self.object.env.class.into()) as _
+        T::size(self.raw_type_context()) as _
+    }
+
+    fn raw_type_context(&self) -> RawTypeContext {
+        RawTypeContext::new(self.object.env.class, self.object.env.endian, self.object.env.abi)
     }
 
     fn write_raw<T: RawType>(&mut self, value: T) -> Result<(), WriteError> {

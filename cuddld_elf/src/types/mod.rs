@@ -5,7 +5,7 @@ pub use self::string_table::ElfStringTable;
 use crate::ids::{ElfSectionId, ElfStringId, ElfSymbolId};
 use crate::raw::{RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawRel, RawRela, RawSymbol};
 use cuddld_macros::Bitfield;
-use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize};
+use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize, RawTypeContext};
 use cuddld_utils::{Bits, Endian, OsAbi};
 use std::collections::BTreeMap;
 use std::num::NonZeroU64;
@@ -111,33 +111,32 @@ pub enum ElfSectionContent {
 }
 
 impl ElfSectionContent {
-    pub fn content_size(&self, bits: ElfClass) -> usize {
-        let bits: Bits = bits.into();
+    pub fn content_size(&self, ctx: RawTypeContext) -> usize {
         match self {
             ElfSectionContent::Null => 0,
             ElfSectionContent::Program(p) => p.raw.len(),
             ElfSectionContent::Uninitialized(u) => u.len as usize,
-            ElfSectionContent::SymbolTable(s) => RawSymbol::size(bits) * s.symbols.len(),
+            ElfSectionContent::SymbolTable(s) => RawSymbol::size(ctx) * s.symbols.len(),
             ElfSectionContent::StringTable(s) => s.len(),
-            ElfSectionContent::Rel(r) => RawRel::size(bits) * r.relocations.len(),
-            ElfSectionContent::Rela(r) => RawRela::size(bits) * r.relocations.len(),
+            ElfSectionContent::Rel(r) => RawRel::size(ctx) * r.relocations.len(),
+            ElfSectionContent::Rela(r) => RawRela::size(ctx) * r.relocations.len(),
             ElfSectionContent::Group(g) => {
-                RawGroupFlags::size(bits) + u32::size(bits) * g.sections.len()
+                RawGroupFlags::size(ctx) + u32::size(ctx) * g.sections.len()
             }
             ElfSectionContent::Hash(h) => {
-                RawHashHeader::size(bits)
-                    + u32::size(bits) * h.buckets.len()
-                    + u32::size(bits) * h.chain.len()
+                RawHashHeader::size(ctx)
+                    + u32::size(ctx) * h.buckets.len()
+                    + u32::size(ctx) * h.chain.len()
             }
             ElfSectionContent::GnuHash(h) => {
-                let bloom_bits = <u64 as RawTypeAsPointerSize>::size(bits);
-                RawGnuHashHeader::size(bits)
-                    + bloom_bits * h.bloom.len()
-                    + u32::size(bits) * h.buckets.len()
-                    + u32::size(bits) * h.chain.len()
+                let bloom_ctx = <u64 as RawTypeAsPointerSize>::size(ctx);
+                RawGnuHashHeader::size(ctx)
+                    + bloom_ctx * h.bloom.len()
+                    + u32::size(ctx) * h.buckets.len()
+                    + u32::size(ctx) * h.chain.len()
             }
             ElfSectionContent::Dynamic(d) => {
-                let size = <u64 as RawTypeAsPointerSize>::size(bits) * 2;
+                let size = <u64 as RawTypeAsPointerSize>::size(ctx) * 2;
                 d.directives.len() * size
             }
             ElfSectionContent::Note(_) => unimplemented!(),
@@ -192,15 +191,15 @@ impl ElfNote {
         }
     }
 
-    pub fn value_len(&self, class: ElfClass) -> usize {
+    pub fn value_len(&self, ctx: RawTypeContext) -> usize {
         match self {
             ElfNote::GnuProperties(properties) => properties
                 .iter()
                 .map(|p| {
-                    let mut len = u32::size(class.into()) * 2 + p.value_len(class);
-                    let align_to = match class {
-                        ElfClass::Elf32 => 4,
-                        ElfClass::Elf64 => 8,
+                    let mut len = u32::size(ctx) * 2 + p.value_len(ctx);
+                    let align_to = match ctx.bits {
+                        Bits::Bits32 => 4,
+                        Bits::Bits64 => 8,
                     };
                     if len % align_to != 0 {
                         len += align_to - len % align_to;
@@ -221,10 +220,10 @@ pub enum ElfGnuProperty {
 }
 
 impl ElfGnuProperty {
-    fn value_len(&self, class: ElfClass) -> usize {
+    fn value_len(&self, ctx: RawTypeContext) -> usize {
         match self {
-            ElfGnuProperty::X86Features2Used(_) => ElfX86Features2::size(class.into()),
-            ElfGnuProperty::X86IsaUsed(_) => ElfX86Isa::size(class.into()),
+            ElfGnuProperty::X86Features2Used(_) => ElfX86Features2::size(ctx),
+            ElfGnuProperty::X86IsaUsed(_) => ElfX86Isa::size(ctx),
             ElfGnuProperty::Unknown(unknown) => unknown.data.len(),
         }
     }

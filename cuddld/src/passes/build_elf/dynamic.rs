@@ -5,7 +5,6 @@ use crate::repr::sections::{DynamicSection, SectionId, UpcomingStringId};
 use cuddld_elf::raw::{RawRel, RawRela, RawSymbol};
 use cuddld_elf::writer::layout::PartMemory;
 use cuddld_elf::{ElfDynamic, ElfDynamicDirective, ElfPLTRelocationsMode, ElfSectionContent};
-use cuddld_utils::Bits;
 use cuddld_utils::ints::ExtractNumber;
 use cuddld_utils::raw_types::RawType;
 
@@ -13,8 +12,6 @@ pub(super) fn build_dynamic_section(
     builder: &mut ElfBuilder,
     dynamic: &DynamicSection,
 ) -> ElfSectionContent {
-    let bits: Bits = builder.object.env.class.into();
-
     let mut string_table_id = None;
     for entry in builder.object.dynamic_entries.iter() {
         match entry {
@@ -47,7 +44,7 @@ pub(super) fn build_dynamic_section(
                 directives
                     .push(ElfDynamicDirective::SymbolTable { address: mem.address.extract() });
                 directives.push(ElfDynamicDirective::SymbolTableEntrySize {
-                    bytes: RawSymbol::size(bits) as _,
+                    bytes: RawSymbol::size(builder.object.raw_type_context()) as _,
                 });
             }
             DynamicEntry::Hash(id) => {
@@ -66,7 +63,7 @@ pub(super) fn build_dynamic_section(
                             .push(ElfDynamicDirective::Rel { address: mem.address.extract() });
                         directives.push(ElfDynamicDirective::RelSize { bytes: mem.len.extract() });
                         directives.push(ElfDynamicDirective::RelEntrySize {
-                            bytes: RawRel::size(bits) as _,
+                            bytes: RawRel::size(builder.object.raw_type_context()) as _,
                         });
                     }
                     RelocationMode::Rela => {
@@ -74,7 +71,7 @@ pub(super) fn build_dynamic_section(
                             .push(ElfDynamicDirective::Rela { address: mem.address.extract() });
                         directives.push(ElfDynamicDirective::RelaSize { bytes: mem.len.extract() });
                         directives.push(ElfDynamicDirective::RelaEntrySize {
-                            bytes: RawRela::size(bits) as _,
+                            bytes: RawRela::size(builder.object.raw_type_context()) as _,
                         });
                     }
                 }

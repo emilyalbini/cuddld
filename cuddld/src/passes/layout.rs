@@ -7,11 +7,11 @@ use crate::repr::relocations::RelocationMode;
 use crate::repr::sections::{Section, SectionContent, SectionId};
 use crate::repr::segments::{SegmentContent, SegmentType};
 use crate::repr::symbols::SymbolVisibility;
-use cuddld_elf::ElfClass;
 use cuddld_elf::writer::layout::{
     Layout, LayoutDetailsGnuHash, LayoutDetailsHash, LayoutDetailsNote, LayoutDetailsProvider,
     LayoutError, LayoutPartsGroup, Part,
 };
+use cuddld_elf::{ElfABI, ElfClass, ElfEndian};
 use cuddld_utils::ints::{Address, ExtractNumber};
 use std::collections::BTreeSet;
 
@@ -37,6 +37,14 @@ macro_rules! cast_section {
 impl LayoutDetailsProvider<SectionId> for Object {
     fn class(&self) -> ElfClass {
         self.env.class
+    }
+
+    fn endian(&self) -> ElfEndian {
+        self.env.endian
+    }
+
+    fn abi(&self) -> ElfABI {
+        self.env.abi
     }
 
     fn sections_count(&self) -> usize {
@@ -138,7 +146,7 @@ impl LayoutDetailsProvider<SectionId> for Object {
             .iter()
             .map(|note| LayoutDetailsNote {
                 name_len: note.name().len(),
-                value_len: note.value_len(self.env.class),
+                value_len: note.value_len(self.raw_type_context()),
             })
             .collect()
     }

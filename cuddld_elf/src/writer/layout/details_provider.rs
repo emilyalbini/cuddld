@@ -1,10 +1,15 @@
 use crate::ids::ElfSectionId;
 use crate::writer::LayoutError;
 use crate::writer::layout::Part;
-use crate::{ElfClass, ElfObject, ElfSection, ElfSectionContent, ElfSegmentType};
+use crate::{
+    ElfABI, ElfClass, ElfEndian, ElfObject, ElfSection, ElfSectionContent, ElfSegmentType,
+};
+use cuddld_utils::raw_types::RawTypeContext;
 
 pub trait LayoutDetailsProvider<S: Copy> {
     fn class(&self) -> ElfClass;
+    fn endian(&self) -> ElfEndian;
+    fn abi(&self) -> ElfABI;
 
     fn sections_count(&self) -> usize;
     fn segments_count(&self) -> usize;
@@ -22,6 +27,10 @@ pub trait LayoutDetailsProvider<S: Copy> {
 
     fn parts_for_sections(&self) -> Result<Vec<Part<S>>, LayoutError>;
     fn parts_groups(&self) -> Result<Vec<LayoutPartsGroup<S>>, LayoutError>;
+
+    fn raw_type_context(&self) -> RawTypeContext {
+        RawTypeContext::new(self.class(), self.endian(), self.abi())
+    }
 }
 
 pub struct LayoutDetailsHash {
@@ -58,6 +67,14 @@ macro_rules! cast_section {
 impl LayoutDetailsProvider<ElfSectionId> for ElfObject {
     fn class(&self) -> ElfClass {
         self.env.class
+    }
+
+    fn endian(&self) -> ElfEndian {
+        self.env.endian
+    }
+
+    fn abi(&self) -> ElfABI {
+        self.env.abi
     }
 
     fn sections_count(&self) -> usize {
@@ -121,7 +138,7 @@ impl LayoutDetailsProvider<ElfSectionId> for ElfObject {
             .iter()
             .map(|note| LayoutDetailsNote {
                 name_len: note.name().len(),
-                value_len: note.value_len(self.env.class),
+                value_len: note.value_len(self.raw_type_context()),
             })
             .collect()
     }

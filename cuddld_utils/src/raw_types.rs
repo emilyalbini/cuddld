@@ -16,14 +16,14 @@ impl RawTypeContext {
 }
 
 pub trait RawType: Sized {
-    fn size(bits: Bits) -> usize;
+    fn size(ctx: RawTypeContext) -> usize;
     fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
     fn write(&self, ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
 }
 
 impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
-    fn size(bits: Bits) -> usize {
-        T::size(bits) * N
+    fn size(ctx: RawTypeContext) -> usize {
+        T::size(ctx) * N
     }
 
     fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
@@ -49,7 +49,7 @@ macro_rules! impl_rawtype_for_int {
     ($($int:ty),*) => {
         $(
             impl RawType for $int {
-                fn size(_bits: Bits) -> usize {
+                fn size(_ctx: RawTypeContext) -> usize {
                     std::mem::size_of::<$int>()
                 }
 
@@ -78,7 +78,7 @@ impl_rawtype_for_int!(u8, u16, u32, u64, i8, i16, i32, i64);
 pub struct RawPadding<const N: usize>;
 
 impl<const N: usize> RawType for RawPadding<N> {
-    fn size(_bits: Bits) -> usize {
+    fn size(_ctx: RawTypeContext) -> usize {
         N
     }
 
@@ -94,7 +94,7 @@ impl<const N: usize> RawType for RawPadding<N> {
 }
 
 pub trait RawTypeAsPointerSize: Sized {
-    fn size(bits: Bits) -> usize;
+    fn size(ctx: RawTypeContext) -> usize;
     fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
     fn write(&self, ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
 }
@@ -103,10 +103,10 @@ macro_rules! impl_rawtypeaspointersize_for_int {
     ($($int:ident or $smallint:ident),*) => {
         $(
             impl RawTypeAsPointerSize for $int {
-                fn size(bits: Bits) -> usize {
-                    match bits {
-                        Bits::Bits32 => <$smallint as RawType>::size(bits),
-                        Bits::Bits64 => <$int as RawType>::size(bits),
+                fn size(ctx: RawTypeContext) -> usize {
+                    match ctx.bits {
+                        Bits::Bits32 => <$smallint as RawType>::size(ctx),
+                        Bits::Bits64 => <$int as RawType>::size(ctx),
                     }
                 }
 

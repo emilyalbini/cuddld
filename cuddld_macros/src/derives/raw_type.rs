@@ -24,11 +24,11 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
 fn fn_size(fields: &[Field<'_>]) -> TokenStream {
     let mut addends = Vec::new();
     for Field { field_ty, trait_ty, .. } in fields {
-        addends.push(quote! { + <#field_ty as #trait_ty>::size(bits) });
+        addends.push(quote! { + <#field_ty as #trait_ty>::size(ctx) });
     }
 
     quote! {
-        fn size(bits: cuddld_utils::Bits) -> usize {
+        fn size(ctx: cuddld_utils::raw_types::RawTypeContext) -> usize {
             0 #addends
         }
     }
