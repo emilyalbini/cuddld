@@ -28,7 +28,7 @@ fn fn_size(fields: &[Field<'_>]) -> TokenStream {
     }
 
     quote! {
-        fn size(ctx: cuddld_utils::raw_types::RawTypeContext) -> usize {
+        fn size(ctx: &cuddld_utils::raw_types::RawTypeContext) -> usize {
             0 #addends
         }
     }
@@ -52,7 +52,7 @@ fn fn_read(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
 
     quote! {
         fn read(
-            ctx: cuddld_utils::raw_types::RawTypeContext,
+            ctx: &cuddld_utils::raw_types::RawTypeContext,
             reader: &mut dyn std::io::Read,
         ) -> Result<Self, cuddld_utils::raw_types::RawReadError> {
             match ctx.bits {
@@ -80,7 +80,7 @@ fn fn_write(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
     quote! {
         fn write(
             &self,
-            ctx: cuddld_utils::raw_types::RawTypeContext,
+            ctx: &cuddld_utils::raw_types::RawTypeContext,
             writer: &mut dyn std::io::Write,
         ) -> Result<(), cuddld_utils::raw_types::RawWriteError> {
             match ctx.bits {

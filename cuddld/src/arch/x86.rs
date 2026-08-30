@@ -35,8 +35,8 @@ pub(crate) fn generate_plt(
     debug_assert!(codegen.len() % 16 == 0);
 
     let reloc_size: i32 = match object.relocation_mode() {
-        RelocationMode::Rel => RawRel::size(object.raw_type_context()) as _,
-        RelocationMode::Rela => RawRela::size(object.raw_type_context()) as _,
+        RelocationMode::Rel => RawRel::size(&object.raw_type_context()) as _,
+        RelocationMode::Rela => RawRela::size(&object.raw_type_context()) as _,
     };
 
     let mut extra_got_plt_relocations = Vec::new();

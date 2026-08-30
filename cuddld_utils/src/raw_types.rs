@@ -16,17 +16,17 @@ impl RawTypeContext {
 }
 
 pub trait RawType: Sized {
-    fn size(ctx: RawTypeContext) -> usize;
-    fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
-    fn write(&self, ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
+    fn size(ctx: &RawTypeContext) -> usize;
+    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
+    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
 }
 
 impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
-    fn size(ctx: RawTypeContext) -> usize {
+    fn size(ctx: &RawTypeContext) -> usize {
         T::size(ctx) * N
     }
 
-    fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
+    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let mut items = Vec::new();
         for _ in 0..N {
             items.push(RawReadError::wrap_type::<Self, _>(T::read(ctx, reader))?);
@@ -37,7 +37,7 @@ impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
         }
     }
 
-    fn write(&self, ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
+    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
         for item in self {
             RawWriteError::wrap_type::<Self, _>(T::write(item, ctx, writer))?;
         }
@@ -49,11 +49,11 @@ macro_rules! impl_rawtype_for_int {
     ($($int:ty),*) => {
         $(
             impl RawType for $int {
-                fn size(_ctx: RawTypeContext) -> usize {
+                fn size(_ctx: &RawTypeContext) -> usize {
                     std::mem::size_of::<$int>()
                 }
 
-                fn read(ctx: RawTypeContext, reader: &mut dyn std::io::Read) -> Result<Self, RawReadError> {
+                fn read(ctx: &RawTypeContext, reader: &mut dyn std::io::Read) -> Result<Self, RawReadError> {
                     let mut buf = [0; std::mem::size_of::<$int>()];
                     reader.read_exact(&mut buf).map_err(RawReadError::io::<$int>)?;
                     Ok(match ctx.endian {
@@ -62,7 +62,7 @@ macro_rules! impl_rawtype_for_int {
                     })
                 }
 
-                fn write(&self, ctx: RawTypeContext, writer: &mut dyn std::io::Write) -> Result<(), RawWriteError> {
+                fn write(&self, ctx: &RawTypeContext, writer: &mut dyn std::io::Write) -> Result<(), RawWriteError> {
                     writer.write_all(&match ctx.endian {
                         Endian::Big => self.to_be_bytes(),
                         Endian::Little => self.to_le_bytes(),
@@ -78,46 +78,46 @@ impl_rawtype_for_int!(u8, u16, u32, u64, i8, i16, i32, i64);
 pub struct RawPadding<const N: usize>;
 
 impl<const N: usize> RawType for RawPadding<N> {
-    fn size(_ctx: RawTypeContext) -> usize {
+    fn size(_ctx: &RawTypeContext) -> usize {
         N
     }
 
-    fn read(_ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
+    fn read(_ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let mut buf = [0; N];
         reader.read_exact(&mut buf).map_err(RawReadError::io::<Self>)?;
         Ok(Self)
     }
 
-    fn write(&self, _ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
+    fn write(&self, _ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
         writer.write_all(&[0; N]).map_err(RawWriteError::io::<Self>)
     }
 }
 
 pub trait RawTypeAsPointerSize: Sized {
-    fn size(ctx: RawTypeContext) -> usize;
-    fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
-    fn write(&self, ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
+    fn size(ctx: &RawTypeContext) -> usize;
+    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
+    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
 }
 
 macro_rules! impl_rawtypeaspointersize_for_int {
     ($($int:ident or $smallint:ident),*) => {
         $(
             impl RawTypeAsPointerSize for $int {
-                fn size(ctx: RawTypeContext) -> usize {
+                fn size(ctx: &RawTypeContext) -> usize {
                     match ctx.bits {
                         Bits::Bits32 => <$smallint as RawType>::size(ctx),
                         Bits::Bits64 => <$int as RawType>::size(ctx),
                     }
                 }
 
-                fn read(ctx: RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
+                fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
                     match ctx.bits {
                         Bits::Bits32 => <$smallint as RawType>::read(ctx, reader).map(|v| v as _),
                         Bits::Bits64 => <$int as RawType>::read(ctx, reader),
                     }
                 }
 
-                fn write(&self, ctx: RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
+                fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
                     match ctx.bits {
                         Bits::Bits32 => <$smallint as RawType>::write(&(*self as _), ctx, writer),
                         Bits::Bits64 => <$int as RawType>::write(self, ctx, writer),

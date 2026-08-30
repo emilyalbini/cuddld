@@ -140,7 +140,7 @@ impl<'reader, 'src> ElfDynamicReader<'reader, 'src> {
 
         self.reader
             .cursor
-            .skip(<u64 as RawTypeAsPointerSize>::size(ctx) as u64 * header.bloom_count as u64)?;
+            .skip(<u64 as RawTypeAsPointerSize>::size(&ctx) as u64 * header.bloom_count as u64)?;
 
         let mut max_chain = None;
         for _ in 0..header.buckets_count {
@@ -158,7 +158,7 @@ impl<'reader, 'src> ElfDynamicReader<'reader, 'src> {
 
         self.reader
             .cursor
-            .skip((max_chain - header.symbols_offset) as u64 * u32::size(ctx) as u64)?;
+            .skip((max_chain - header.symbols_offset) as u64 * u32::size(&ctx) as u64)?;
         let mut symbols_count = max_chain;
         loop {
             symbols_count += 1;

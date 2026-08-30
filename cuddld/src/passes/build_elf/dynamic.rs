@@ -44,7 +44,7 @@ pub(super) fn build_dynamic_section(
                 directives
                     .push(ElfDynamicDirective::SymbolTable { address: mem.address.extract() });
                 directives.push(ElfDynamicDirective::SymbolTableEntrySize {
-                    bytes: RawSymbol::size(builder.object.raw_type_context()) as _,
+                    bytes: RawSymbol::size(&builder.object.raw_type_context()) as _,
                 });
             }
             DynamicEntry::Hash(id) => {
@@ -63,7 +63,7 @@ pub(super) fn build_dynamic_section(
                             .push(ElfDynamicDirective::Rel { address: mem.address.extract() });
                         directives.push(ElfDynamicDirective::RelSize { bytes: mem.len.extract() });
                         directives.push(ElfDynamicDirective::RelEntrySize {
-                            bytes: RawRel::size(builder.object.raw_type_context()) as _,
+                            bytes: RawRel::size(&builder.object.raw_type_context()) as _,
                         });
                     }
                     RelocationMode::Rela => {
@@ -71,7 +71,7 @@ pub(super) fn build_dynamic_section(
                             .push(ElfDynamicDirective::Rela { address: mem.address.extract() });
                         directives.push(ElfDynamicDirective::RelaSize { bytes: mem.len.extract() });
                         directives.push(ElfDynamicDirective::RelaEntrySize {
-                            bytes: RawRela::size(builder.object.raw_type_context()) as _,
+                            bytes: RawRela::size(&builder.object.raw_type_context()) as _,
                         });
                     }
                 }

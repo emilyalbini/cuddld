@@ -111,7 +111,7 @@ pub enum ElfSectionContent {
 }
 
 impl ElfSectionContent {
-    pub fn content_size(&self, ctx: RawTypeContext) -> usize {
+    pub fn content_size(&self, ctx: &RawTypeContext) -> usize {
         match self {
             ElfSectionContent::Null => 0,
             ElfSectionContent::Program(p) => p.raw.len(),
@@ -191,7 +191,7 @@ impl ElfNote {
         }
     }
 
-    pub fn value_len(&self, ctx: RawTypeContext) -> usize {
+    pub fn value_len(&self, ctx: &RawTypeContext) -> usize {
         match self {
             ElfNote::GnuProperties(properties) => properties
                 .iter()
@@ -220,7 +220,7 @@ pub enum ElfGnuProperty {
 }
 
 impl ElfGnuProperty {
-    fn value_len(&self, ctx: RawTypeContext) -> usize {
+    fn value_len(&self, ctx: &RawTypeContext) -> usize {
         match self {
             ElfGnuProperty::X86Features2Used(_) => ElfX86Features2::size(ctx),
             ElfGnuProperty::X86IsaUsed(_) => ElfX86Isa::size(ctx),

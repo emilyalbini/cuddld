@@ -138,7 +138,7 @@ impl LayoutDetailsProvider<ElfSectionId> for ElfObject {
             .iter()
             .map(|note| LayoutDetailsNote {
                 name_len: note.name().len(),
-                value_len: note.value_len(self.raw_type_context()),
+                value_len: note.value_len(&self.raw_type_context()),
             })
             .collect()
     }

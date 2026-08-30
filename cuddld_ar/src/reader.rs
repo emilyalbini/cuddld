@@ -157,11 +157,11 @@ impl<R: BufRead + Seek> ArReader<R> {
         mut raw: &[u8],
     ) -> Result<ArSymbolTable, ArSymbolTableReadError> {
         let rawctx = RawTypeContext::new(Bits::Bits64, Endian::Big, OsAbi::SystemV);
-        let count = u32::read(rawctx, &mut raw)?;
+        let count = u32::read(&rawctx, &mut raw)?;
 
         let mut offsets = Vec::new();
         for _ in 0..count {
-            offsets.push(u32::read(rawctx, &mut raw)?);
+            offsets.push(u32::read(&rawctx, &mut raw)?);
         }
 
         let mut symbols = BTreeMap::new();
@@ -204,7 +204,7 @@ impl<R: BufRead + Seek> ArReader<R> {
         // There are no types we need to read that depend on the bits of the processor, so we just
         // pick any of them to parse the raw types. The binary part of AR archives is also encoded
         // in big endian, so treat all raw data as big.
-        Ok(T::read(RawTypeContext::new(Bits::Bits64, Endian::Big, OsAbi::SystemV), &mut self.read)?)
+        Ok(T::read(&RawTypeContext::new(Bits::Bits64, Endian::Big, OsAbi::SystemV), &mut self.read)?)
     }
 
     fn align(&mut self) -> Result<(), ArReadError> {

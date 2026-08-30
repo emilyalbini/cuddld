@@ -35,7 +35,7 @@ impl<'a> ReadCursor<'a> {
     }
 
     pub(super) fn read_raw<T: RawType>(&mut self) -> Result<T, LoadError> {
-        Ok(T::read(self.raw_ctx, self)?)
+        Ok(T::read(&self.raw_ctx, self.reader.get())?)
     }
 
     pub(super) fn align_with_padding(&mut self, align: u64) -> Result<(), LoadError> {

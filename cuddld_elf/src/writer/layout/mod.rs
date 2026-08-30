@@ -176,30 +176,30 @@ impl<S: Ord + Eq + Clone + Copy> LayoutBuilder<'_, S> {
 fn part_len<S: Copy>(details: &dyn LayoutDetailsProvider<S>, part: Part<S>) -> Length {
     let ctx = details.raw_type_context();
     match part {
-        Part::Header => RawIdentification::size(ctx) + RawHeader::size(ctx),
+        Part::Header => RawIdentification::size(&ctx) + RawHeader::size(&ctx),
 
-        Part::SectionHeaders => RawSectionHeader::size(ctx) * details.sections_count(),
-        Part::ProgramHeaders => RawProgramHeader::size(ctx) * details.segments_count(),
+        Part::SectionHeaders => RawSectionHeader::size(&ctx) * details.sections_count(),
+        Part::ProgramHeaders => RawProgramHeader::size(&ctx) * details.segments_count(),
 
         Part::ProgramSection(id) => details.program_section_len(id),
         Part::UninitializedSection(id) => details.uninitialized_section_len(id),
         Part::StringTable(id) => details.string_table_len(id),
 
-        Part::SymbolTable(id) => RawSymbol::size(ctx) * details.symbols_in_table_count(id),
-        Part::Rel(id) => RawRel::size(ctx) * details.relocations_in_table_count(id),
-        Part::Rela(id) => RawRela::size(ctx) * details.relocations_in_table_count(id),
+        Part::SymbolTable(id) => RawSymbol::size(&ctx) * details.symbols_in_table_count(id),
+        Part::Rel(id) => RawRel::size(&ctx) * details.relocations_in_table_count(id),
+        Part::Rela(id) => RawRela::size(&ctx) * details.relocations_in_table_count(id),
 
         Part::Hash(id) => {
             let hash = details.hash_details(id);
-            RawHashHeader::size(ctx) + hash.buckets * u32::size(ctx) + hash.chain * u32::size(ctx)
+            RawHashHeader::size(&ctx) + hash.buckets * u32::size(&ctx) + hash.chain * u32::size(&ctx)
         }
 
         Part::GnuHash(id) => {
             let gnu_hash = details.gnu_hash_details(id);
-            RawGnuHashHeader::size(ctx)
-                + gnu_hash.bloom * <u64 as RawTypeAsPointerSize>::size(ctx)
-                + gnu_hash.buckets * u32::size(ctx)
-                + gnu_hash.chain * u32::size(ctx)
+            RawGnuHashHeader::size(&ctx)
+                + gnu_hash.bloom * <u64 as RawTypeAsPointerSize>::size(&ctx)
+                + gnu_hash.buckets * u32::size(&ctx)
+                + gnu_hash.chain * u32::size(&ctx)
         }
 
         Part::Note(id) => {
@@ -209,7 +209,7 @@ fn part_len<S: Copy>(details: &dyn LayoutDetailsProvider<S>, part: Part<S>) -> L
                 .note_details(id)
                 .iter()
                 .map(|note| {
-                    RawNoteHeader::size(ctx)
+                    RawNoteHeader::size(&ctx)
                         + align(note.name_len + 1 /* Null terminator */)
                         + align(note.value_len)
                 })
@@ -217,10 +217,10 @@ fn part_len<S: Copy>(details: &dyn LayoutDetailsProvider<S>, part: Part<S>) -> L
         }
 
         Part::Group(id) => {
-            RawGroupFlags::size(ctx) + u32::size(ctx) * details.sections_in_group_count(id)
+            RawGroupFlags::size(&ctx) + u32::size(&ctx) * details.sections_in_group_count(id)
         }
         Part::Dynamic(id) => {
-            <u64 as RawTypeAsPointerSize>::size(ctx) * 2 * details.dynamic_directives_count(id)
+            <u64 as RawTypeAsPointerSize>::size(&ctx) * 2 * details.dynamic_directives_count(id)
         }
 
         Part::Padding { len, .. } => len,
