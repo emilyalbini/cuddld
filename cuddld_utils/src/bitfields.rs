@@ -33,10 +33,6 @@ where
     T: Bitfield,
     T::Repr: RawType,
 {
-    fn zero() -> Self {
-        <T as Bitfield>::empty()
-    }
-
     fn size(bits: Bits) -> usize {
         T::Repr::size(bits)
     }
@@ -57,10 +53,6 @@ where
     T: Bitfield,
     T::Repr: RawTypeAsPointerSize,
 {
-    fn zero() -> Self {
-        <T as Bitfield>::empty()
-    }
-
     fn size(bits: Bits) -> usize {
         T::Repr::size(bits)
     }

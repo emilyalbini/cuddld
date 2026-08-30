@@ -7,10 +7,6 @@ pub(crate) struct RawString<const LEN: usize> {
 }
 
 impl<const LEN: usize> RawType for RawString<LEN> {
-    fn zero() -> Self {
-        Self { value: " ".repeat(LEN) }
-    }
-
     fn size(_bits: Bits) -> usize {
         LEN
     }
@@ -35,10 +31,6 @@ pub(crate) struct RawStringAsU64<const LEN: usize, const RADIX: u32> {
 }
 
 impl<const LEN: usize, const RADIX: u32> RawType for RawStringAsU64<LEN, RADIX> {
-    fn zero() -> Self {
-        Self { value: 0 }
-    }
-
     fn size(bits: Bits) -> usize {
         RawString::<LEN>::size(bits)
     }

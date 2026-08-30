@@ -14,24 +14,11 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
         &Item::Struct(parsed.clone()),
         Some("cuddld_utils::raw_types::RawType"),
         quote! {
-            #{ fn_zero(&fields32) }
             #{ fn_size(&fields32) }
             #{ fn_read(&fields32, &fields64) }
             #{ fn_write(&fields32, &fields64) }
         },
     ))
-}
-
-fn fn_zero(fields: &[Field<'_>]) -> TokenStream {
-    let mut initializers = Vec::new();
-    for Field { name, field_ty, trait_ty } in fields {
-        initializers.push(quote! { #name: <#field_ty as #trait_ty>::zero(), });
-    }
-    quote! {
-        fn zero() -> Self {
-            Self { #initializers }
-        }
-    }
 }
 
 fn fn_size(fields: &[Field<'_>]) -> TokenStream {

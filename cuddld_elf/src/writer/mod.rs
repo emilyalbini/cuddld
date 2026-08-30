@@ -153,7 +153,7 @@ impl<'a> Writer<'a> {
                 .unwrap()
                 .offset
                 .extract() as _,
-            flags: RawHeaderFlags::zero(),
+            flags: RawHeaderFlags::empty(),
             elf_header_size: self.raw_type_size::<RawIdentification>()
                 + self.raw_type_size::<RawHeader>(),
             program_header_size: self.raw_type_size::<RawProgramHeader>(),
@@ -168,7 +168,18 @@ impl<'a> Writer<'a> {
         for (id, section) in &self.object.sections {
             let type_ = match &section.content {
                 ElfSectionContent::Null => {
-                    self.write_raw(RawSectionHeader::zero())?;
+                    self.write_raw(RawSectionHeader {
+                        name_offset: 0,
+                        type_: 0,
+                        flags: RawSectionHeaderFlags::empty(),
+                        memory_address: 0,
+                        offset: 0,
+                        size: 0,
+                        link: 0,
+                        info: 0,
+                        addr_align: 0,
+                        entries_size: 0,
+                    })?;
                     continue;
                 }
 
@@ -218,9 +229,9 @@ impl<'a> Writer<'a> {
                     flags
                 }
                 ElfSectionContent::Rel(_) | ElfSectionContent::Rela(_) => {
-                    RawSectionHeaderFlags { info_link: true, ..RawSectionHeaderFlags::zero() }
+                    RawSectionHeaderFlags { info_link: true, ..RawSectionHeaderFlags::empty() }
                 }
-                _ => RawSectionHeaderFlags::zero(),
+                _ => RawSectionHeaderFlags::empty(),
             };
             if section.part_of_group {
                 flags.group = true;
@@ -701,7 +712,7 @@ impl<'a> Writer<'a> {
             write: perms.write,
             alloc: perms.read,
             exec: perms.execute,
-            ..RawSectionHeaderFlags::zero()
+            ..RawSectionHeaderFlags::empty()
         }
     }
 
