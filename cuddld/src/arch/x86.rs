@@ -9,7 +9,7 @@ use crate::utils::x86_codegen::{
 };
 use cuddld_elf::raw::{RawRel, RawRela};
 use cuddld_utils::ints::ExtractNumber;
-use cuddld_utils::raw_types::RawType;
+use cuddld_utils::raw_types::SizedRawType;
 use std::collections::BTreeMap;
 
 pub(crate) fn generate_plt(

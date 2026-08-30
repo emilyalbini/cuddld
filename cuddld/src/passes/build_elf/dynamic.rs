@@ -6,7 +6,7 @@ use cuddld_elf::raw::{RawRel, RawRela, RawSymbol};
 use cuddld_elf::writer::layout::PartMemory;
 use cuddld_elf::{ElfDynamic, ElfDynamicDirective, ElfPLTRelocationsMode, ElfSectionContent};
 use cuddld_utils::ints::ExtractNumber;
-use cuddld_utils::raw_types::RawType;
+use cuddld_utils::raw_types::SizedRawType;
 
 pub(super) fn build_dynamic_section(
     builder: &mut ElfBuilder,

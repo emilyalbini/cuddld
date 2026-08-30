@@ -20,7 +20,7 @@ use crate::{
 };
 use cuddld_utils::bitfields::Bitfield;
 use cuddld_utils::ints::ExtractNumber;
-use cuddld_utils::raw_types::{RawPadding, RawType, RawTypeContext};
+use cuddld_utils::raw_types::{RawPadding, RawType, SizedRawType, RawTypeContext};
 use std::collections::BTreeMap;
 use std::io::Write;
 
@@ -714,7 +714,7 @@ impl<'a> Writer<'a> {
         }
     }
 
-    fn raw_type_size<T: RawType>(&self) -> u16 {
+    fn raw_type_size<T: SizedRawType>(&self) -> u16 {
         T::size(&self.raw_ctx) as _
     }
 

@@ -16,7 +16,7 @@ use cuddld_utils::ints::ExtractNumber;
 use cuddld_utils::ints::Length;
 use cuddld_utils::ints::Offset;
 use cuddld_utils::ints::OutOfBoundsError;
-use cuddld_utils::raw_types::{PointerSize, RawType};
+use cuddld_utils::raw_types::{PointerSize, SizedRawType};
 use std::collections::BTreeMap;
 
 #[derive(Debug)]

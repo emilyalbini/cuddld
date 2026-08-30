@@ -1,6 +1,6 @@
 use crate::OsAbi;
 use crate::raw_types::{
-    PointerSize, RawReadError, RawType, RawTypeContext, RawWriteError,
+    PointerSize, RawReadError, RawType, RawTypeContext, RawWriteError, SizedRawType,
 };
 use std::io::{Read, Write};
 
@@ -46,10 +46,6 @@ where
     T::Repr: RawType<C>,
     BitfieldContext: for<'a> From<&'a C>,
 {
-    fn size(ctx: &C) -> usize {
-        T::Repr::size(ctx)
-    }
-
     fn read(ctx: &C, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let raw = RawReadError::wrap_type::<T, _>(<T::Repr as RawType<_>>::read(ctx, reader))?;
         <T as Bitfield>::read(raw, ctx.into()).map_err(RawReadError::bitfield::<T>)
@@ -58,6 +54,16 @@ where
     fn write(&self, ctx: &C, writer: &mut dyn Write) -> Result<(), RawWriteError> {
         let raw = <T as Bitfield>::write(self, ctx.into());
         RawWriteError::wrap_type::<Self, _>(<T::Repr as RawType<_>>::write(&raw, ctx, writer))
+    }
+}
+
+impl<T, C> SizedRawType<C> for T
+where
+    T: Bitfield,
+    T::Repr: SizedRawType<C>,
+{
+    fn size(ctx: &C) -> usize {
+        T::Repr::size(ctx)
     }
 }
 

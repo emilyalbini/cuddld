@@ -10,15 +10,27 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
     let fields32 = prepare_field_list(&parsed, true)?;
     let fields64 = prepare_field_list(&parsed, false)?;
 
-    Ok(generate_impl_for(
+    let raw_type = generate_impl_for(
         &Item::Struct(parsed.clone()),
         Some("cuddld_utils::raw_types::RawType"),
         quote! {
-            #{ fn_size(&fields32) }
             #{ fn_read(&fields32, &fields64) }
             #{ fn_write(&fields32, &fields64) }
         },
-    ))
+    );
+
+    let sized_raw_type = generate_impl_for(
+        &Item::Struct(parsed.clone()),
+        Some("cuddld_utils::raw_types::SizedRawType"),
+        quote! {
+            #{ fn_size(&fields32) }
+        },
+    );
+
+    Ok(quote! {
+        #raw_type
+        #sized_raw_type
+    })
 }
 
 fn fn_size(fields: &[Field<'_>]) -> TokenStream {
@@ -28,7 +40,7 @@ fn fn_size(fields: &[Field<'_>]) -> TokenStream {
             Ctx::Default => quote!(ctx),
             Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
         };
-        addends.push(quote! { + <#field_ty as cuddld_utils::raw_types::RawType<_>>::size(#ctx) });
+        addends.push(quote! { + <#field_ty as cuddld_utils::raw_types::SizedRawType<_>>::size(#ctx) });
     }
 
     quote! {

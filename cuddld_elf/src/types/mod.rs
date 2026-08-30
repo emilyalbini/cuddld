@@ -5,7 +5,7 @@ pub use self::string_table::ElfStringTable;
 use crate::ids::{ElfSectionId, ElfStringId, ElfSymbolId};
 use crate::raw::{RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawRel, RawRela, RawSymbol};
 use cuddld_macros::Bitfield;
-use cuddld_utils::raw_types::{PointerSize, RawType, RawTypeContext};
+use cuddld_utils::raw_types::{PointerSize, SizedRawType, RawTypeContext};
 use cuddld_utils::{Bits, Endian, OsAbi};
 use std::collections::BTreeMap;
 use std::num::NonZeroU64;

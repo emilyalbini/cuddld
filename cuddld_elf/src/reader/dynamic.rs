@@ -8,7 +8,7 @@ use crate::{
     ElfSymbolDefinition, ElfSymbolVisibility, LoadError,
 };
 use cuddld_macros::{Display, Error};
-use cuddld_utils::raw_types::{PointerSize, RawType, RawTypeContext};
+use cuddld_utils::raw_types::{PointerSize, SizedRawType, RawTypeContext};
 
 pub struct ElfDynamicReader<'reader, 'src> {
     reader: &'reader mut ElfReader<'src>,

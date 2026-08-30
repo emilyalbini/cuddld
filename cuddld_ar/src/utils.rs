@@ -1,4 +1,4 @@
-use cuddld_utils::raw_types::{RawReadError, RawType, RawTypeContext, RawWriteError};
+use cuddld_utils::raw_types::{RawReadError, RawType, RawTypeContext, RawWriteError, SizedRawType};
 use std::io::{Read, Write};
 
 pub(crate) struct RawString<const LEN: usize> {
@@ -6,10 +6,6 @@ pub(crate) struct RawString<const LEN: usize> {
 }
 
 impl<const LEN: usize> RawType for RawString<LEN> {
-    fn size(_ctx: &RawTypeContext) -> usize {
-        LEN
-    }
-
     fn read(_ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let mut buf = [0; LEN];
         reader.read_exact(&mut buf).map_err(RawReadError::io::<Self>)?;
@@ -25,15 +21,17 @@ impl<const LEN: usize> RawType for RawString<LEN> {
     }
 }
 
+impl<const LEN: usize> SizedRawType for RawString<LEN> {
+    fn size(_ctx: &RawTypeContext) -> usize {
+        LEN
+    }
+}
+
 pub(crate) struct RawStringAsU64<const LEN: usize, const RADIX: u32> {
     pub(crate) value: u64,
 }
 
 impl<const LEN: usize, const RADIX: u32> RawType for RawStringAsU64<LEN, RADIX> {
-    fn size(ctx: &RawTypeContext) -> usize {
-        RawString::<LEN>::size(ctx)
-    }
-
     fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let string = RawReadError::wrap_type::<Self, _>(RawString::<LEN>::read(ctx, reader))?;
         let string = string.value.trim_end_matches(' ');
@@ -50,5 +48,11 @@ impl<const LEN: usize, const RADIX: u32> RawType for RawStringAsU64<LEN, RADIX> 
 
     fn write(&self, _ctx: &RawTypeContext, _writer: &mut dyn Write) -> Result<(), RawWriteError> {
         unimplemented!();
+    }
+}
+
+impl<const LEN: usize, const RADIX: u32> SizedRawType for RawStringAsU64<LEN, RADIX> {
+    fn size(ctx: &RawTypeContext) -> usize {
+        RawString::<LEN>::size(ctx)
     }
 }

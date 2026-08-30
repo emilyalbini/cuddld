@@ -16,16 +16,15 @@ impl RawTypeContext {
 }
 
 pub trait RawType<C = RawTypeContext>: Sized {
-    fn size(ctx: &C) -> usize;
     fn read(ctx: &C, reader: &mut dyn Read) -> Result<Self, RawReadError>;
     fn write(&self, ctx: &C, writer: &mut dyn Write) -> Result<(), RawWriteError>;
 }
 
-impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
-    fn size(ctx: &RawTypeContext) -> usize {
-        T::size(ctx) * N
-    }
+pub trait SizedRawType<C = RawTypeContext> {
+    fn size(ctx: &C) -> usize;
+}
 
+impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
     fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let mut items = Vec::new();
         for _ in 0..N {
@@ -45,14 +44,16 @@ impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
     }
 }
 
+impl<const N: usize, T: SizedRawType + Copy> SizedRawType for [T; N] {
+    fn size(ctx: &RawTypeContext) -> usize {
+        T::size(ctx) * N
+    }
+}
+
 macro_rules! impl_rawtype_for_int {
     ($($int:ty),*) => {
         $(
             impl RawType for $int {
-                fn size(_ctx: &RawTypeContext) -> usize {
-                    std::mem::size_of::<$int>()
-                }
-
                 fn read(ctx: &RawTypeContext, reader: &mut dyn std::io::Read) -> Result<Self, RawReadError> {
                     let mut buf = [0; std::mem::size_of::<$int>()];
                     reader.read_exact(&mut buf).map_err(RawReadError::io::<$int>)?;
@@ -69,6 +70,12 @@ macro_rules! impl_rawtype_for_int {
                     }).map_err(RawWriteError::io::<$int>)
                 }
             }
+
+            impl SizedRawType for $int {
+                fn size(_ctx: &RawTypeContext) -> usize {
+                    std::mem::size_of::<$int>()
+                }
+            }
         )*
     }
 }
@@ -78,10 +85,6 @@ impl_rawtype_for_int!(u8, u16, u32, u64, i8, i16, i32, i64);
 pub struct RawPadding<const N: usize>;
 
 impl<const N: usize> RawType for RawPadding<N> {
-    fn size(_ctx: &RawTypeContext) -> usize {
-        N
-    }
-
     fn read(_ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
         let mut buf = [0; N];
         reader.read_exact(&mut buf).map_err(RawReadError::io::<Self>)?;
@@ -93,18 +96,18 @@ impl<const N: usize> RawType for RawPadding<N> {
     }
 }
 
+impl<const N: usize> SizedRawType for RawPadding<N> {
+    fn size(_ctx: &RawTypeContext) -> usize {
+        N
+    }
+}
+
 pub struct PointerSize<'a>(pub &'a RawTypeContext);
 
 macro_rules! impl_pointersized_for_int {
     ($($int:ident or $smallint:ident),*) => {
         $(
             impl RawType<PointerSize<'_>> for $int {
-                fn size(ctx: &PointerSize<'_>) -> usize {
-                    match ctx.0.bits {
-                        Bits::Bits32 => <$smallint as RawType>::size(ctx.0),
-                        Bits::Bits64 => <$int as RawType>::size(ctx.0),
-                    }
-                }
 
                 fn read(ctx: &PointerSize<'_>, reader: &mut dyn Read) -> Result<Self, RawReadError> {
                     match ctx.0.bits {
@@ -117,6 +120,15 @@ macro_rules! impl_pointersized_for_int {
                     match ctx.0.bits {
                         Bits::Bits32 => <$smallint as RawType>::write(&(*self as _), ctx.0, writer),
                         Bits::Bits64 => <$int as RawType>::write(self, ctx.0, writer),
+                    }
+                }
+            }
+
+            impl SizedRawType<PointerSize<'_>> for $int {
+                fn size(ctx: &PointerSize<'_>) -> usize {
+                    match ctx.0.bits {
+                        Bits::Bits32 => <$smallint as SizedRawType>::size(ctx.0),
+                        Bits::Bits64 => <$int as SizedRawType>::size(ctx.0),
                     }
                 }
             }
