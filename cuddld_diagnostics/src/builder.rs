@@ -1,5 +1,5 @@
 use crate::Diagnostic;
-use std::any::{type_name, Any, TypeId};
+use std::any::{Any, TypeId, type_name};
 use std::collections::HashMap;
 
 pub trait DiagnosticBuilder {

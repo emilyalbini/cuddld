@@ -61,7 +61,7 @@ impl<'a> Lexer<'a> {
                     Some(_) | None => {
                         self.flush_text();
                         self.result.push(Token::Backslash);
-                    },
+                    }
                 }
             } else if c == '=' {
                 self.flush_text();

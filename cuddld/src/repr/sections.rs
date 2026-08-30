@@ -197,7 +197,7 @@ pub(crate) struct Section {
     pub(crate) name: Interned<String>,
     pub(crate) source: ObjectSpan,
     pub(crate) content: SectionContent,
-    pub (crate) retain: bool,
+    pub(crate) retain: bool,
     _prevent_creation: (),
 }
 

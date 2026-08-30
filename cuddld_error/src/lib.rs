@@ -1,4 +1,4 @@
 #[macro_use]
 mod erased;
 
-pub use crate::erased::{ErasedError, ErasedContext};
+pub use crate::erased::{ErasedContext, ErasedError};

@@ -1,13 +1,13 @@
 use crate::cli::CliError;
 use crate::diagnostics::builders::UndefinedSymbolDiagnostic;
 use crate::utils::file_type::{FileType, FileTypeError};
-use crate::utils::resolve_cli_input::{resolve_cli_input, ResolveCliInputError, ResolvedInput};
+use crate::utils::resolve_cli_input::{ResolveCliInputError, ResolvedInput, resolve_cli_input};
 use cuddld_ar::{ArReadError, ArReader};
-use cuddld_diagnostics::widgets::{Table, Text, Widget};
 use cuddld_diagnostics::GatheredContext;
+use cuddld_diagnostics::widgets::{Table, Text, Widget};
 use cuddld_elf::{ElfReader, ElfType, LoadError, ReadDynamicError};
 use cuddld_macros::{Display, Error};
-use cuddld_pkg_config::{discover, ParseError, PkgConfig, PkgConfigEnv};
+use cuddld_pkg_config::{ParseError, PkgConfig, PkgConfigEnv, discover};
 use cuddld_utils::posix_shell_quote;
 use std::error::Error;
 use std::fs::File;

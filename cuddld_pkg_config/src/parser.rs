@@ -1,6 +1,6 @@
-use crate::lexer::{is_valid_identifier, LexError, Lexer, Token};
-use crate::template::{resolve_variables, Resolvable, Template, TemplateComponent};
 use crate::PkgConfig;
+use crate::lexer::{LexError, Lexer, Token, is_valid_identifier};
+use crate::template::{Resolvable, Template, TemplateComponent, resolve_variables};
 use cuddld_macros::{Display, Error};
 use std::collections::BTreeMap;
 use std::iter::Peekable;

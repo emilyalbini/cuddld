@@ -1,8 +1,8 @@
 pub mod ast;
+mod builtins;
 mod deserialize;
 mod functions;
 mod lexer;
-mod builtins;
 mod parser;
 mod resolve;
 

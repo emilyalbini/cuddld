@@ -22,7 +22,7 @@ pub(super) fn read(
     for _ in 0..gnu_hash_header.bloom_count {
         gnu_hash.bloom.push(match reader.parent_cursor.bits() {
             Bits::Bits32 => cursor.read_raw::<u32>()?.into(),
-            Bits::Bits64=> cursor.read_raw::<u64>()?,
+            Bits::Bits64 => cursor.read_raw::<u64>()?,
         });
     }
 

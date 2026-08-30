@@ -1,10 +1,10 @@
+use crate::picohcl::ast::ResolvedExpression;
 use crate::picohcl::{FromHcl, FromHclString, HclDeserializer};
 use crate::utils::{file_name, run};
 use crate::{Arch, Step, TestContext};
 use cuddld_error::{ErasedError, bail};
 use std::path::PathBuf;
 use std::process::Command;
-use crate::picohcl::ast::ResolvedExpression;
 
 #[derive(Debug)]
 pub(crate) struct AsmStep {

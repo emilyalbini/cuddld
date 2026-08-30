@@ -3,7 +3,7 @@
 use crate::debug_print::DebugCallbacks;
 use crate::linker::Linker;
 use cuddld_diagnostics::{DiagnosticBuilder, DiagnosticContext, GatheredContext};
-use std::error::{request_ref, Error};
+use std::error::{Error, request_ref};
 use std::process::ExitCode;
 
 mod arch;

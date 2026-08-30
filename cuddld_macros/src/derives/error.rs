@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::parser::{Attributes, EnumVariantData, Item, Parser, StructFields, Type};
-use crate::utils::{generate_for_each_variant, generate_impl_for, ident, UnifiedField};
+use crate::utils::{UnifiedField, generate_for_each_variant, generate_impl_for, ident};
 use cuddld_macros_quote::quote;
 use proc_macro::{TokenStream, TokenTree};
 

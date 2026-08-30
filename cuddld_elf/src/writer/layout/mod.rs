@@ -11,6 +11,7 @@ use crate::raw::{
     RawSectionHeader, RawSymbol,
 };
 use cuddld_macros::{Display, Error};
+use cuddld_utils::Bits;
 use cuddld_utils::ints::Address;
 use cuddld_utils::ints::ExtractNumber;
 use cuddld_utils::ints::Length;
@@ -18,7 +19,6 @@ use cuddld_utils::ints::Offset;
 use cuddld_utils::ints::OutOfBoundsError;
 use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize};
 use std::collections::BTreeMap;
-use cuddld_utils::Bits;
 
 #[derive(Debug)]
 pub struct Layout<S> {

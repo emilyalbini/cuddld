@@ -12,8 +12,8 @@ pub mod raw_types;
 mod tempdir;
 
 pub use crate::jaro_similarity::jaro_similarity;
-pub use crate::tempdir::create_temp_dir;
 pub use crate::posix_shell::posix_shell_quote;
+pub use crate::tempdir::create_temp_dir;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Bits {

@@ -1,6 +1,6 @@
 use crate::cli::{
-    parse, CliError, CliInput, CliInputOptions, CliInputValue, CliOptions, DebugPrint,
-    DynamicLinker, EntryPoint, HashStyle, Mode,
+    CliError, CliInput, CliInputOptions, CliInputValue, CliOptions, DebugPrint, DynamicLinker,
+    EntryPoint, HashStyle, Mode, parse,
 };
 use crate::debug_print::filters::ObjectsFilter;
 use crate::interner::intern;

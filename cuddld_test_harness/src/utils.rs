@@ -89,6 +89,6 @@ pub(crate) fn err_str<T>(result: Result<T, ErasedError>) -> Result<T, String> {
             let formatted = err.format_chain();
             eprintln!("{formatted}");
             Err(formatted)
-        },
+        }
     }
 }

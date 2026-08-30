@@ -1,8 +1,8 @@
+use crate::cli::{CliOptions, EntryPoint};
 use crate::diagnostics::builders::UndefinedSymbolDiagnostic;
 use crate::diagnostics::contexts::WhileProcessingEntrypoint;
-use cuddld_diagnostics::widgets::{Text, Widget};
 use cuddld_diagnostics::GatheredContext;
-use crate::cli::{CliOptions, EntryPoint};
+use cuddld_diagnostics::widgets::{Text, Widget};
 
 pub(super) fn generate(
     diagnostic: &UndefinedSymbolDiagnostic,

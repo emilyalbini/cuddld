@@ -3,7 +3,7 @@ use crate::diagnostics::builders::NoSymbolNameAtArchiveStartDiagnostic;
 use crate::interner::intern;
 use crate::repr::symbols::{SymbolValue, Symbols};
 use crate::utils::file_type::{FileType, FileTypeError};
-use crate::utils::resolve_cli_input::{resolve_cli_input, ResolveCliInputError};
+use crate::utils::resolve_cli_input::{ResolveCliInputError, resolve_cli_input};
 use cuddld_ar::{ArFile, ArMemberId, ArReadError, ArReader};
 use cuddld_diagnostics::ObjectSpan;
 use cuddld_elf::{ElfReader, LoadError};
