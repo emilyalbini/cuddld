@@ -12,7 +12,7 @@ use crate::repr::symbols::{LoadSymbolsError, SymbolId, SymbolValue, UpcomingSymb
 use cuddld_elf::{ElfClass, ElfPermissions};
 use cuddld_macros::{Display, Error, Getters};
 use cuddld_utils::ints::Offset;
-use cuddld_utils::raw_types::RawTypeAsPointerSize;
+use cuddld_utils::raw_types::{RawType, PointerSize};
 
 pub(crate) fn run(
     options: &CliOptions,
@@ -98,7 +98,7 @@ pub(crate) fn run(
     });
 
     object.segments.add(Segment {
-        align: <u64 as RawTypeAsPointerSize>::size(&object.raw_type_context()) as _,
+        align: u64::size(&PointerSize(&object.raw_type_context())) as _,
         type_: SegmentType::Dynamic,
         perms: ElfPermissions::R,
         content: vec![SegmentContent::Section(dynamic)],

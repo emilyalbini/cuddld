@@ -15,10 +15,10 @@ impl RawTypeContext {
     }
 }
 
-pub trait RawType: Sized {
-    fn size(ctx: &RawTypeContext) -> usize;
-    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
-    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
+pub trait RawType<C = RawTypeContext>: Sized {
+    fn size(ctx: &C) -> usize;
+    fn read(ctx: &C, reader: &mut dyn Read) -> Result<Self, RawReadError>;
+    fn write(&self, ctx: &C, writer: &mut dyn Write) -> Result<(), RawWriteError>;
 }
 
 impl<const N: usize, T: RawType + Copy> RawType for [T; N] {
@@ -93,34 +93,30 @@ impl<const N: usize> RawType for RawPadding<N> {
     }
 }
 
-pub trait RawTypeAsPointerSize: Sized {
-    fn size(ctx: &RawTypeContext) -> usize;
-    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError>;
-    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError>;
-}
+pub struct PointerSize<'a>(pub &'a RawTypeContext);
 
-macro_rules! impl_rawtypeaspointersize_for_int {
+macro_rules! impl_pointersized_for_int {
     ($($int:ident or $smallint:ident),*) => {
         $(
-            impl RawTypeAsPointerSize for $int {
-                fn size(ctx: &RawTypeContext) -> usize {
-                    match ctx.bits {
-                        Bits::Bits32 => <$smallint as RawType>::size(ctx),
-                        Bits::Bits64 => <$int as RawType>::size(ctx),
+            impl RawType<PointerSize<'_>> for $int {
+                fn size(ctx: &PointerSize<'_>) -> usize {
+                    match ctx.0.bits {
+                        Bits::Bits32 => <$smallint as RawType>::size(ctx.0),
+                        Bits::Bits64 => <$int as RawType>::size(ctx.0),
                     }
                 }
 
-                fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
-                    match ctx.bits {
-                        Bits::Bits32 => <$smallint as RawType>::read(ctx, reader).map(|v| v as _),
-                        Bits::Bits64 => <$int as RawType>::read(ctx, reader),
+                fn read(ctx: &PointerSize<'_>, reader: &mut dyn Read) -> Result<Self, RawReadError> {
+                    match ctx.0.bits {
+                        Bits::Bits32 => <$smallint as RawType>::read(ctx.0, reader).map(|v| v as _),
+                        Bits::Bits64 => <$int as RawType>::read(ctx.0, reader),
                     }
                 }
 
-                fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
-                    match ctx.bits {
-                        Bits::Bits32 => <$smallint as RawType>::write(&(*self as _), ctx, writer),
-                        Bits::Bits64 => <$int as RawType>::write(self, ctx, writer),
+                fn write(&self, ctx: &PointerSize<'_>, writer: &mut dyn Write) -> Result<(), RawWriteError> {
+                    match ctx.0.bits {
+                        Bits::Bits32 => <$smallint as RawType>::write(&(*self as _), ctx.0, writer),
+                        Bits::Bits64 => <$int as RawType>::write(self, ctx.0, writer),
                     }
                 }
             }
@@ -128,7 +124,7 @@ macro_rules! impl_rawtypeaspointersize_for_int {
     }
 }
 
-impl_rawtypeaspointersize_for_int!(i64 or i32, u64 or u32);
+impl_pointersized_for_int!(i64 or i32, u64 or u32);
 
 #[derive(Debug)]
 pub struct RawReadError {

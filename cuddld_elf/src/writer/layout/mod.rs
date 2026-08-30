@@ -16,7 +16,7 @@ use cuddld_utils::ints::ExtractNumber;
 use cuddld_utils::ints::Length;
 use cuddld_utils::ints::Offset;
 use cuddld_utils::ints::OutOfBoundsError;
-use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize};
+use cuddld_utils::raw_types::{PointerSize, RawType};
 use std::collections::BTreeMap;
 
 #[derive(Debug)]
@@ -191,13 +191,15 @@ fn part_len<S: Copy>(details: &dyn LayoutDetailsProvider<S>, part: Part<S>) -> L
 
         Part::Hash(id) => {
             let hash = details.hash_details(id);
-            RawHashHeader::size(&ctx) + hash.buckets * u32::size(&ctx) + hash.chain * u32::size(&ctx)
+            RawHashHeader::size(&ctx)
+                + hash.buckets * u32::size(&ctx)
+                + hash.chain * u32::size(&ctx)
         }
 
         Part::GnuHash(id) => {
             let gnu_hash = details.gnu_hash_details(id);
             RawGnuHashHeader::size(&ctx)
-                + gnu_hash.bloom * <u64 as RawTypeAsPointerSize>::size(&ctx)
+                + gnu_hash.bloom * u64::size(&PointerSize(&ctx))
                 + gnu_hash.buckets * u32::size(&ctx)
                 + gnu_hash.chain * u32::size(&ctx)
         }
@@ -220,7 +222,7 @@ fn part_len<S: Copy>(details: &dyn LayoutDetailsProvider<S>, part: Part<S>) -> L
             RawGroupFlags::size(&ctx) + u32::size(&ctx) * details.sections_in_group_count(id)
         }
         Part::Dynamic(id) => {
-            <u64 as RawTypeAsPointerSize>::size(&ctx) * 2 * details.dynamic_directives_count(id)
+            u64::size(&PointerSize(&ctx)) * 2 * details.dynamic_directives_count(id)
         }
 
         Part::Padding { len, .. } => len,

@@ -23,8 +23,12 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
 
 fn fn_size(fields: &[Field<'_>]) -> TokenStream {
     let mut addends = Vec::new();
-    for Field { field_ty, trait_ty, .. } in fields {
-        addends.push(quote! { + <#field_ty as #trait_ty>::size(ctx) });
+    for Field { field_ty, ctx, .. } in fields {
+        let ctx = match ctx {
+            Ctx::Default => quote!(ctx),
+            Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
+        };
+        addends.push(quote! { + <#field_ty as cuddld_utils::raw_types::RawType<_>>::size(#ctx) });
     }
 
     quote! {
@@ -37,11 +41,15 @@ fn fn_size(fields: &[Field<'_>]) -> TokenStream {
 fn fn_read(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
     fn render(fields: &[Field<'_>]) -> TokenStream {
         let mut setters = Vec::new();
-        for Field { name, field_ty, trait_ty } in fields {
+        for Field { name, field_ty, ctx } in fields {
+            let ctx = match ctx {
+                Ctx::Default => quote!(ctx),
+                Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
+            };
             setters.push(quote! {
                 #name: cuddld_utils::raw_types::RawReadError::wrap_field::<Self, _>(
                     stringify!(#name),
-                    <#field_ty as #trait_ty>::read(ctx, reader)
+                    <#field_ty as cuddld_utils::raw_types::RawType<_>>::read(#ctx, reader)
                 )?,
             });
         }
@@ -66,11 +74,17 @@ fn fn_read(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
 fn fn_write(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
     fn render(fields: &[Field<'_>]) -> TokenStream {
         let mut writes = Vec::new();
-        for Field { name, field_ty, trait_ty } in fields {
+        for Field { name, field_ty, ctx } in fields {
+            let ctx = match ctx {
+                Ctx::Default => quote!(ctx),
+                Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
+            };
             writes.push(quote! {
                 cuddld_utils::raw_types::RawWriteError::wrap_field::<Self, _>(
                     stringify!(#name),
-                    <#field_ty as #trait_ty>::write(&self.#name, ctx, writer)
+                    <#field_ty as cuddld_utils::raw_types::RawType<_>>::write(
+                        &self.#name, #ctx, writer,
+                    )
                 )?;
             });
         }
@@ -93,9 +107,6 @@ fn fn_write(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
 }
 
 fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>, Error> {
-    let trait_ty_base = Type("cuddld_utils::raw_types::RawType".parse().unwrap());
-    let trait_ty_pointers = Type("cuddld_utils::raw_types::RawTypeAsPointerSize".parse().unwrap());
-
     let mut fields: Vec<Field> = Vec::new();
 
     let parsed_fields = match &parsed.fields {
@@ -104,12 +115,12 @@ fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>,
     };
 
     for field in parsed_fields {
-        let mut trait_ty = &trait_ty_base;
         let mut insert_at = fields.len();
+        let mut ctx = Ctx::Default;
 
         if let Some(attr) = field.attrs.get("pointer_size")? {
             attr.must_be_empty()?;
-            trait_ty = &trait_ty_pointers;
+            ctx = Ctx::PointerSize;
         }
         if let Some(attr) = field.attrs.get("placed_on_elf32_after")? {
             let after = attr.get_equals_to_str()?;
@@ -128,10 +139,7 @@ fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>,
             }
         }
 
-        fields.insert(
-            insert_at,
-            Field { name: &field.name, field_ty: &field.ty, trait_ty: trait_ty.clone() },
-        );
+        fields.insert(insert_at, Field { name: &field.name, field_ty: &field.ty, ctx });
     }
 
     Ok(fields)
@@ -140,5 +148,10 @@ fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>,
 struct Field<'a> {
     name: &'a Ident,
     field_ty: &'a Type,
-    trait_ty: Type,
+    ctx: Ctx,
+}
+
+enum Ctx {
+    Default,
+    PointerSize,
 }

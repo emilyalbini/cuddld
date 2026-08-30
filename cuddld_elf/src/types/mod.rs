@@ -5,7 +5,7 @@ pub use self::string_table::ElfStringTable;
 use crate::ids::{ElfSectionId, ElfStringId, ElfSymbolId};
 use crate::raw::{RawGnuHashHeader, RawGroupFlags, RawHashHeader, RawRel, RawRela, RawSymbol};
 use cuddld_macros::Bitfield;
-use cuddld_utils::raw_types::{RawType, RawTypeAsPointerSize, RawTypeContext};
+use cuddld_utils::raw_types::{PointerSize, RawType, RawTypeContext};
 use cuddld_utils::{Bits, Endian, OsAbi};
 use std::collections::BTreeMap;
 use std::num::NonZeroU64;
@@ -129,14 +129,14 @@ impl ElfSectionContent {
                     + u32::size(ctx) * h.chain.len()
             }
             ElfSectionContent::GnuHash(h) => {
-                let bloom_ctx = <u64 as RawTypeAsPointerSize>::size(ctx);
+                let bloom_ctx = u64::size(&PointerSize(ctx));
                 RawGnuHashHeader::size(ctx)
                     + bloom_ctx * h.bloom.len()
                     + u32::size(ctx) * h.buckets.len()
                     + u32::size(ctx) * h.chain.len()
             }
             ElfSectionContent::Dynamic(d) => {
-                let size = <u64 as RawTypeAsPointerSize>::size(ctx) * 2;
+                let size = u64::size(&PointerSize(ctx)) * 2;
                 d.directives.len() * size
             }
             ElfSectionContent::Note(_) => unimplemented!(),

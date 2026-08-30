@@ -1,6 +1,6 @@
 use crate::OsAbi;
 use crate::raw_types::{
-    RawReadError, RawType, RawTypeAsPointerSize, RawTypeContext, RawWriteError,
+    PointerSize, RawReadError, RawType, RawTypeContext, RawWriteError,
 };
 use std::io::{Read, Write};
 
@@ -21,6 +21,12 @@ impl From<&RawTypeContext> for BitfieldContext {
     }
 }
 
+impl From<&PointerSize<'_>> for BitfieldContext {
+    fn from(raw_type: &PointerSize<'_>) -> Self {
+        BitfieldContext { os_abi: raw_type.0.os_abi }
+    }
+}
+
 pub trait Bitfield: Sized {
     type Repr: BitfieldRepr;
 
@@ -34,46 +40,24 @@ pub trait Bitfield: Sized {
     fn and(&self, other: &Self) -> Self;
 }
 
-impl<T> RawType for T
+impl<T, C> RawType<C> for T
 where
     T: Bitfield,
-    T::Repr: RawType,
+    T::Repr: RawType<C>,
+    BitfieldContext: for<'a> From<&'a C>,
 {
-    fn size(ctx: &RawTypeContext) -> usize {
+    fn size(ctx: &C) -> usize {
         T::Repr::size(ctx)
     }
 
-    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
-        let raw = RawReadError::wrap_type::<T, _>(<T::Repr as RawType>::read(ctx, reader))?;
+    fn read(ctx: &C, reader: &mut dyn Read) -> Result<Self, RawReadError> {
+        let raw = RawReadError::wrap_type::<T, _>(<T::Repr as RawType<_>>::read(ctx, reader))?;
         <T as Bitfield>::read(raw, ctx.into()).map_err(RawReadError::bitfield::<T>)
     }
 
-    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
+    fn write(&self, ctx: &C, writer: &mut dyn Write) -> Result<(), RawWriteError> {
         let raw = <T as Bitfield>::write(self, ctx.into());
-        RawWriteError::wrap_type::<Self, _>(<T::Repr as RawType>::write(&raw, ctx, writer))
-    }
-}
-
-impl<T> RawTypeAsPointerSize for T
-where
-    T: Bitfield,
-    T::Repr: RawTypeAsPointerSize,
-{
-    fn size(ctx: &RawTypeContext) -> usize {
-        T::Repr::size(ctx)
-    }
-
-    fn read(ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
-        let raw =
-            RawReadError::wrap_type::<T, _>(<T::Repr as RawTypeAsPointerSize>::read(ctx, reader))?;
-        <T as Bitfield>::read(raw, ctx.into()).map_err(RawReadError::bitfield::<T>)
-    }
-
-    fn write(&self, ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
-        let raw = <T as Bitfield>::write(self, ctx.into());
-        RawWriteError::wrap_type::<Self, _>(<T::Repr as RawTypeAsPointerSize>::write(
-            &raw, ctx, writer,
-        ))
+        RawWriteError::wrap_type::<Self, _>(<T::Repr as RawType<_>>::write(&raw, ctx, writer))
     }
 }
 
