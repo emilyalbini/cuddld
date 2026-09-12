@@ -327,6 +327,7 @@ impl<'a> Writer<'a> {
                     ElfSegmentType::Interpreter => 3,
                     ElfSegmentType::Note => 4,
                     ElfSegmentType::ProgramHeaderTable => 6,
+                    ElfSegmentType::GnuEhFrame => 0x6474e550,
                     ElfSegmentType::GnuStack => 0x6474e551,
                     ElfSegmentType::GnuRelro => 0x6474e552,
                     ElfSegmentType::GnuProperty => 0x6474e553,

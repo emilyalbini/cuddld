@@ -27,6 +27,7 @@ pub(crate) struct CliOptions {
     pub(crate) shared_object_name: Option<String>,
     pub(crate) hash_style: HashStyle,
     pub(crate) mode: Mode,
+    pub(crate) eh_frame_hdr: bool,
 }
 
 impl DiagnosticContext for CliOptions {}

@@ -57,6 +57,7 @@ pub(crate) fn run(options: &CliOptions) -> Result<Object, LoadInputsError> {
                     mode: options.mode,
                     executable_stack: options.executable_stack,
                     gnu_stack_section_ignored: false,
+                    emit_eh_frame_hdr: options.eh_frame_hdr,
                 };
 
                 object.sections.builder(".shstrtab", SectionContent::SectionNames).create();

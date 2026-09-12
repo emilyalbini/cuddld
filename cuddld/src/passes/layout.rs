@@ -151,8 +151,14 @@ impl LayoutDetailsProvider<SectionId> for Object {
             .collect()
     }
 
-    fn eh_frame_hdr_details(&self, _id: SectionId) -> LayoutDetailsEhFrameHdr {
-        unimplemented!()
+    fn eh_frame_hdr_details(&self, id: SectionId) -> LayoutDetailsEhFrameHdr {
+        let efh = cast_section!(self, id, EhFrameHdr);
+        LayoutDetailsEhFrameHdr {
+            frame_pointer_encoding: efh.frame_pointer_encoding(),
+            entry_count_encoding: efh.entry_count_encoding(),
+            entry_encoding: efh.entry_encoding(),
+            entries_count: efh.entries().len(),
+        }
     }
 
     fn parts_for_sections(&self) -> Result<Vec<Part<SectionId>>, LayoutError> {
@@ -178,6 +184,7 @@ impl LayoutDetailsProvider<SectionId> for Object {
                 SegmentType::Uninitialized => {}
                 SegmentType::Notes => {}
                 SegmentType::Dynamic => continue,
+                SegmentType::GnuEhFrame => continue,
                 SegmentType::GnuStack => continue,
                 SegmentType::GnuRelro => continue,
                 SegmentType::GnuProperty => continue,
@@ -219,6 +226,7 @@ fn part_for_section(object: &Object, section: &Section) -> Part<SectionId> {
         },
         SectionContent::Dynamic(_) => Part::Dynamic(section.id),
         SectionContent::Notes(_) => Part::Note(section.id),
+        SectionContent::EhFrameHdr(_) => Part::EhFrameHdr(section.id),
         SectionContent::SectionNames => Part::StringTable(section.id),
     }
 }

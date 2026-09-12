@@ -27,6 +27,7 @@ pub(super) fn render_segments(object: &ElfObject) -> Box<dyn Widget> {
                 ElfSegmentType::Interpreter => "Interpreter".into(),
                 ElfSegmentType::Note => "Note".into(),
                 ElfSegmentType::ProgramHeaderTable => "Program header table".into(),
+                ElfSegmentType::GnuEhFrame => "GNU EH frame".into(),
                 ElfSegmentType::GnuStack => "GNU stack".into(),
                 ElfSegmentType::GnuRelro => "GNU relocations read-only".into(),
                 ElfSegmentType::GnuProperty => "GNU property".into(),

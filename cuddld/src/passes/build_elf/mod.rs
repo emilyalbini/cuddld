@@ -22,8 +22,8 @@ use crate::utils::address_resolver::AddressResolver;
 use cuddld_elf::ids::{ElfSectionId, ElfStringId};
 use cuddld_elf::writer::layout::Layout;
 use cuddld_elf::{
-    ElfNotesTable, ElfObject, ElfProgramSection, ElfSection, ElfSectionContent, ElfSegment,
-    ElfSegmentType, ElfStringTable, ElfType, ElfUninitializedSection,
+    ElfEhFrameHdr, ElfNotesTable, ElfObject, ElfProgramSection, ElfSection, ElfSectionContent,
+    ElfSegment, ElfSegmentType, ElfStringTable, ElfType, ElfUninitializedSection,
 };
 use cuddld_macros::{Display, Error};
 use cuddld_utils::ints::{Address, ExtractNumber};
@@ -241,6 +241,31 @@ impl<'a> ElfBuilder<'a> {
                     ElfSectionContent::Note(ElfNotesTable { notes: notes.notes.clone() })
                 }
 
+                SectionContent::EhFrameHdr(efh) => {
+                    let efh_addr = self
+                        .layout
+                        .metadata_of_section(&section.id)
+                        .memory
+                        .as_ref()
+                        .expect(".eh_frame_hdr is not in memory")
+                        .address;
+                    let ef_addr = self
+                        .layout
+                        .metadata_of_section(&efh.eh_frame)
+                        .memory
+                        .as_ref()
+                        .expect(".eh_frame is not in memory")
+                        .address;
+
+                    ElfSectionContent::EhFrameHdr(ElfEhFrameHdr {
+                        frame_pointer_encoding: efh.frame_pointer_encoding(),
+                        entry_count_encoding: efh.entry_count_encoding(),
+                        entry_encoding: efh.entry_encoding(),
+                        frame_pointer: ef_addr.extract() as i64 - efh_addr.extract() as i64 - 4,
+                        entries: efh.entries().into(),
+                    })
+                }
+
                 SectionContent::SectionNames => section_names
                     .take()
                     .ok_or(ElfBuilderError::MoreThanOneSectionNamesSection)?
@@ -279,6 +304,7 @@ impl<'a> ElfBuilder<'a> {
                     SegmentType::Program => ElfSegmentType::Load,
                     SegmentType::ProgramHeader => ElfSegmentType::ProgramHeaderTable,
                     SegmentType::Uninitialized => ElfSegmentType::Load,
+                    SegmentType::GnuEhFrame => ElfSegmentType::GnuEhFrame,
                     SegmentType::GnuStack => ElfSegmentType::GnuStack,
                     SegmentType::GnuRelro => ElfSegmentType::GnuRelro,
                     SegmentType::GnuProperty => ElfSegmentType::GnuProperty,

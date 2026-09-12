@@ -32,6 +32,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
     let mut search_paths = Vec::new();
     let mut shared_object_name = None;
     let mut hash_style = None;
+    let mut eh_frame_hdr = None;
     let mut input_options = CliInputOptions { search_shared_objects: true, as_needed: false };
     let mut debug_print = BTreeSet::new();
 
@@ -174,6 +175,13 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
                 reject_duplicate(&token, &mut gc_sections, || Ok(true))?
             }
 
+            CliToken::LongFlag("eh-frame-hdr") => {
+                reject_duplicate(&token, &mut eh_frame_hdr, || Ok(true))?
+            }
+            CliToken::LongFlag("no-eh-frame-hdr") => {
+                reject_duplicate(&token, &mut eh_frame_hdr, || Ok(false))?
+            }
+
             // If the flag value was not consumed in the previous iteration when the flag itself
             // was parsed, it means the flag didn't accept a value and we should error out.
             CliToken::FlagValue(_) => {
@@ -201,6 +209,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
         read_only_got_plt: read_only_got_plt.unwrap_or(false),
         hash_style: hash_style.unwrap_or(HashStyle::Both),
         mode,
+        eh_frame_hdr: eh_frame_hdr.unwrap_or(false),
 
         entry: match mode {
             Mode::PositionDependent | Mode::PositionIndependent => match entry {

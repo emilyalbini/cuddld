@@ -104,6 +104,7 @@ impl Visitor {
                 SectionContent::Relocations(_) => {}
                 SectionContent::Dynamic(_) => {}
                 SectionContent::Notes(_) => {}
+                SectionContent::EhFrameHdr(_) => {}
                 SectionContent::SectionNames => {}
             }
         }

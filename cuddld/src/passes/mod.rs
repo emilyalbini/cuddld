@@ -9,6 +9,7 @@ pub(crate) mod generate_dynamic;
 pub(crate) mod generate_gnu_property;
 pub(crate) mod generate_got;
 pub(crate) mod generate_plt;
+pub(crate) mod inject_eh_frame_hdr;
 pub(crate) mod inject_gnu_relro;
 pub(crate) mod inject_gnu_stack;
 pub(crate) mod inject_symbol_table;

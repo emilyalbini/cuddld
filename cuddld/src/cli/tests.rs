@@ -462,6 +462,23 @@ fn test_invalid_hash_style() {
 }
 
 #[test]
+fn test_eh_frame_hdr() {
+    assert_parse(
+        &["input.o", "--eh-frame-hdr"],
+        Ok(CliOptions { eh_frame_hdr: true, ..default_options_static() }),
+    );
+    assert_parse(
+        &["input.o", "--no-eh-frame-hdr"],
+        Ok(CliOptions { eh_frame_hdr: false, ..default_options_static() }),
+    );
+}
+
+#[test]
+fn test_duplicate_eh_frame_hdr() {
+    assert_reject_duplicate(&["input.o", "--eh-frame-hdr", "--no-eh-frame-hdr"]);
+}
+
+#[test]
 fn test_as_needed() {
     assert_parse(
         &["liba.so", "-lb", "--as-needed", "libc.so", "-ld", "--no-as-needed", "libe.so", "-lf"],
@@ -576,6 +593,7 @@ fn default_options_static() -> CliOptions {
         search_paths: Vec::new(),
         shared_object_name: None,
         hash_style: HashStyle::Both,
+        eh_frame_hdr: false,
         mode: Mode::PositionDependent,
     }
 }

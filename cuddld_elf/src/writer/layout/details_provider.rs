@@ -185,6 +185,7 @@ impl LayoutDetailsProvider<ElfSectionId> for ElfObject {
                 ElfSegmentType::Load => {}
                 ElfSegmentType::Dynamic => continue,
                 ElfSegmentType::Note => continue,
+                ElfSegmentType::GnuEhFrame => continue,
                 ElfSegmentType::GnuStack => continue,
                 ElfSegmentType::GnuRelro => continue,
                 ElfSegmentType::GnuProperty => continue,

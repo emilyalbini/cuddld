@@ -494,7 +494,7 @@ pub struct ElfEhFrameHdr {
     pub entries: Vec<ElfEhFrameHdrEntry>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ElfEhFrameHdrEntry {
     pub pointer: i64,
     pub info: i64,
@@ -582,6 +582,7 @@ pub enum ElfSegmentType {
     Load,
     Dynamic,
     Note,
+    GnuEhFrame,
     GnuStack,
     GnuRelro,
     GnuProperty,

@@ -35,6 +35,7 @@ pub(crate) fn run(object: &mut Object) {
             SectionContent::Notes(notes) => {
                 (SegmentType::Notes, ElfPermissions::R, notes.alignment(object.env.class))
             }
+            SectionContent::EhFrameHdr(_) => (SegmentType::Program, ElfPermissions::R, PAGE_SIZE),
 
             SectionContent::Strings(_)
             | SectionContent::Symbols(_)

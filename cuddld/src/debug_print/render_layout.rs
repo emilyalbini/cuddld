@@ -70,6 +70,7 @@ pub(super) fn render_layout(object: &Object, layout: &Layout<SectionId>) -> Diag
                 SegmentType::Dynamic => "dynamic".into(),
                 SegmentType::Interpreter => "interpreter".into(),
                 SegmentType::Notes => "notes".into(),
+                SegmentType::GnuEhFrame => "GNU EH frame".into(),
                 SegmentType::GnuStack => "GNU stack".into(),
                 SegmentType::GnuRelro => "GNU relro".into(),
                 SegmentType::GnuProperty => "GNU property".into(),

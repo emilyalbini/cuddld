@@ -4,9 +4,9 @@ use crate::debug_print::utils::permissions;
 use crate::repr::object::Object;
 use crate::repr::relocations::{Relocation, RelocationAddend};
 use crate::repr::sections::{
-    DataSection, DynamicSection, GnuHashSection, NotesSection, RelocationsSection, Section,
-    SectionContent, SectionId, StringsSection, SymbolsSection, SysvHashSection,
-    UninitializedSection,
+    DataSection, DynamicSection, EhFrameHdrSection, GnuHashSection, NotesSection,
+    RelocationsSection, Section, SectionContent, SectionId, StringsSection, SymbolsSection,
+    SysvHashSection, UninitializedSection,
 };
 use crate::repr::symbols::views::{AllSymbols, DynamicSymbolTable, SymbolsView};
 use crate::repr::symbols::{SymbolType, SymbolValue, SymbolVisibility};
@@ -87,6 +87,7 @@ fn render_section(
         }
         SectionContent::Dynamic(dynamic) => render_dynamic_section(names, section, dynamic),
         SectionContent::Notes(notes) => render_notes_section(names, section, notes),
+        SectionContent::EhFrameHdr(efh) => render_eh_frame_hdr_section(names, section, efh),
         SectionContent::SectionNames => render_section_names_section(names, section),
     }
 }
@@ -311,6 +312,17 @@ fn render_dynamic_section(
 
 fn render_notes_section(names: &Names, section: &Section, notes: &NotesSection) -> Box<dyn Widget> {
     Box::new(section_widget(names, section, "notes").add_iter(notes.notes.iter().map(render_note)))
+}
+
+fn render_eh_frame_hdr_section(
+    names: &Names,
+    section: &Section,
+    efh: &EhFrameHdrSection,
+) -> Box<dyn Widget> {
+    Box::new(
+        section_widget(names, section, "EH frame header")
+            .add(Text::new(format!("EH frame: {}", names.section(efh.eh_frame)))),
+    )
 }
 
 fn render_section_names_section(names: &Names, section: &Section) -> Box<dyn Widget> {

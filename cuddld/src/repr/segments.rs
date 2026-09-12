@@ -65,6 +65,7 @@ pub(crate) enum SegmentType {
     Program,
     Uninitialized,
     Dynamic,
+    GnuEhFrame,
     GnuStack,
     GnuRelro,
     GnuProperty,

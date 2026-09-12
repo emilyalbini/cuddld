@@ -70,6 +70,7 @@ impl Linker {
         passes::generate_got::generate_got(&options, &mut object, &relocs_analysis, &dynamic)?;
         passes::generate_plt::run(&mut object);
 
+        passes::inject_eh_frame_hdr::run(&mut object);
         passes::generate_gnu_property::run(&mut object);
 
         passes::exclude_section_symbols_from_tables::remove(&mut object);

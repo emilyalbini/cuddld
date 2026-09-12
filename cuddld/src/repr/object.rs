@@ -26,6 +26,7 @@ pub(crate) struct Object {
     pub(crate) mode: Mode,
     pub(crate) executable_stack: bool,
     pub(crate) gnu_stack_section_ignored: bool,
+    pub(crate) emit_eh_frame_hdr: bool,
 }
 
 impl Object {

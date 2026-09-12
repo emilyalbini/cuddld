@@ -8,6 +8,7 @@ version = "0.0.0"
 dependencies = [
  "cuddld_ar",
  "cuddld_diagnostics",
+ "cuddld_dwarf",
  "cuddld_elf",
  "cuddld_error",
  "cuddld_macros",

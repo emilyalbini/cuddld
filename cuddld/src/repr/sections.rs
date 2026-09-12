@@ -3,7 +3,8 @@ use crate::repr::relocations::Relocation;
 use crate::repr::symbols::views::{AllSymbols, SymbolsView};
 use crate::repr::symbols::{SymbolValue, Symbols};
 use cuddld_diagnostics::ObjectSpan;
-use cuddld_elf::{ElfClass, ElfDeduplication, ElfNote, ElfPermissions};
+use cuddld_dwarf::eh_encoding::{DwarfEhApplication, DwarfEhEncoding, DwarfEhValueFormat};
+use cuddld_elf::{ElfClass, ElfDeduplication, ElfEhFrameHdrEntry, ElfNote, ElfPermissions};
 use cuddld_macros::Getters;
 use cuddld_utils::ints::Length;
 use std::collections::VecDeque;
@@ -212,6 +213,7 @@ pub(crate) enum SectionContent {
     Relocations(RelocationsSection),
     Dynamic(DynamicSection),
     Notes(NotesSection),
+    EhFrameHdr(EhFrameHdrSection),
     SectionNames,
 }
 
@@ -388,6 +390,36 @@ impl NotesSection {
     }
 }
 
+#[derive(Debug)]
+pub(crate) struct EhFrameHdrSection {
+    pub(crate) eh_frame: SectionId,
+}
+
+impl EhFrameHdrSection {
+    pub(crate) fn new(eh_frame: SectionId) -> Self {
+        Self { eh_frame }
+    }
+
+    pub(crate) fn frame_pointer_encoding(&self) -> DwarfEhEncoding {
+        DwarfEhEncoding::Present {
+            value_format: DwarfEhValueFormat::I32,
+            application: DwarfEhApplication::PcRel,
+        }
+    }
+
+    pub(crate) fn entry_count_encoding(&self) -> DwarfEhEncoding {
+        DwarfEhEncoding::Missing
+    }
+
+    pub(crate) fn entry_encoding(&self) -> DwarfEhEncoding {
+        DwarfEhEncoding::Missing
+    }
+
+    pub(crate) fn entries(&self) -> &[ElfEhFrameHdrEntry] {
+        &[]
+    }
+}
+
 macro_rules! from {
     (impl From<$from:ident> for $enum:ident::$variant:ident) => {
         impl From<$from> for $enum {
@@ -407,6 +439,7 @@ from!(impl From<GnuHashSection> for SectionContent::GnuHash);
 from!(impl From<RelocationsSection> for SectionContent::Relocations);
 from!(impl From<DynamicSection> for SectionContent::Dynamic);
 from!(impl From<NotesSection> for SectionContent::Notes);
+from!(impl From<EhFrameHdrSection> for SectionContent::EhFrameHdr);
 
 #[derive(Debug)]
 struct RemovedSection {

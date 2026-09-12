@@ -22,6 +22,7 @@ harness = false
 [dependencies]
 cuddld_ar.workspace = true
 cuddld_diagnostics.workspace = true
+cuddld_dwarf.workspace = true
 cuddld_macros.workspace = true
 cuddld_pkg_config.workspace = true
 cuddld_elf.workspace = true
