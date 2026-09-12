@@ -12,7 +12,7 @@ use crate::raw::RawSectionHeader;
 use crate::reader::cursor::ReadCursor;
 use crate::reader::header::read_header;
 use crate::reader::sections::read_section;
-use crate::{ElfEnvironment, ElfObject, ElfSegment, ElfType};
+use crate::{ElfEnvironment, ElfObject, ElfSectionContent, ElfSegment, ElfType};
 use cuddld_utils::raw_types::RawTypeContext;
 use cuddld_utils::{Bits, Endian, OsAbi};
 use std::collections::BTreeMap;
@@ -72,10 +72,36 @@ impl<'src> ElfReader<'src> {
     }
 
     pub fn into_object(mut self) -> Result<ElfObject, LoadError> {
+        // The parsing of some sections depends on the name of the section, so we need to parse the
+        // section names string table first.
+        let section_names_table = read_section(
+            &mut self.cursor,
+            self.section_names_table,
+            None,
+            self.section_names_table,
+            self.sections
+                .remove(&self.section_names_table)
+                .ok_or(LoadError::MissingStringTable(self.section_names_table.index))?,
+        )?;
+        let ElfSectionContent::StringTable(section_names) = &section_names_table.content else {
+            return Err(LoadError::WrongStringTableType(self.section_names_table.index));
+        };
+
         let mut sections = BTreeMap::new();
         for (id, raw) in self.sections.into_iter() {
-            sections.insert(id, read_section(&mut self.cursor, self.section_names_table, id, raw)?);
+            sections.insert(
+                id,
+                read_section(
+                    &mut self.cursor,
+                    self.section_names_table,
+                    Some(section_names),
+                    id,
+                    raw,
+                )?,
+            );
         }
+        sections.insert(self.section_names_table, section_names_table);
+
         Ok(ElfObject {
             env: self.env,
             type_: self.type_,

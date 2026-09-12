@@ -31,9 +31,9 @@ pub enum LoadError {
     #[transparent]
     NonUtf8String(std::string::FromUtf8Error),
     #[display("there is no string table in section {f0}")]
-    MissingStringTable(u16),
+    MissingStringTable(u32),
     #[display("the type of section {f0} is not a string table")]
-    WrongStringTableType(u16),
+    WrongStringTableType(u32),
     #[display("missing string with offset {f1:#x} in table {f0}")]
     MissingString(u16, u32),
     #[display("missing section with id {f0:#x}")]

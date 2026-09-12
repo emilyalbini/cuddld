@@ -17,22 +17,26 @@ use crate::raw::RawSectionHeader;
 use crate::reader::ReadCursor;
 use crate::reader::sections::reader::HeaderMetadata;
 pub(super) use crate::reader::sections::reader::{SectionMetadata, SectionReader};
-use crate::{ElfDeduplication, ElfSection, ElfSectionContent};
+use crate::{ElfDeduplication, ElfSection, ElfSectionContent, ElfStringTable};
 
 pub(super) fn read_section(
     cursor: &mut ReadCursor<'_>,
-    section_names_table: ElfSectionId,
+    section_names_table_id: ElfSectionId,
+    section_names: Option<&ElfStringTable>,
     current_section: ElfSectionId,
     header: RawSectionHeader,
 ) -> Result<ElfSection, LoadError> {
-    read_section_inner(cursor, section_names_table, current_section, header).map_err(|inner| {
-        LoadError::FailedToParseSection { idx: current_section.index as _, inner: Box::new(inner) }
-    })
+    read_section_inner(cursor, section_names_table_id, section_names, current_section, header)
+        .map_err(|inner| LoadError::FailedToParseSection {
+            idx: current_section.index as _,
+            inner: Box::new(inner),
+        })
 }
 
 fn read_section_inner(
     cursor: &mut ReadCursor<'_>,
-    section_names_table: ElfSectionId,
+    section_names_table_id: ElfSectionId,
+    _section_names: Option<&ElfStringTable>,
     current_section: ElfSectionId,
     header: RawSectionHeader,
 ) -> Result<ElfSection, LoadError> {
@@ -131,7 +135,7 @@ fn read_section_inner(
     let is_retain = header.flags.gnu_retain;
 
     Ok(ElfSection {
-        name: ElfStringId { section: section_names_table, offset: header.name_offset },
+        name: ElfStringId { section: section_names_table_id, offset: header.name_offset },
         memory_address: header.memory_address,
         part_of_group: header.flags.group,
         content,
