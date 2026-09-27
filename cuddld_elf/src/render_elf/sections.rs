@@ -1,5 +1,6 @@
 use crate::ids::ElfSectionId;
 use crate::render_elf::names::Names;
+use crate::render_elf::resolve_string;
 use crate::render_elf::utils::render_perms;
 use crate::{
     ElfClass, ElfDeduplication, ElfDynamic, ElfDynamicDirective, ElfEhFrameHdr, ElfGnuHash,
@@ -8,6 +9,12 @@ use crate::{
     ElfSymbolDefinition, ElfSymbolTable, ElfSymbolType, ElfUninitializedSection, ElfUnknownSection,
 };
 use cuddld_diagnostics::widgets::{HexDump, Table, Text, Widget, WidgetGroup};
+use cuddld_dwarf::exception_frames::{
+    CommonInformationEntry, FrameDescriptionEntry, parse_exception_frames,
+};
+use cuddld_utils::raw_types::RawTypeContext;
+use std::io::Cursor;
+use std::iter::once;
 
 pub(super) fn render_section(
     names: &Names,
@@ -15,9 +22,14 @@ pub(super) fn render_section(
     id: ElfSectionId,
     section: &ElfSection,
 ) -> impl Widget + use<> {
+    let raw_name = resolve_string(object, section.name);
+
     let content: Vec<Box<dyn Widget>> = match &section.content {
         ElfSectionContent::Null => vec![Box::new(Text::new("empty section"))],
-        ElfSectionContent::Program(program) => render_section_program(program),
+        ElfSectionContent::Program(program) => match raw_name {
+            ".eh_frame" => render_section_eh_frame(object, section, program),
+            _ => render_section_program(program),
+        },
         ElfSectionContent::Uninitialized(uninit) => render_section_uninit(uninit),
         ElfSectionContent::SymbolTable(symbols) => render_section_symbols(names, symbols),
         ElfSectionContent::StringTable(strings) => render_section_strings(strings),
@@ -357,6 +369,96 @@ fn render_section_eh_frame_hdr(section: &ElfSection, efh: &ElfEhFrameHdr) -> Vec
     };
 
     vec![Box::new(intro), Box::new(encodings), Box::new(eh_frame_ptr), entries]
+}
+
+fn render_section_eh_frame(
+    object: &ElfObject,
+    section: &ElfSection,
+    program: &ElfProgramSection,
+) -> Vec<Box<dyn Widget>> {
+    let intro = Text::new(format!("EH frame | permissions: {}", program.perms));
+
+    let ctx = RawTypeContext::new(object.env.class, object.env.endian, object.env.abi);
+    match parse_exception_frames(
+        &ctx,
+        &mut Cursor::new(&program.raw),
+        section.memory_address.into(),
+    ) {
+        Ok(cies) => {
+            once(Box::new(intro) as Box<dyn Widget>).chain(cies.iter().map(render_cie)).collect()
+        }
+        Err(err) => {
+            let mut err_str = String::new();
+            let mut source = Some(&err as &dyn std::error::Error);
+            while let Some(err) = source {
+                if !err_str.is_empty() {
+                    err_str.push_str(": ");
+                }
+                err_str.push_str(&err.to_string());
+                source = err.source();
+            }
+            vec![
+                Box::new(intro),
+                Box::new(Text::new(format!("Warning: failed to parse EH frame: {err_str}"))),
+                Box::new(HexDump::new(program.raw.as_slice())),
+            ]
+        }
+    }
+}
+
+fn render_cie(cie: &CommonInformationEntry) -> Box<dyn Widget> {
+    let CommonInformationEntry {
+        offset,
+        code_alignment_factor,
+        data_alignment_factor,
+        return_address_column,
+        augmentations: _,
+        address_pointer_encoding,
+        lsda_pointer_encoding,
+        personality_routine,
+        instructions,
+        frames,
+    } = cie;
+
+    let mut facts = Vec::new();
+    facts.push(format!("Code alignment factor: {code_alignment_factor}"));
+    facts.push(format!("Data alignment factor: {data_alignment_factor}"));
+    facts.push(format!("Return address column: {return_address_column}"));
+    if let Some(ape) = address_pointer_encoding {
+        facts.push(format!("Address pointer encoding: {ape:?}"))
+    }
+    if let Some(lsda) = lsda_pointer_encoding {
+        facts.push(format!("LSDA pointer encoding: {lsda:?}"));
+    }
+    if let Some(routine) = personality_routine {
+        facts.push(format!("Personality routine: {routine}"))
+    }
+
+    Box::new(
+        WidgetGroup::new()
+            .name(format!("Common Information Entry | Offset: {offset}"))
+            .add(Text::new(facts.join("\n")))
+            .add(HexDump::new(instructions.as_slice()).title("Instructions:"))
+            .add_iter(frames.iter().map(render_fde)),
+    )
+}
+
+fn render_fde(fde: &FrameDescriptionEntry) -> Box<dyn Widget> {
+    let FrameDescriptionEntry { offset, address, length, lsda_address, instructions } = fde;
+
+    let mut facts = Vec::new();
+    facts.push(format!("Address: {address}"));
+    facts.push(format!("Length: {length}"));
+    if let Some(lsda) = lsda_address {
+        facts.push(format!("LSDA address: {lsda}"));
+    }
+
+    Box::new(
+        WidgetGroup::new()
+            .name(format!("Frame Description Entry | Offset: {offset}"))
+            .add(Text::new(facts.join("\n")))
+            .add(HexDump::new(instructions.as_slice()).title("Instructions:")),
+    )
 }
 
 fn render_section_dynamic(

@@ -22,14 +22,42 @@ section .eh_frame_hdr (address: 0x402000)
 
 section .eh_frame (address: 0x402020)
  │
- │  program data | permissions: R
+ │  EH frame | permissions: R
  │
- │  ╭─────────────────────────────────────────────────┬──────────────────╮
- │  │ 14 00 00 00 00 00 00 00 01 7a 52 00 01 78 10 01 │ .........zR..x.. │
- │  │ 1b 0c 07 08 90 01 00 00 10 00 00 00 1c 00 00 00 │ ................ │
- │  │ c0 ef ff ff 04 00 00 00 00 00 00 00 10 00 00 00 │ ................ │
- │  │ 30 00 00 00 b0 ef ff ff 04 00 00 00 00 00 00 00 │ 0............... │
- │  ╰─────────────────────────────────────────────────┴──────────────────╯
+ │  Common Information Entry | Offset: 0x0
+ │   │
+ │   │  Code alignment factor: 1
+ │   │  Data alignment factor: -8
+ │   │  Return address column: 16
+ │   │  Address pointer encoding: I32 | PcRel
+ │   │
+ │   │    Instructions:
+ │   │  ╭──────────────────────┬─────────╮
+ │   │  │ 0c 07 08 90 01 00 00 │ ....... │
+ │   │  ╰──────────────────────┴─────────╯
+ │   │
+ │   │  Frame Description Entry | Offset: 0x18
+ │   │   │
+ │   │   │  Address: 0x401000
+ │   │   │  Length: 0x4
+ │   │   │
+ │   │   │    Instructions:
+ │   │   │  ╭──────────┬─────╮
+ │   │   │  │ 00 00 00 │ ... │
+ │   │   │  ╰──────────┴─────╯
+ │   │   ┴
+ │   │
+ │   │  Frame Description Entry | Offset: 0x2c
+ │   │   │
+ │   │   │  Address: 0x401004
+ │   │   │  Length: 0x4
+ │   │   │
+ │   │   │    Instructions:
+ │   │   │  ╭──────────┬─────╮
+ │   │   │  │ 00 00 00 │ ... │
+ │   │   │  ╰──────────┴─────╯
+ │   │   ┴
+ │   ┴
  ┴
 
 no stderr present

@@ -2,3 +2,4 @@
 
 pub mod eh_encoding;
 pub mod leb128;
+pub mod exception_frames;

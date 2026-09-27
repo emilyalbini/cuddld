@@ -6,11 +6,17 @@ const BYTES_PER_LINE: usize = 16;
 
 pub struct HexDump {
     data: Vec<u8>,
+    title: Option<String>,
 }
 
 impl HexDump {
     pub fn new(data: impl Into<Vec<u8>>) -> Self {
-        Self { data: data.into() }
+        Self { data: data.into(), title: None }
+    }
+
+    pub fn title(mut self, title: impl Into<String>) -> Self {
+        self.title = Some(title.into());
+        self
     }
 }
 
@@ -36,6 +42,9 @@ impl Widget for HexDump {
         }
 
         let mut table = Table::new();
+        if let Some(title) = &self.title {
+            table.set_title(title);
+        }
         table.add_body([hex.trim(), ascii.trim()]);
         table.render(writer);
     }

@@ -103,6 +103,16 @@ impl Length {
         Ok(Length(self.0.checked_add(other.0).ok_or(OutOfBoundsError)?))
     }
 
+    pub fn add_offset(&self, other: Offset) -> Result<Length, OutOfBoundsError> {
+        if other.0 < 0 {
+            let absolute = u64::try_from(other.0.abs()).map_err(|_| OutOfBoundsError)?;
+            Ok(Length(self.0.checked_sub(absolute).ok_or(OutOfBoundsError)?))
+        } else {
+            let positive = u64::try_from(other.0.abs()).map_err(|_| OutOfBoundsError)?;
+            Ok(Length(self.0.checked_add(positive).ok_or(OutOfBoundsError)?))
+        }
+    }
+
     pub fn as_offset(&self) -> Result<Offset, OutOfBoundsError> {
         Ok(i64::try_from(self.0).map_err(|_| OutOfBoundsError)?.into())
     }

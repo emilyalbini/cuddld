@@ -1,3 +1,4 @@
+use crate::leb128::{Leb128Error, decode_signed_leb128, decode_unsigned_leb128};
 use cuddld_utils::raw_types::{
     ContextFrom, PointerSize, RawReadError, RawType, RawTypeContext, RawWriteError, SizedRawType,
 };
@@ -105,7 +106,9 @@ impl SizedRawType for DwarfEhEncoding {
 impl std::fmt::Debug for DwarfEhEncoding {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Present { value_format, application } => write!(f, "{value_format:?} | {application:?}"),
+            Self::Present { value_format, application } => {
+                write!(f, "{value_format:?} | {application:?}")
+            }
             Self::Missing => write!(f, "Missing"),
         }
     }
@@ -170,6 +173,9 @@ impl RawType<DwarfEhContext<'_>> for u64 {
                 DwarfEhValueFormat::U16 => u16::read(ctx.ctx, reader)?.into(),
                 DwarfEhValueFormat::U32 => u32::read(ctx.ctx, reader)?.into(),
                 DwarfEhValueFormat::U64 => u64::read(ctx.ctx, reader)?,
+                DwarfEhValueFormat::ULeb128 => decode_unsigned_leb128(reader)
+                    .and_then(|decoded| decoded.try_into().map_err(|_| Leb128Error::Overflow))
+                    .map_err(|e| RawReadError::custom::<Self>(e.to_string()))?,
                 vf => {
                     return Err(RawReadError::custom::<Self>(format!(
                         "failed to read {vf:?} into u64"
@@ -208,6 +214,9 @@ impl RawType<DwarfEhContext<'_>> for i64 {
                 DwarfEhValueFormat::I16 => i16::read(ctx.ctx, reader)?.into(),
                 DwarfEhValueFormat::I32 => i32::read(ctx.ctx, reader)?.into(),
                 DwarfEhValueFormat::I64 => i64::read(ctx.ctx, reader)?,
+                DwarfEhValueFormat::ILeb128 => decode_signed_leb128(reader)
+                    .and_then(|decoded| decoded.try_into().map_err(|_| Leb128Error::Overflow))
+                    .map_err(|e| RawReadError::custom::<Self>(e.to_string()))?,
                 vf => {
                     return Err(RawReadError::custom::<Self>(format!(
                         "failed to read {vf:?} into i64"

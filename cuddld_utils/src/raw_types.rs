@@ -1,5 +1,6 @@
 use crate::bitfields::BitfieldReadError;
 use crate::{Bits, Endian, OsAbi};
+use std::ffi::CString;
 use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Copy)]
@@ -137,6 +138,26 @@ macro_rules! impl_pointersized_for_int {
 }
 
 impl_pointersized_for_int!(i64 or i32, u64 or u32);
+
+impl RawType for CString {
+    fn read(_ctx: &RawTypeContext, reader: &mut dyn Read) -> Result<Self, RawReadError> {
+        let mut contents = Vec::new();
+        let mut buf = [0];
+        loop {
+            reader.read_exact(&mut buf).map_err(RawReadError::io::<Self>)?;
+            if buf[0] == 0 {
+                break;
+            } else {
+                contents.push(buf[0]);
+            }
+        }
+        Ok(CString::new(contents).unwrap())
+    }
+
+    fn write(&self, _ctx: &RawTypeContext, writer: &mut dyn Write) -> Result<(), RawWriteError> {
+        writer.write_all(self.as_bytes_with_nul()).map_err(RawWriteError::io::<Self>)
+    }
+}
 
 #[derive(Debug)]
 pub struct RawReadError {
