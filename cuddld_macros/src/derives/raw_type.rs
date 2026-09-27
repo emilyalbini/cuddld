@@ -19,13 +19,15 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
         },
     );
 
-    let sized_raw_type = generate_impl_for(
-        &Item::Struct(parsed.clone()),
-        Some("cuddld_utils::raw_types::SizedRawType"),
-        quote! {
-            #{ fn_size(&fields32) }
-        },
-    );
+    let sized_raw_type = if let Some(size) = fn_size(&fields32) {
+        generate_impl_for(
+            &Item::Struct(parsed.clone()),
+            Some("cuddld_utils::raw_types::SizedRawType"),
+            size,
+        )
+    } else {
+        quote!()
+    };
 
     Ok(quote! {
         #raw_type
@@ -33,21 +35,23 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
     })
 }
 
-fn fn_size(fields: &[Field<'_>]) -> TokenStream {
+fn fn_size(fields: &[Field<'_>]) -> Option<TokenStream> {
     let mut addends = Vec::new();
     for Field { field_ty, ctx, .. } in fields {
         let ctx = match ctx {
             Ctx::Default => quote!(ctx),
             Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
+            Ctx::Leb128 => return None,
         };
-        addends.push(quote! { + <#field_ty as cuddld_utils::raw_types::SizedRawType<_>>::size(#ctx) });
+        addends
+            .push(quote! { + <#field_ty as cuddld_utils::raw_types::SizedRawType<_>>::size(#ctx) });
     }
 
-    quote! {
+    Some(quote! {
         fn size(ctx: &cuddld_utils::raw_types::RawTypeContext) -> usize {
             0 #addends
         }
-    }
+    })
 }
 
 fn fn_read(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
@@ -57,6 +61,7 @@ fn fn_read(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
             let ctx = match ctx {
                 Ctx::Default => quote!(ctx),
                 Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
+                Ctx::Leb128 => quote!(&cuddld_dwarf::leb128::Leb128),
             };
             setters.push(quote! {
                 #name: cuddld_utils::raw_types::RawReadError::wrap_field::<Self, _>(
@@ -90,6 +95,7 @@ fn fn_write(fields32: &[Field<'_>], fields64: &[Field<'_>]) -> TokenStream {
             let ctx = match ctx {
                 Ctx::Default => quote!(ctx),
                 Ctx::PointerSize => quote!(&cuddld_utils::raw_types::PointerSize(ctx)),
+                Ctx::Leb128 => quote!(&cuddld_dwarf::leb128::Leb128),
             };
             writes.push(quote! {
                 cuddld_utils::raw_types::RawWriteError::wrap_field::<Self, _>(
@@ -128,11 +134,27 @@ fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>,
 
     for field in parsed_fields {
         let mut insert_at = fields.len();
-        let mut ctx = Ctx::Default;
+        let mut ctx = None;
 
         if let Some(attr) = field.attrs.get("pointer_size")? {
             attr.must_be_empty()?;
-            ctx = Ctx::PointerSize;
+            if ctx.is_none() {
+                ctx = Some(Ctx::PointerSize);
+            } else {
+                return Err(
+                    Error::new("cannot have multiple attributes defining parsing").span(attr.span)
+                );
+            }
+        }
+        if let Some(attr) = field.attrs.get("leb128")? {
+            attr.must_be_empty()?;
+            if ctx.is_none() {
+                ctx = Some(Ctx::Leb128);
+            } else {
+                return Err(
+                    Error::new("cannot have multiple attributes defining parsing").span(attr.span)
+                );
+            }
         }
         if let Some(attr) = field.attrs.get("placed_on_elf32_after")? {
             let after = attr.get_equals_to_str()?;
@@ -151,7 +173,10 @@ fn prepare_field_list(parsed: &Struct, is_elf32: bool) -> Result<Vec<Field<'_>>,
             }
         }
 
-        fields.insert(insert_at, Field { name: &field.name, field_ty: &field.ty, ctx });
+        fields.insert(
+            insert_at,
+            Field { name: &field.name, field_ty: &field.ty, ctx: ctx.unwrap_or(Ctx::Default) },
+        );
     }
 
     Ok(fields)
@@ -166,4 +191,5 @@ struct Field<'a> {
 enum Ctx {
     Default,
     PointerSize,
+    Leb128,
 }

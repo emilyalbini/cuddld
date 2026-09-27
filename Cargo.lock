@@ -36,6 +36,7 @@ dependencies = [
 name = "cuddld_dwarf"
 version = "0.0.0"
 dependencies = [
+ "cuddld_macros",
  "cuddld_utils",
 ]
 
