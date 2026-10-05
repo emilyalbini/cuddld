@@ -1,5 +1,6 @@
 pub(crate) mod analyze_relocations;
 pub(crate) mod build_elf;
+pub(crate) mod populate_eh_frame_hdr;
 pub(crate) mod convert_relocation_modes;
 pub(crate) mod create_segments;
 pub(crate) mod demote_global_hidden_symbols;

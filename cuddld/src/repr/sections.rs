@@ -393,11 +393,16 @@ impl NotesSection {
 #[derive(Debug)]
 pub(crate) struct EhFrameHdrSection {
     pub(crate) eh_frame: SectionId,
+    pub(crate) content: EhFrameHdrContent,
 }
 
 impl EhFrameHdrSection {
-    pub(crate) fn new(eh_frame: SectionId) -> Self {
-        Self { eh_frame }
+    pub(crate) fn placeholder(eh_frame: SectionId, count: usize) -> Self {
+        Self { eh_frame, content: EhFrameHdrContent::Placeholder { count } }
+    }
+
+    pub(crate) fn set_content(&mut self, entries: Vec<ElfEhFrameHdrEntry>) {
+        self.content = EhFrameHdrContent::Present { entries };
     }
 
     pub(crate) fn frame_pointer_encoding(&self) -> DwarfEhEncoding {
@@ -408,16 +413,40 @@ impl EhFrameHdrSection {
     }
 
     pub(crate) fn entry_count_encoding(&self) -> DwarfEhEncoding {
-        DwarfEhEncoding::Missing
+        DwarfEhEncoding::Present {
+            value_format: DwarfEhValueFormat::U32,
+            application: DwarfEhApplication::Absolute,
+        }
     }
 
     pub(crate) fn entry_encoding(&self) -> DwarfEhEncoding {
-        DwarfEhEncoding::Missing
+        DwarfEhEncoding::Present {
+            value_format: DwarfEhValueFormat::I32,
+            application: DwarfEhApplication::DataRel,
+        }
     }
 
     pub(crate) fn entries(&self) -> &[ElfEhFrameHdrEntry] {
-        &[]
+        match &self.content {
+            EhFrameHdrContent::Placeholder { .. } => {
+                panic!("trying to get .eh_frame_hdr entries of a pending section");
+            }
+            EhFrameHdrContent::Present { entries } => entries,
+        }
     }
+
+    pub(crate) fn entries_count(&self) -> usize {
+        match &self.content {
+            EhFrameHdrContent::Placeholder { count } => *count,
+            EhFrameHdrContent::Present { entries } => entries.len(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum EhFrameHdrContent {
+    Placeholder { count: usize },
+    Present { entries: Vec<ElfEhFrameHdrEntry> },
 }
 
 macro_rules! from {

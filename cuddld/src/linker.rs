@@ -18,6 +18,8 @@ use cuddld_diagnostics::GatheredContext;
 use cuddld_elf::ElfObject;
 use cuddld_elf::writer::layout::{Layout, LayoutError};
 use cuddld_macros::{Display, Error};
+use crate::passes::inject_eh_frame_hdr::InjectEhFrameHdrError;
+use crate::passes::populate_eh_frame_hdr::PopulateEhFrameHdrError;
 
 pub(crate) struct Linker {
     options: CliOptions,
@@ -70,7 +72,7 @@ impl Linker {
         passes::generate_got::generate_got(&options, &mut object, &relocs_analysis, &dynamic)?;
         passes::generate_plt::run(&mut object);
 
-        passes::inject_eh_frame_hdr::run(&mut object);
+        passes::inject_eh_frame_hdr::run(&mut object)?;
         passes::generate_gnu_property::run(&mut object);
 
         passes::exclude_section_symbols_from_tables::remove(&mut object);
@@ -90,6 +92,7 @@ impl Linker {
 
         passes::convert_relocation_modes::run(&mut object)?;
         passes::replace_section_relative_symbols::replace(&mut object, &resolver)?;
+        passes::populate_eh_frame_hdr::run(&mut object, &layout)?;
 
         let (elf, conversion_map) = passes::build_elf::run(&object, &layout, &resolver)?;
         callbacks.on_elf_built(&elf);
@@ -139,4 +142,8 @@ pub(crate) enum LinkerError {
     ReplaceSectionRelativeSymbolsFailed(ReplaceSectionRelativeSymbolsError),
     #[transparent]
     WriteToDiskFailed(WriteToDiskError),
+    #[display("failed to inject .eh_frame_hdr")]
+    InjectEhFrameHdr(#[from] InjectEhFrameHdrError),
+    #[display("failed to populate .eh_frame_hdr")]
+    PopulateEhFrameHdr(#[from] PopulateEhFrameHdrError),
 }

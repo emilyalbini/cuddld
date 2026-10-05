@@ -157,7 +157,7 @@ impl LayoutDetailsProvider<SectionId> for Object {
             frame_pointer_encoding: efh.frame_pointer_encoding(),
             entry_count_encoding: efh.entry_count_encoding(),
             entry_encoding: efh.entry_encoding(),
-            entries_count: efh.entries().len(),
+            entries_count: efh.entries_count(),
         }
     }
 

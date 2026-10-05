@@ -56,8 +56,8 @@ debug print: calculated layout
  │  │ .comment                                             │ 0x4f7       │ 0x57        │ -              │ -             │
  │  │ <padding>                                            │ 0x54e       │ 0xab2       │ -              │ -             │
  │  │ .eh_frame                                            │ 0x1000      │ 0x78        │ 0x400000       │ 0x78          │
- │  │ .eh_frame_hdr                                        │ 0x1078      │ 0x8         │ 0x400078       │ 0x8           │
- │  │ <padding>                                            │ 0x1080      │ 0xf80       │ -              │ -             │
+ │  │ .eh_frame_hdr                                        │ 0x1078      │ 0x24        │ 0x400078       │ 0x24          │
+ │  │ <padding>                                            │ 0x109c      │ 0xf64       │ -              │ -             │
  │  │ .text._RNvCsjjZ7o4X8YX3_7___rustc17rust_begin_unwind │ 0x2000      │ 0x4         │ 0x401000       │ 0x4           │
  │  │ .text._start                                         │ 0x2004      │ 0x4         │ 0x401004       │ 0x4           │
  │  │ .text                                                │ 0x2008      │ 0x7         │ 0x401008       │ 0x7           │
@@ -172,11 +172,18 @@ debug print: built elf
  │   │  EH Frame Header
  │   │
  │   │  .eh_frame pointer encoding: I32 | PcRel
- │   │  entries encoding:           Missing
- │   │  entries count encoding:     Missing
+ │   │  entries encoding:           I32 | DataRel
+ │   │  entries count encoding:     U32 | Absolute
  │   │
  │   │  .eh_frame pointer: 0x400000 (raw offset: -0x7c)
  │   │
- │   │  There are no entries stored in the binary search table
+ │   │    Binary search entries:
+ │   │  ╭──────────────────────────┬──────────────────────╮
+ │   │  │ Function pointer         │ FDE                  │
+ │   │  ├──────────────────────────┼──────────────────────┤
+ │   │  │ 0x401000 (offset: 0xf88) │ 0x18 (offset: -0x60) │
+ │   │  │ 0x401004 (offset: 0xf8c) │ 0x2c (offset: -0x4c) │
+ │   │  │ 0x401008 (offset: 0xf90) │ 0x58 (offset: -0x20) │
+ │   │  ╰──────────────────────────┴──────────────────────╯
  │   ┴
  ┴
