@@ -226,18 +226,6 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
     };
 
     match options.mode {
-        Mode::PositionDependent | Mode::SharedLibrary => {
-            if options.read_only_got {
-                return Err(CliError::RelroOnlyForPie);
-            }
-            if options.read_only_got_plt {
-                return Err(CliError::NowOnlyForPie);
-            }
-        }
-        Mode::PositionIndependent => {}
-    }
-
-    match options.mode {
         Mode::PositionDependent | Mode::PositionIndependent => {
             if options.shared_object_name.is_some() {
                 return Err(CliError::UnsupportedSharedObjectName);

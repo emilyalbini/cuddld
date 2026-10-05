@@ -239,11 +239,6 @@ fn test_norelro() {
 }
 
 #[test]
-fn test_relro_without_pie() {
-    assert_parse(&["input.o", "-zrelro"], Err(CliError::RelroOnlyForPie));
-}
-
-#[test]
 fn test_multiple_relro_flags() {
     assert_reject_duplicate_multiple(&[
         &["input.o", "-zrelro", "-zrelro"],
@@ -280,11 +275,6 @@ fn test_multiple_now_flags() {
         &["input.o", "-zlazy", "-znow"],
         &["input.o", "-zlazy", "-zlazy"],
     ]);
-}
-
-#[test]
-fn test_now_without_pie() {
-    assert_parse(&["input.o", "-znow"], Err(CliError::NowOnlyForPie));
 }
 
 #[test]

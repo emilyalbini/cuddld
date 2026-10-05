@@ -126,10 +126,6 @@ pub(crate) enum CliError {
     FlagDoesNotAcceptValues(String),
     #[display("missing value for flag {f0}")]
     MissingValueForFlag(String),
-    #[display("-z relro is only supported in PIE mode")]
-    RelroOnlyForPie,
-    #[display("-z now is only supported in PIE mode")]
-    NowOnlyForPie,
     #[display("setting the shared object name is only supported when building shared objects")]
     UnsupportedSharedObjectName,
     #[display("sysroot-relative library paths are not supported yet")]
