@@ -266,7 +266,7 @@ fn render_section_gnu_hash(
             .chain
             .iter()
             .enumerate()
-            .skip((*start_symtab_index - gnu_hash.symbols_offset) as usize)
+            .skip(((*start_symtab_index).saturating_sub(gnu_hash.symbols_offset)) as usize)
         {
             symbols.push((
                 symbol_table
