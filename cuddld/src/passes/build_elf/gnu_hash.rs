@@ -84,7 +84,9 @@ pub(super) fn create_gnu_hash<'a>(
     }
 
     // Ensure the chain is terminated by setting the least significant bit of the last element to 1.
-    *chain.last_mut().expect("empty chain") |= 1;
+    if let Some(last) = chain.last_mut() {
+        *last |= 1;
+    }
 
     ElfSectionContent::GnuHash(ElfGnuHash {
         symbol_table,
