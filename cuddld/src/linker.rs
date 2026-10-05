@@ -65,6 +65,9 @@ impl Linker {
             callbacks.on_sections_removed_by_gc(&object, &removed);
         }
 
+        // This must run before relocation analysis, as it changes some relocation types.
+        passes::plt32_to_pc32::run(&mut object);
+
         let relocs_analysis = passes::analyze_relocations::run(&object)?;
         callbacks.on_relocations_analyzed(&object, &relocs_analysis);
 

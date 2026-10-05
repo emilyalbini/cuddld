@@ -18,6 +18,7 @@ pub(crate) mod layout;
 pub(crate) mod load_inputs;
 pub(crate) mod mark_shared_library_symbols;
 pub(crate) mod merge_sections;
+pub(crate) mod plt32_to_pc32;
 pub(crate) mod relocate;
 pub(crate) mod replace_section_relative_symbols;
 pub(crate) mod write_to_disk;
