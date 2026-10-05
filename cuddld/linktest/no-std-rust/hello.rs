@@ -1,4 +1,5 @@
 #![no_std]
+#![no_main]
 
 fn write(fd: u64, content: &str) {
     let content = content.as_bytes();
