@@ -49,6 +49,9 @@ pub(super) fn render_section(
     if section.part_of_group {
         extra.push_str(", part of a group");
     }
+    if section.exclude {
+        extra.push_str(", should be excluded from input");
+    }
 
     WidgetGroup::new()
         .name(format!(

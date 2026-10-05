@@ -35,6 +35,10 @@ pub(super) fn merge_elf(
 
     let mut all_elf_section_ids = Vec::new();
     for (section_id, section) in elf.sections.into_iter() {
+        if section.exclude {
+            continue;
+        }
+
         all_elf_section_ids.push(section_id);
         match section.content {
             ElfSectionContent::Null => {}

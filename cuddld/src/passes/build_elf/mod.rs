@@ -175,6 +175,7 @@ impl<'a> ElfBuilder<'a> {
                 part_of_group: false,
                 content: ElfSectionContent::Null,
                 retain: false,
+                exclude: false,
             },
         );
 
@@ -285,6 +286,7 @@ impl<'a> ElfBuilder<'a> {
                         .unwrap_or(0),
                     part_of_group: false,
                     retain: section.retain,
+                    exclude: false,
                     content,
                 },
             );

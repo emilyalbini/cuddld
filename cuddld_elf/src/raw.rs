@@ -1,6 +1,6 @@
+use cuddld_dwarf::eh_encoding::DwarfEhEncoding;
 use cuddld_macros::{Bitfield, RawType};
 use cuddld_utils::raw_types::RawPadding;
-use cuddld_dwarf::eh_encoding::DwarfEhEncoding;
 
 #[derive(RawType)]
 pub struct RawIdentification {
@@ -75,6 +75,8 @@ pub struct RawSectionHeaderFlags {
     #[bit(21)]
     #[bitfield_only_on_abi(Gnu)]
     pub gnu_retain: bool,
+    #[bit(31)]
+    pub exclude: bool,
 }
 
 #[derive(RawType)]

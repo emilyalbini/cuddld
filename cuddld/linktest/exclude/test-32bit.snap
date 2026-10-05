@@ -1,0 +1,14 @@
+linking exited with exit status: 0
+
+no stdout present
+
+=== stderr ===
+debug print: loaded object
+ │
+ │  section .text (perms: rx) in test.o
+ │   │
+ │   │  ╭────┬───╮
+ │   │  │ 90 │ . │
+ │   │  ╰────┴───╯
+ │   ┴
+ ┴

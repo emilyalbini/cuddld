@@ -140,6 +140,7 @@ fn read_section_inner(
     };
 
     let is_retain = header.flags.gnu_retain;
+    let exclude = header.flags.exclude;
 
     Ok(ElfSection {
         name: ElfStringId { section: section_names_table_id, offset: header.name_offset },
@@ -147,6 +148,7 @@ fn read_section_inner(
         part_of_group: header.flags.group,
         content,
         retain: is_retain,
+        exclude,
     })
 }
 

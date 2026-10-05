@@ -94,6 +94,7 @@ pub struct ElfSection {
     pub part_of_group: bool,
     pub content: ElfSectionContent,
     pub retain: bool,
+    pub exclude: bool,
 }
 
 #[derive(Debug)]
