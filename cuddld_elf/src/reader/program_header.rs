@@ -14,6 +14,7 @@ pub(super) fn read_program_header(cursor: &mut ReadCursor<'_>) -> Result<ElfSegm
             3 => ElfSegmentType::Interpreter,
             4 => ElfSegmentType::Note,
             6 => ElfSegmentType::ProgramHeaderTable,
+            0x6474e550 => ElfSegmentType::GnuEhFrame,
             0x6474e551 => ElfSegmentType::GnuStack,
             0x6474e552 => ElfSegmentType::GnuRelro,
             0x6474e553 => ElfSegmentType::GnuProperty,
