@@ -280,7 +280,7 @@ enum EitherRelocation {
 pub(crate) enum MergeElfError {
     #[display("unsupported note with name {name} and type {type_}")]
     UnsupportedUnknownNote { name: String, type_: u32 },
-    #[display("unsupported GNU property with type {type_}")]
+    #[display("unsupported GNU property with type {type_:#x?}")]
     UnsupportedUnknownGnuProperty { type_: u32 },
     #[display("unknown section with type {id:#x?} is not supported")]
     UnsupportedUnknownSection { id: u32 },
