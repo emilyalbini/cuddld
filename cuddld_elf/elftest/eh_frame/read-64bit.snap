@@ -12,12 +12,12 @@ section .eh_frame_hdr (address: 0x402000)
  │  .eh_frame pointer: 0x402020 (raw offset: 0x1c)
  │
  │    Binary search entries:
- │  ╭────────────────────┬──────╮
- │  │ Pointer            │ Info │
- │  ├────────────────────┼──────┤
- │  │ 0xfffffffffffff000 │ 0x38 │
- │  │ 0xfffffffffffff004 │ 0x4c │
- │  ╰────────────────────┴──────╯
+ │  ╭────────────────────────────┬─────────────────────╮
+ │  │ Function pointer           │ FDE                 │
+ │  ├────────────────────────────┼─────────────────────┤
+ │  │ 0x401000 (offset: -0x1000) │ 0x18 (offset: 0x38) │
+ │  │ 0x401004 (offset: -0xffc)  │ 0x2c (offset: 0x4c) │
+ │  ╰────────────────────────────┴─────────────────────╯
  ┴
 
 section .eh_frame (address: 0x402020)

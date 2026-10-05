@@ -557,8 +557,8 @@ impl<'a> Writer<'a> {
         self.write_raw_ctx(&section.frame_pointer_encoding, section.frame_pointer)?;
         self.write_raw_ctx(&section.entry_count_encoding, section.entries.len() as u64)?;
         for entry in &section.entries {
-            self.write_raw_ctx(&section.entry_encoding, entry.pointer)?;
-            self.write_raw_ctx(&section.entry_encoding, entry.info)?;
+            self.write_raw_ctx(&section.entry_encoding, entry.pointer_offset)?;
+            self.write_raw_ctx(&section.entry_encoding, entry.fde_offset)?;
         }
 
         Ok(())

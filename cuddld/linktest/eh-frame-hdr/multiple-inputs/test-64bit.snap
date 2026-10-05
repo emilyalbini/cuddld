@@ -175,7 +175,7 @@ debug print: built elf
  │   │  entries encoding:           Missing
  │   │  entries count encoding:     Missing
  │   │
- │   │  .eh_frame pointer: 0x400000 (raw offset: 0xffffffffffffff84)
+ │   │  .eh_frame pointer: 0x400000 (raw offset: -0x7c)
  │   │
  │   │  There are no entries stored in the binary search table
  │   ┴

@@ -496,8 +496,8 @@ pub struct ElfEhFrameHdr {
 
 #[derive(Debug, Clone)]
 pub struct ElfEhFrameHdrEntry {
-    pub pointer: i64,
-    pub info: i64,
+    pub pointer_offset: i64,
+    pub fde_offset: i64,
 }
 
 #[derive(Debug)]

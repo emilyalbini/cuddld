@@ -16,8 +16,8 @@ pub(super) fn read(reader: &mut SectionReader<'_, '_>) -> Result<ElfEhFrameHdr, 
     let mut entries = Vec::new();
     for _ in 0..entries_count {
         entries.push(ElfEhFrameHdrEntry {
-            pointer: cursor.read_raw_ctx(&header.table_enc)?,
-            info: cursor.read_raw_ctx(&header.table_enc)?,
+            pointer_offset: cursor.read_raw_ctx(&header.table_enc)?,
+            fde_offset: cursor.read_raw_ctx(&header.table_enc)?,
         });
     }
 

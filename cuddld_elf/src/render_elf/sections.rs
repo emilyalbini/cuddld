@@ -12,6 +12,7 @@ use cuddld_diagnostics::widgets::{HexDump, Table, Text, Widget, WidgetGroup};
 use cuddld_dwarf::exception_frames::{
     CommonInformationEntry, FrameDescriptionEntry, parse_exception_frames,
 };
+use cuddld_utils::ints::Offset;
 use cuddld_utils::raw_types::RawTypeContext;
 use std::io::Cursor;
 use std::iter::once;
@@ -350,18 +351,30 @@ fn render_section_eh_frame_hdr(section: &ElfSection, efh: &ElfEhFrameHdr) -> Vec
         efh.frame_pointer_encoding, efh.entry_encoding, efh.entry_count_encoding,
     ));
 
+    let eh_frame_addr = section.memory_address as i64 + efh.frame_pointer + 4;
     let eh_frame_ptr = Text::new(format!(
-        ".eh_frame pointer: {:#x} (raw offset: {:#x})",
-        section.memory_address as i64 + efh.frame_pointer + 4,
-        efh.frame_pointer,
+        ".eh_frame pointer: {} (raw offset: {})",
+        Offset::from(eh_frame_addr),
+        Offset::from(efh.frame_pointer),
     ));
 
     let entries = if !efh.entries.is_empty() {
         let mut entries = Table::new();
         entries.set_title("Binary search entries:");
-        entries.add_head(["Pointer", "Info"]);
+        entries.add_head(["Function pointer", "FDE"]);
         for entry in &efh.entries {
-            entries.add_body([format!("{:#x}", entry.pointer), format!("{:#x}", entry.info)]);
+            entries.add_body([
+                format!(
+                    "{} (offset: {})",
+                    Offset::from(section.memory_address as i64 + entry.pointer_offset),
+                    Offset::from(entry.pointer_offset)
+                ),
+                format!(
+                    "{} (offset: {})",
+                    Offset::from(entry.fde_offset - efh.frame_pointer - 4),
+                    Offset::from(entry.fde_offset)
+                ),
+            ]);
         }
         Box::new(entries) as Box<dyn Widget>
     } else {

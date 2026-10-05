@@ -12,12 +12,12 @@ section .eh_frame_hdr (address: 0x804a000)
  │  .eh_frame pointer: 0x804a01c (raw offset: 0x18)
  │
  │    Binary search entries:
- │  ╭────────────────────┬──────╮
- │  │ Pointer            │ Info │
- │  ├────────────────────┼──────┤
- │  │ 0xfffffffffffff000 │ 0x34 │
- │  │ 0xfffffffffffff004 │ 0x48 │
- │  ╰────────────────────┴──────╯
+ │  ╭─────────────────────────────┬─────────────────────╮
+ │  │ Function pointer            │ FDE                 │
+ │  ├─────────────────────────────┼─────────────────────┤
+ │  │ 0x8049000 (offset: -0x1000) │ 0x18 (offset: 0x34) │
+ │  │ 0x8049004 (offset: -0xffc)  │ 0x2c (offset: 0x48) │
+ │  ╰─────────────────────────────┴─────────────────────╯
  ┴
 
 section .eh_frame (address: 0x804a01c)
