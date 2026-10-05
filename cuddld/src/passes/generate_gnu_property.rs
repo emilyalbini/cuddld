@@ -19,10 +19,12 @@ pub(crate) fn run(object: &mut Object) {
     //     https://gitlab.com/x86-psABIs/x86-64-ABI/-/merge_requests/13
     //
     let mut merged_x86_isa_used = AndOrState::Initial;
+    let mut merged_x86_features1_and = AndState::Initial;
     let mut merged_x86_features2_used = AndOrState::Initial;
 
     for input in &object.inputs {
-        let GnuProperties { x86_isa_used, x86_features_2_used } = &input.gnu_properties;
+        let GnuProperties { x86_isa_used, x86_features_1_and, x86_features_2_used } =
+            &input.gnu_properties;
 
         // Do not merge GNU Properties of shared objects.
         if input.shared_object.is_some() {
@@ -30,12 +32,16 @@ pub(crate) fn run(object: &mut Object) {
         }
 
         merged_x86_isa_used.merge(*x86_isa_used);
+        merged_x86_features1_and.merge(*x86_features_1_and);
         merged_x86_features2_used.merge(*x86_features_2_used);
     }
 
     let mut properties = Vec::new();
     if let Some(val) = merged_x86_isa_used.prepare_for_adding() {
         properties.push(ElfGnuProperty::X86IsaUsed(val));
+    }
+    if let Some(val) = merged_x86_features1_and.prepare_for_adding() {
+        properties.push(ElfGnuProperty::X86Features1And(val));
     }
     if let Some(val) = merged_x86_features2_used.prepare_for_adding() {
         properties.push(ElfGnuProperty::X86Features2Used(val));
@@ -52,6 +58,29 @@ pub(crate) fn run(object: &mut Object) {
             perms: ElfPermissions::R,
             content: vec![SegmentContent::Section(id)],
         });
+    }
+}
+
+enum AndState<T> {
+    Initial,
+    Present(T),
+}
+
+impl<T: Bitfield + Copy> AndState<T> {
+    fn merge(&mut self, other: Option<T>) {
+        match (&self, other) {
+            (_, None) => *self = AndState::Present(T::empty()),
+            (AndState::Initial, Some(initial)) => *self = AndState::Present(initial),
+            (AndState::Present(old), Some(new)) => *self = AndState::Present(old.and(&new)),
+        }
+    }
+
+    fn prepare_for_adding(self) -> Option<T> {
+        match self {
+            AndState::Initial => panic!("adding a note in the initial state"),
+            AndState::Present(val) if !val.is_empty() => Some(val),
+            AndState::Present(_) => None,
+        }
     }
 }
 

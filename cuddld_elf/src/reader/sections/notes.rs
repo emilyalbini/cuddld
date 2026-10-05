@@ -3,8 +3,7 @@ use crate::raw::RawNoteHeader;
 use crate::reader::ReadCursor;
 use crate::reader::sections::SectionReader;
 use crate::{
-    ElfGnuProperty, ElfNote, ElfNotesTable, ElfUnknownGnuProperty, ElfUnknownNote, ElfX86Features2,
-    ElfX86Isa,
+    ElfGnuProperty, ElfNote, ElfNotesTable, ElfUnknownGnuProperty, ElfUnknownNote, ElfX86Features1, ElfX86Features2, ElfX86Isa,
 };
 use cuddld_utils::Bits;
 use cuddld_utils::bitfields::Bitfield;
@@ -75,6 +74,15 @@ fn read_gnu_property(
         })?;
 
         match type_ {
+            // GNU_PROPERTY_X86_FEATURE_1_AND
+            0xc0000002 => {
+                let mut cursor = reader.cursor_for(data);
+                properties.push(ElfGnuProperty::X86Features1And(
+                    ElfX86Features1::read(cursor.read_raw()?, cursor.raw_type_ctx().into())
+                        .map_err(LoadError::X86Features1And)?,
+                ));
+                
+            }
             // GNU_PROPERTY_X86_FEATURE_2_USED
             0xc0010001 => {
                 let mut cursor = reader.cursor_for(data);

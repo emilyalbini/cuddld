@@ -1,7 +1,7 @@
 use crate::debug_print::filters::ObjectsFilter;
 use crate::debug_print::names::Names;
 use crate::debug_print::utils::permissions;
-use crate::repr::object::Object;
+use crate::repr::object::{GnuProperties, Object};
 use crate::repr::relocations::{Relocation, RelocationAddend};
 use crate::repr::sections::{
     DataSection, DynamicSection, EhFrameHdrSection, GnuHashSection, NotesSection,
@@ -341,11 +341,17 @@ fn render_inputs(object: &Object) -> Box<dyn Widget> {
         let mut table = Table::new();
         table.set_title(title.clone());
 
+        let GnuProperties { x86_isa_used, x86_features_1_and, x86_features_2_used } =
+            &input.gnu_properties;
+
         table.add_head(["Property", "Value"]);
-        if let Some(isa) = &input.gnu_properties.x86_isa_used {
+        if let Some(isa) = x86_isa_used {
             table.add_body(["X86 ISA used".to_string(), isa.to_string()]);
         }
-        if let Some(features2) = &input.gnu_properties.x86_features_2_used {
+        if let Some(features1) = x86_features_1_and {
+            table.add_body(["X86 features 1 and".to_string(), features1.to_string()]);
+        }
+        if let Some(features2) = x86_features_2_used {
             table.add_body(["x86 features 2 used".to_string(), features2.to_string()]);
         }
 

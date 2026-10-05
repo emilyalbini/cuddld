@@ -322,6 +322,9 @@ pub fn render_note(note: &ElfNote) -> Box<dyn Widget> {
             table.add_head(["Property", "Value"]);
             for property in properties {
                 match property {
+                    ElfGnuProperty::X86Features1And(features1) => {
+                        table.add_body(["x86 features (1) and".into(), features1.to_string()]);
+                    }
                     ElfGnuProperty::X86Features2Used(features2) => {
                         table.add_body(["x86 features (2) used".into(), features2.to_string()]);
                     }

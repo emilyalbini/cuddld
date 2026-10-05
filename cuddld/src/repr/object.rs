@@ -8,7 +8,7 @@ use crate::repr::sections::Sections;
 use crate::repr::segments::Segments;
 use crate::repr::symbols::{SymbolId, Symbols};
 use cuddld_diagnostics::{DiagnosticContext, ObjectSpan};
-use cuddld_elf::{ElfEnvironment, ElfMachine, ElfX86Features2, ElfX86Isa};
+use cuddld_elf::{ElfEnvironment, ElfMachine, ElfX86Features1, ElfX86Features2, ElfX86Isa};
 use cuddld_utils::raw_types::RawTypeContext;
 
 #[derive(Debug)]
@@ -61,5 +61,6 @@ pub(crate) struct InputSharedObject {
 #[derive(Debug)]
 pub(crate) struct GnuProperties {
     pub(crate) x86_isa_used: Option<ElfX86Isa>,
+    pub(crate) x86_features_1_and: Option<ElfX86Features1>,
     pub(crate) x86_features_2_used: Option<ElfX86Features2>,
 }

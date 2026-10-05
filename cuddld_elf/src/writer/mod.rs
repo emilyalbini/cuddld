@@ -667,6 +667,10 @@ impl<'a> Writer<'a> {
                     for property in properties {
                         let tmp;
                         let (type_, data): (u32, &[u8]) = match property {
+                            ElfGnuProperty::X86Features1And(features1) => {
+                                tmp = Bitfield::write(features1, self.raw_ctx.into()).to_le_bytes();
+                                (0xc0000002, &tmp)
+                            }
                             ElfGnuProperty::X86Features2Used(features2) => {
                                 tmp = Bitfield::write(features2, self.raw_ctx.into()).to_le_bytes();
                                 (0xc0010001, &tmp)

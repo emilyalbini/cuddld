@@ -18,6 +18,18 @@ cuddld "isa_two_files_with_features2_in_one" {
   kind        = "link-pass"
 }
 
+cuddld "features1" {
+  cmd         = [asm.entry_features1_both, asm.features1_first]
+  debug-print = ["loaded-object=@inputs", "final-elf=.note.gnu.property"]
+  kind        = "link-pass"
+}
+
+cuddld "features1_with_empty" {
+  cmd         = [asm.entry_features1_both, asm.features1_first, asm.empty]
+  debug-print = ["loaded-object=@inputs", "final-elf=.note.gnu.property"]
+  kind        = "link-pass"
+}
+
 cuddld "duplicate_features2_used" {
   cmd  = [asm.duplicate_features2_used]
   kind = "link-fail"
@@ -26,6 +38,18 @@ cuddld "duplicate_features2_used" {
 cuddld "duplicate_isa_used" {
   cmd  = [asm.duplicate_isa_used]
   kind = "link-fail"
+}
+
+asm "entry_features1_both" {
+  source          = "entry_features1_both.S"
+  auxiliary-files = ["shared.S"]
+  emit-x86-used   = false
+}
+
+asm "features1_first" {
+  source          = "features1_first.S"
+  auxiliary-files = ["shared.S"]
+  emit-x86-used   = false
 }
 
 asm "duplicate_features2_used" {

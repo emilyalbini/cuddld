@@ -3,7 +3,7 @@ pub use crate::render_elf::filters::{RenderElfFilters, RenderElfFiltersParseErro
 use crate::ElfObject;
 use crate::render_elf::names::Names;
 use crate::render_elf::utils::{MultipleWidgets, resolve_string};
-use cuddld_diagnostics::widgets::Widget;
+use cuddld_diagnostics::widgets::{Text, Widget};
 
 mod filters;
 mod meta;
@@ -29,5 +29,10 @@ pub fn render(object: &ElfObject, filters: &RenderElfFilters) -> impl Widget + u
     if filters.segments {
         widgets.push(Box::new(segments::render_segments(object)));
     }
+
+    if widgets.len() == 0 {
+        widgets.push(Box::new(Text::new("nothing matches the filter")));
+    }
+
     MultipleWidgets(widgets)
 }

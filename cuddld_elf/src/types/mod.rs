@@ -224,6 +224,7 @@ impl ElfNote {
 
 #[derive(Debug, Clone)]
 pub enum ElfGnuProperty {
+    X86Features1And(ElfX86Features1),
     X86Features2Used(ElfX86Features2),
     X86IsaUsed(ElfX86Isa),
     Unknown(ElfUnknownGnuProperty),
@@ -232,6 +233,7 @@ pub enum ElfGnuProperty {
 impl ElfGnuProperty {
     fn value_len(&self, ctx: &RawTypeContext) -> usize {
         match self {
+            ElfGnuProperty::X86Features1And(_) => ElfX86Features1::size(ctx),
             ElfGnuProperty::X86Features2Used(_) => ElfX86Features2::size(ctx),
             ElfGnuProperty::X86IsaUsed(_) => ElfX86Isa::size(ctx),
             ElfGnuProperty::Unknown(unknown) => unknown.data.len(),
@@ -248,6 +250,15 @@ pub struct ElfX86Isa {
     pub v2: bool,
     pub v3: bool,
     pub v4: bool,
+}
+
+#[derive(Debug, Bitfield, Clone, Copy)]
+#[bitfield_repr(u32)]
+#[bitfield_display_comma_separated]
+// Defined as GNU_PROPERTY_X86_FEATURE_1_$name
+pub struct ElfX86Features1 {
+    pub ibt: bool,
+    pub shstk: bool,
 }
 
 #[derive(Debug, Bitfield, Clone, Copy)]

@@ -30,6 +30,7 @@ pub(super) fn merge_elf(
     let mut symbol_conversion = BTreeMap::new();
 
     let mut x86_isa_used = None;
+    let mut x86_features_1_and = None;
     let mut x86_features_2_used = None;
 
     let mut all_elf_section_ids = Vec::new();
@@ -78,6 +79,12 @@ pub(super) fn merge_elf(
                         ElfNote::GnuProperties(properties) => {
                             for property in properties {
                                 match property {
+                                    ElfGnuProperty::X86Features1And(val) => {
+                                        if x86_features_1_and.is_some() {
+                                            return Err(MergeElfError::DuplicateGnuProperty);
+                                        }
+                                        x86_features_1_and = Some(val);
+                                    }
                                     ElfGnuProperty::X86Features2Used(val) => {
                                         if x86_features_2_used.is_some() {
                                             return Err(MergeElfError::DuplicateGnuProperty);
@@ -197,7 +204,7 @@ pub(super) fn merge_elf(
     object.inputs.push(Input {
         span: intern(source),
         shared_object: None,
-        gnu_properties: GnuProperties { x86_isa_used, x86_features_2_used },
+        gnu_properties: GnuProperties { x86_isa_used, x86_features_1_and, x86_features_2_used },
     });
 
     Ok(())

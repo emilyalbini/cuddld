@@ -58,9 +58,11 @@ pub enum LoadError {
     DynamicFlags(BitfieldReadError),
     #[display("failed to parse the flags1 field of the dynamic table")]
     DynamicFlags1(BitfieldReadError),
-    #[display("failed to parse the x86 features 2 used GNU property")]
+    #[display("failed to parse the x86 'features 1 and' GNU property")]
+    X86Features1And(BitfieldReadError),
+    #[display("failed to parse the x86 'features 2 used' GNU property")]
     X86Features2Used(BitfieldReadError),
-    #[display("failed to parse the x86 ISA used GNU property")]
+    #[display("failed to parse the x86 'ISA used' GNU property")]
     X86IsaUsed(BitfieldReadError),
     #[display("failed to parse section header number {idx}")]
     FailedToParseSectionHeader {

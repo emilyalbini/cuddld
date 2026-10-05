@@ -1,0 +1,39 @@
+linking exited with exit status: 0
+
+no stdout present
+
+=== stderr ===
+debug print: loaded object
+ │
+ │  inputs
+ │   │
+ │   │    entry_features1_both.o
+ │   │  ╭────────────────────┬────────────╮
+ │   │  │ Property           │ Value      │
+ │   │  ├────────────────────┼────────────┤
+ │   │  │ X86 features 1 and │ ibt, shstk │
+ │   │  ╰────────────────────┴────────────╯
+ │   │
+ │   │    features1_first.o
+ │   │  ╭────────────────────┬───────╮
+ │   │  │ Property           │ Value │
+ │   │  ├────────────────────┼───────┤
+ │   │  │ X86 features 1 and │ ibt   │
+ │   │  ╰────────────────────┴───────╯
+ │   ┴
+ ┴
+
+debug print: built elf
+ │
+ │  section .note.gnu.property (address: 0x400008)
+ │   │
+ │   │  GNU properties
+ │   │   │
+ │   │   │  ╭──────────────────────┬───────╮
+ │   │   │  │ Property             │ Value │
+ │   │   │  ├──────────────────────┼───────┤
+ │   │   │  │ x86 features (1) and │ ibt   │
+ │   │   │  ╰──────────────────────┴───────╯
+ │   │   ┴
+ │   ┴
+ ┴

@@ -62,7 +62,11 @@ pub(super) fn load_shared_object(
                 .collect(),
             undefined_global_symbols,
         }),
-        gnu_properties: GnuProperties { x86_isa_used: None, x86_features_2_used: None },
+        gnu_properties: GnuProperties {
+            x86_isa_used: None,
+            x86_features_1_and: None,
+            x86_features_2_used: None,
+        },
     });
 
     Ok(())
