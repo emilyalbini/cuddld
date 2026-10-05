@@ -6,6 +6,12 @@ cuddld "test" {
   debug-print = ["loaded-object=.eh_*", "layout", "relocated-object=.eh_*", "final-elf=.eh_*"]
 }
 
+cuddld "gc" {
+  cmd         = [rust.hello, "--eh-frame-hdr", "--gc-sections"]
+  kind        = "link-pass"
+  debug-print = ["final-elf=.eh_*"]
+}
+
 rust "hello" {
   source = "hello.rs"
 }

@@ -1,0 +1,66 @@
+linking exited with exit status: 0
+
+no stdout present
+
+=== stderr ===
+debug print: built elf
+ │
+ │  section .eh_frame (address: 0x400000)
+ │   │
+ │   │  EH frame | permissions: R
+ │   │
+ │   │  Common Information Entry | Offset: 0x0
+ │   │   │
+ │   │   │  Code alignment factor: 1
+ │   │   │  Data alignment factor: -8
+ │   │   │  Return address column: 16
+ │   │   │  Address pointer encoding: I32 | PcRel
+ │   │   │
+ │   │   │    Instructions:
+ │   │   │  ╭──────────────────────┬─────────╮
+ │   │   │  │ 0c 07 08 90 01 00 00 │ ....... │
+ │   │   │  ╰──────────────────────┴─────────╯
+ │   │   │
+ │   │   │  Frame Description Entry | Offset: 0x18
+ │   │   │   │
+ │   │   │   │  Address: 0x401000
+ │   │   │   │  Length: 0x4
+ │   │   │   │
+ │   │   │   │    Instructions:
+ │   │   │   │  ╭──────────┬─────╮
+ │   │   │   │  │ 00 00 00 │ ... │
+ │   │   │   │  ╰──────────┴─────╯
+ │   │   │   ┴
+ │   │   │
+ │   │   │  Frame Description Entry | Offset: 0x2c
+ │   │   │   │
+ │   │   │   │  Address: 0x401004
+ │   │   │   │  Length: 0x4
+ │   │   │   │
+ │   │   │   │    Instructions:
+ │   │   │   │  ╭──────────┬─────╮
+ │   │   │   │  │ 00 00 00 │ ... │
+ │   │   │   │  ╰──────────┴─────╯
+ │   │   │   ┴
+ │   │   ┴
+ │   ┴
+ │
+ │  section .eh_frame_hdr (address: 0x400040)
+ │   │
+ │   │  EH Frame Header
+ │   │
+ │   │  .eh_frame pointer encoding: I32 | PcRel
+ │   │  entries encoding:           I32 | DataRel
+ │   │  entries count encoding:     U32 | Absolute
+ │   │
+ │   │  .eh_frame pointer: 0x400000 (raw offset: -0x44)
+ │   │
+ │   │    Binary search entries:
+ │   │  ╭──────────────────────────┬──────────────────────╮
+ │   │  │ Function pointer         │ FDE                  │
+ │   │  ├──────────────────────────┼──────────────────────┤
+ │   │  │ 0x401000 (offset: 0xfc0) │ 0x18 (offset: -0x28) │
+ │   │  │ 0x401004 (offset: 0xfc4) │ 0x2c (offset: -0x14) │
+ │   │  ╰──────────────────────────┴──────────────────────╯
+ │   ┴
+ ┴

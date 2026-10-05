@@ -1,4 +1,4 @@
-use crate::interner::Interned;
+use crate::interner::{Interned, intern};
 use crate::repr::object::Object;
 use crate::repr::sections::{SectionContent, SectionId};
 use crate::repr::symbols::views::{AllSymbols, DynamicSymbolTable};
@@ -33,6 +33,7 @@ pub(crate) fn run(object: &mut Object) -> Vec<RemovedSection> {
         visitor.add(symbol.id());
     }
 
+    let eh_frame = intern(".eh_frame");
     for section in object.sections.iter() {
         // Mark all sections that will not be allocated in memory to be saved, as checking the
         // relocations from the entry point is not accurate for that.
@@ -46,6 +47,11 @@ pub(crate) fn run(object: &mut Object) -> Vec<RemovedSection> {
 
         // Mark all retained (`#[used(linker)`, `__attribute__((retain))`) section as saved.
         if section.retain {
+            visitor.queue.insert(section.id);
+        }
+
+        // Avoid garbage collecting .eh_frame.
+        if section.name == eh_frame {
             visitor.queue.insert(section.id);
         }
     }
