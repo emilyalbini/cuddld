@@ -14,13 +14,13 @@ debug print: loaded object
  │   │  ╰─────────────────────────────────────────────────┴──────────────────╯
  │   │
  │   │    Relocations:
- │   │  ╭───────────────┬───────────────────┬────────┬────────────────────╮
- │   │  │ Type          │ Symbol            │ Offset │ Addend             │
- │   │  ├───────────────┼───────────────────┼────────┼────────────────────┤
- │   │  │ Relative32    │ <section .rodata> │ 0xc    │ 0xfffffffffffffffc │
- │   │  │ GOTRelative32 │ write             │ 0x1a   │ 0xfffffffffffffffc │
- │   │  │ GOTRelative32 │ exit              │ 0x25   │ 0xfffffffffffffffc │
- │   │  ╰───────────────┴───────────────────┴────────┴────────────────────╯
+ │   │  ╭───────────────┬───────────────────┬────────┬────────╮
+ │   │  │ Type          │ Symbol            │ Offset │ Addend │
+ │   │  ├───────────────┼───────────────────┼────────┼────────┤
+ │   │  │ Relative32    │ <section .rodata> │ 0xc    │ -0x4   │
+ │   │  │ GOTRelative32 │ write             │ 0x1a   │ -0x4   │
+ │   │  │ GOTRelative32 │ exit              │ 0x25   │ -0x4   │
+ │   │  ╰───────────────┴───────────────────┴────────┴────────╯
  │   ┴
  │
  │  section .text#1 (perms: rx) in syscall.write.o

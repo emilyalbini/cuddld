@@ -12,11 +12,11 @@ debug print: loaded object
  │   │  ╰────────────────┴───────╯
  │   │
  │   │    Relocations:
- │   │  ╭───────┬────────┬────────┬────────────────────╮
- │   │  │ Type  │ Symbol │ Offset │ Addend             │
- │   │  ├───────┼────────┼────────┼────────────────────┤
- │   │  │ PLT32 │ second │ 0x1    │ 0xfffffffffffffffc │
- │   │  ╰───────┴────────┴────────┴────────────────────╯
+ │   │  ╭───────┬────────┬────────┬────────╮
+ │   │  │ Type  │ Symbol │ Offset │ Addend │
+ │   │  ├───────┼────────┼────────┼────────┤
+ │   │  │ PLT32 │ second │ 0x1    │ -0x4   │
+ │   │  ╰───────┴────────┴────────┴────────╯
  │   ┴
  │
  │  section .text#1 (perms: rx) in second.o inside archive archive.a
@@ -26,11 +26,11 @@ debug print: loaded object
  │   │  ╰────────────────┴───────╯
  │   │
  │   │    Relocations:
- │   │  ╭───────┬────────┬────────┬────────────────────╮
- │   │  │ Type  │ Symbol │ Offset │ Addend             │
- │   │  ├───────┼────────┼────────┼────────────────────┤
- │   │  │ PLT32 │ first  │ 0x1    │ 0xfffffffffffffffc │
- │   │  ╰───────┴────────┴────────┴────────────────────╯
+ │   │  ╭───────┬────────┬────────┬────────╮
+ │   │  │ Type  │ Symbol │ Offset │ Addend │
+ │   │  ├───────┼────────┼────────┼────────┤
+ │   │  │ PLT32 │ first  │ 0x1    │ -0x4   │
+ │   │  ╰───────┴────────┴────────┴────────╯
  │   ┴
  │
  │  section .text#2 (perms: rx) in first.o inside archive archive.a

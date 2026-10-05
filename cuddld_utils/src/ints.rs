@@ -12,14 +12,20 @@ macro_rules! int {
         }
 
         impl std::fmt::Debug for $name {
+            #[allow(unused_comparisons)]
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "{:#x}", self.0)
+                if self.0 < 0 {
+                    write!(f, "-0x{:x}", 0 - self.0)
+
+                } else {
+                    write!(f, "0x{:x}", self.0)
+                }
             }
         }
 
         impl std::fmt::Display for $name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "{:#x}", self.0)
+                std::fmt::Debug::fmt(self, f)
             }
         }
 

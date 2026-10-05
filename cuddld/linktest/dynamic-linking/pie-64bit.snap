@@ -12,11 +12,11 @@ debug print: loaded object
  │   │  ╰────────────────┴───────╯
  │   │
  │   │    Relocations:
- │   │  ╭───────┬────────┬────────┬────────────────────╮
- │   │  │ Type  │ Symbol │ Offset │ Addend             │
- │   │  ├───────┼────────┼────────┼────────────────────┤
- │   │  │ PLT32 │ main   │ 0x1    │ 0xfffffffffffffffc │
- │   │  ╰───────┴────────┴────────┴────────────────────╯
+ │   │  ╭───────┬────────┬────────┬────────╮
+ │   │  │ Type  │ Symbol │ Offset │ Addend │
+ │   │  ├───────┼────────┼────────┼────────┤
+ │   │  │ PLT32 │ main   │ 0x1    │ -0x4   │
+ │   │  ╰───────┴────────┴────────┴────────╯
  │   ┴
  │
  │  section .text.main (perms: rx) in entry-pic.x86_64.o
@@ -28,15 +28,15 @@ debug print: loaded object
  │   │  ╰─────────────────────────────────────────────────┴──────────────────╯
  │   │
  │   │    Relocations:
- │   │  ╭───────────────┬─────────────┬────────┬────────────────────╮
- │   │  │ Type          │ Symbol      │ Offset │ Addend             │
- │   │  ├───────────────┼─────────────┼────────┼────────────────────┤
- │   │  │ GOTRelative32 │ message     │ 0xa    │ 0xfffffffffffffffc │
- │   │  │ GOTRelative32 │ message_len │ 0x11   │ 0xfffffffffffffffc │
- │   │  │ PLT32         │ write       │ 0x18   │ 0xfffffffffffffffc │
- │   │  │ GOTRelative32 │ exit_code   │ 0x1f   │ 0xfffffffffffffffc │
- │   │  │ PLT32         │ exit        │ 0x27   │ 0xfffffffffffffffc │
- │   │  ╰───────────────┴─────────────┴────────┴────────────────────╯
+ │   │  ╭───────────────┬─────────────┬────────┬────────╮
+ │   │  │ Type          │ Symbol      │ Offset │ Addend │
+ │   │  ├───────────────┼─────────────┼────────┼────────┤
+ │   │  │ GOTRelative32 │ message     │ 0xa    │ -0x4   │
+ │   │  │ GOTRelative32 │ message_len │ 0x11   │ -0x4   │
+ │   │  │ PLT32         │ write       │ 0x18   │ -0x4   │
+ │   │  │ GOTRelative32 │ exit_code   │ 0x1f   │ -0x4   │
+ │   │  │ PLT32         │ exit        │ 0x27   │ -0x4   │
+ │   │  ╰───────────────┴─────────────┴────────┴────────╯
  │   ┴
  │
  │    Symbols:
