@@ -12,7 +12,8 @@ use std::path::PathBuf;
 // GNU ld loves to be inconsistent, and thus some long flags are prefixed with a single dash
 // rather than a double dash. To ensure we still parse the CLI correctly, we have a list of
 // flags that should be emitted as LongShortFlag.
-const LONG_SHORT_FLAG: &[&str] = &["no-pie", "pie", "shared", "soname", "Bstatic", "Bdynamic"];
+const LONG_SHORT_FLAG: &[&str] =
+    &["no-pie", "pie", "shared", "soname", "Bstatic", "Bdynamic", "static"];
 
 pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
     args: I,
@@ -108,7 +109,9 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
                 }
             }
 
-            CliToken::LongShortFlag("Bstatic") => input_options.search_shared_objects = false,
+            CliToken::LongShortFlag("Bstatic") | CliToken::LongShortFlag("static") => {
+                input_options.search_shared_objects = false
+            }
 
             CliToken::LongShortFlag("Bdynamic") => input_options.search_shared_objects = true,
 
