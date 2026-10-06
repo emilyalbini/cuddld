@@ -8,7 +8,7 @@ use crate::{
     ElfSymbolDefinition, ElfSymbolVisibility, LoadError,
 };
 use cuddld_macros::{Display, Error};
-use cuddld_utils::raw_types::{PointerSize, SizedRawType, RawTypeContext};
+use cuddld_utils::raw_types::{PointerSize, RawTypeContext, SizedRawType};
 
 pub struct ElfDynamicReader<'reader, 'src> {
     reader: &'reader mut ElfReader<'src>,
@@ -138,9 +138,9 @@ impl<'reader, 'src> ElfDynamicReader<'reader, 'src> {
         self.reader.cursor.seek_to(gnu_hash_addr)?;
         let header = self.reader.cursor.read_raw::<RawGnuHashHeader>()?;
 
-        self.reader.cursor.skip(
-            u64::size(&PointerSize(&ctx)) as u64 * header.bloom_count as u64,
-        )?;
+        self.reader
+            .cursor
+            .skip(u64::size(&PointerSize(&ctx)) as u64 * header.bloom_count as u64)?;
 
         let mut max_chain = None;
         for _ in 0..header.buckets_count {

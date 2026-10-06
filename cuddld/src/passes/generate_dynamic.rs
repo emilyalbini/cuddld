@@ -12,7 +12,7 @@ use crate::repr::symbols::{LoadSymbolsError, SymbolId, SymbolValue, UpcomingSymb
 use cuddld_elf::{ElfClass, ElfPermissions};
 use cuddld_macros::{Display, Error, Getters};
 use cuddld_utils::ints::Offset;
-use cuddld_utils::raw_types::{SizedRawType, PointerSize};
+use cuddld_utils::raw_types::{PointerSize, SizedRawType};
 
 pub(crate) fn run(
     options: &CliOptions,

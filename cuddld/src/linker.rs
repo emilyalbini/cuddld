@@ -6,8 +6,10 @@ use crate::passes::convert_relocation_modes::ConvertRelocationModesError;
 use crate::passes::gc_sections::RemovedSection;
 use crate::passes::generate_dynamic::GenerateDynamicError;
 use crate::passes::generate_got::GenerateGotError;
+use crate::passes::inject_eh_frame_hdr::InjectEhFrameHdrError;
 use crate::passes::load_inputs::LoadInputsError;
 use crate::passes::merge_sections::MergeSectionsError;
+use crate::passes::populate_eh_frame_hdr::PopulateEhFrameHdrError;
 use crate::passes::relocate::RelocationError;
 use crate::passes::replace_section_relative_symbols::ReplaceSectionRelativeSymbolsError;
 use crate::passes::write_to_disk::WriteToDiskError;
@@ -18,8 +20,6 @@ use cuddld_diagnostics::GatheredContext;
 use cuddld_elf::ElfObject;
 use cuddld_elf::writer::layout::{Layout, LayoutError};
 use cuddld_macros::{Display, Error};
-use crate::passes::inject_eh_frame_hdr::InjectEhFrameHdrError;
-use crate::passes::populate_eh_frame_hdr::PopulateEhFrameHdrError;
 
 pub(crate) struct Linker {
     options: CliOptions,

@@ -1,6 +1,5 @@
 pub(crate) mod analyze_relocations;
 pub(crate) mod build_elf;
-pub(crate) mod populate_eh_frame_hdr;
 pub(crate) mod convert_relocation_modes;
 pub(crate) mod create_segments;
 pub(crate) mod demote_global_hidden_symbols;
@@ -19,6 +18,7 @@ pub(crate) mod load_inputs;
 pub(crate) mod mark_shared_library_symbols;
 pub(crate) mod merge_sections;
 pub(crate) mod plt32_to_pc32;
+pub(crate) mod populate_eh_frame_hdr;
 pub(crate) mod relocate;
 pub(crate) mod replace_section_relative_symbols;
 pub(crate) mod write_to_disk;
