@@ -21,7 +21,7 @@ impl Step for CStep {
         let dest_name = if let Some(output) = &self.output {
             output.clone()
         } else {
-            file_name(&source.with_extension("o"))
+            file_name(source.with_extension("o"))
         };
 
         let dest = ctx.dest.join(ctx.step_name);
@@ -40,7 +40,7 @@ impl Step for CStep {
                 Arch::X86_64 => "-m64",
             })
             .args(match self.libc {
-                Libc::Freestanding => &["-nostdlib"],
+                Libc::Freestanding => ["-nostdlib"],
             })
             .args(match self.relocation {
                 Relocation::Static => &["-fno-pic"] as &[&str],

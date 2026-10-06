@@ -32,7 +32,7 @@ pub(crate) fn generate_plt(
     }
 
     // Ensure alignment.
-    debug_assert!(codegen.len() % 16 == 0);
+    debug_assert!(codegen.len().is_multiple_of(16));
 
     let reloc_size: i32 = match object.relocation_mode() {
         RelocationMode::Rel => RawRel::size(&object.raw_type_context()) as _,
@@ -81,7 +81,7 @@ pub(crate) fn generate_plt(
         }
 
         // Ensure alignment.
-        debug_assert!(codegen.len() % 16 == 0);
+        debug_assert!(codegen.len().is_multiple_of(16));
     }
 
     let (content, relocations) = codegen.finish();

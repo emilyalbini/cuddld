@@ -18,7 +18,7 @@ impl Step for ArStep {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
         for input in &self.content {
-            std::fs::copy(ctx.maybe_relative_to_src(&input), dest.join(file_name(input)))?;
+            std::fs::copy(ctx.maybe_relative_to_src(input), dest.join(file_name(input)))?;
         }
 
         let mut flags = "rc".to_string();
@@ -32,7 +32,7 @@ impl Step for ArStep {
             .current_dir(&dest)
             .arg(flags)
             .arg(&self.output)
-            .args(self.content.iter().map(|c| file_name(c)).collect::<Vec<_>>()))?;
+            .args(self.content.iter().map(file_name).collect::<Vec<_>>()))?;
 
         ctx.hcl.set_variable(ctx.step_name, ResolvedExpression::Path(dest.join(&self.output)));
 

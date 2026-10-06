@@ -25,11 +25,8 @@ pub(crate) fn run(
         resolver,
     };
     for section in object.sections.iter_mut() {
-        match &mut section.content {
-            SectionContent::Data(data) => {
-                relocator.relocate(section.id, data)?;
-            }
-            _ => {}
+        if let SectionContent::Data(data) = &mut section.content {
+            relocator.relocate(section.id, data)?;
         }
     }
     Ok(())
@@ -82,13 +79,13 @@ impl<'a> Relocator<'a> {
             }
             RelocationType::Relative32 => {
                 let symbol = self.symbol_as_address(relocation, editor.addend()?)?;
-                let offset = self.resolver.address(section_id, relocation.offset.into())?.1;
+                let offset = self.resolver.address(section_id, relocation.offset)?.1;
                 editor.write_i32(symbol.as_offset()?.add(offset.as_offset()?.neg())?)
             }
             RelocationType::GOTRelative32 => {
                 let got = self.got.expect("GOT was not generated with a GOT relocation");
                 let slot = got.offset(relocation.symbol);
-                let section_addr = self.resolver.address(section_id, relocation.offset.into())?.1;
+                let section_addr = self.resolver.address(section_id, relocation.offset)?.1;
                 let got_addr = self.resolver.address(got.id, 0.into())?.1;
                 let addend = editor.addend()?;
 
@@ -103,7 +100,7 @@ impl<'a> Relocator<'a> {
             RelocationType::PLT32 => {
                 let plt = self.plt.expect("PLT was not generated with a PLT relocation");
                 let plt_offset = *plt.offsets.get(&relocation.symbol).unwrap();
-                let section_addr = self.resolver.address(section_id, relocation.offset.into())?.1;
+                let section_addr = self.resolver.address(section_id, relocation.offset)?.1;
                 let plt_addr = self.resolver.address(plt.section, 0.into())?.1;
                 let addend = editor.addend()?;
 
@@ -140,7 +137,7 @@ impl<'a> Relocator<'a> {
             }
             RelocationType::GOTLocationRelative32 => {
                 let addend = editor.addend()?;
-                let offset = self.resolver.address(section_id, relocation.offset.into())?.1;
+                let offset = self.resolver.address(section_id, relocation.offset)?.1;
                 editor.write_i32(
                     self.got_symbol_addr()?
                         .as_offset()?
@@ -200,7 +197,7 @@ impl<'a> Relocator<'a> {
                 panic!("cannot do static reloc on external symbols")
             }
             ResolvedSymbol::Absolute(_) => {
-                return Err(RelocationErrorInner::RelativeRelocationWithAbsoluteValue);
+                Err(RelocationErrorInner::RelativeRelocationWithAbsoluteValue)
             }
             ResolvedSymbol::Address { memory_address, .. } => Ok(memory_address),
         }

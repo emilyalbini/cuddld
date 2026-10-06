@@ -30,7 +30,7 @@ pub fn render(object: &ElfObject, filters: &RenderElfFilters) -> impl Widget + u
         widgets.push(Box::new(segments::render_segments(object)));
     }
 
-    if widgets.len() == 0 {
+    if widgets.is_empty() {
         widgets.push(Box::new(Text::new("nothing matches the filter")));
     }
 

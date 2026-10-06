@@ -11,7 +11,7 @@ pub(super) struct ByteEditor<'a> {
 
 impl ByteEditor<'_> {
     pub(super) fn addend(&self) -> Result<Offset, RelocationErrorInner> {
-        Ok(self.relocation.addend(self.endian, &self.bytes)?)
+        Ok(self.relocation.addend(self.endian, self.bytes)?)
     }
 
     pub(super) fn write_u32<N>(&mut self, value: N) -> Result<(), RelocationErrorInner>

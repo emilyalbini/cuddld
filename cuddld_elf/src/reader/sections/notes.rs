@@ -14,7 +14,7 @@ pub(super) fn read(reader: &mut SectionReader<'_, '_>) -> Result<ElfNotesTable, 
     let mut cursor = reader.content_cursor()?;
 
     let mut notes = Vec::new();
-    while cursor.current_position()? != reader.content_len as u64 {
+    while cursor.current_position()? != reader.content_len {
         notes.push(read_note(reader, &mut cursor)?);
     }
 
@@ -57,10 +57,10 @@ fn read_gnu_property(
             Err(err) => {
                 let mut source = err.source();
                 while let Some(err) = source.take() {
-                    if let Some(err) = err.downcast_ref::<std::io::Error>() {
-                        if err.kind() == std::io::ErrorKind::UnexpectedEof {
-                            break 'reader;
-                        }
+                    if let Some(err) = err.downcast_ref::<std::io::Error>()
+                        && err.kind() == std::io::ErrorKind::UnexpectedEof
+                    {
+                        break 'reader;
                     }
                     source = err.source();
                 }

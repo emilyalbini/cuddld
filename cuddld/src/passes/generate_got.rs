@@ -96,20 +96,20 @@ fn build_got(
     // The psABI for x86-64 states that the first entry in the .got.plt must point to the _DYNAMIC
     // symbol (resolved at link time), and it must be followed by two other entries reserved for
     // the use of the dynamic linker.
-    if config.add_prelude {
-        if let Some(dynamic) = dynamic_context {
-            for _ in 0..3 {
-                buf.extend_from_slice(placeholder);
-            }
-            // The relocation for the _DYNAMIC symbol in the prelude must always be resolved at
-            // link time, so we unconditionally add it in the relocations applied by the linker.
-            link_time_relocs.push(Relocation {
-                type_: RelocationType::Absolute32,
-                symbol: dynamic.dynamic_symbol(),
-                offset: 0.into(),
-                addend: Offset::from(0).into(),
-            });
+    if config.add_prelude
+        && let Some(dynamic) = dynamic_context
+    {
+        for _ in 0..3 {
+            buf.extend_from_slice(placeholder);
         }
+        // The relocation for the _DYNAMIC symbol in the prelude must always be resolved at
+        // link time, so we unconditionally add it in the relocations applied by the linker.
+        link_time_relocs.push(Relocation {
+            type_: RelocationType::Absolute32,
+            symbol: dynamic.dynamic_symbol(),
+            offset: 0.into(),
+            addend: Offset::from(0).into(),
+        });
     }
 
     for symbol in symbols {
@@ -143,7 +143,7 @@ fn build_got(
     data.inside_relro = config.inside_relro;
 
     // These relocations will later be applied by Cuddld's relocator.
-    data.relocations.extend(link_time_relocs.into_iter());
+    data.relocations.extend(link_time_relocs);
 
     // These relocations will be applied by the dynamic linker.
     if !run_time_relocs.is_empty() {

@@ -95,7 +95,7 @@ impl TestContext<'_> {
             Arch::X86_64 => "64bit",
         };
 
-        RunAndSnapshot::new(&format!("{name}-{arch}"), &self.src)
+        RunAndSnapshot::new(&format!("{name}-{arch}"), self.src)
     }
 }
 

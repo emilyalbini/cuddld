@@ -71,7 +71,7 @@ impl CuddldStep {
         std::fs::create_dir_all(&dest)?;
 
         let cmd =
-            self.cmd.iter().map(|ps| handle_interpolation(&ctx.src, &dest, ps)).collect::<Vec<_>>();
+            self.cmd.iter().map(|ps| handle_interpolation(ctx.src, &dest, ps)).collect::<Vec<_>>();
 
         let mut command = Command::new(env!("CARGO_BIN_EXE_ld.cuddld"));
         command.current_dir(&dest).args(cmd).env("RUST_BACKTRACE", "1");
@@ -79,7 +79,7 @@ impl CuddldStep {
             command.args(["--debug-print", debug_print]);
         }
         for (key, value) in &self.link_env {
-            command.env(key, handle_interpolation(&ctx.src, &dest, value));
+            command.env(key, handle_interpolation(ctx.src, &dest, value));
         }
         for file in &self.auxiliary_files {
             let name = file.file_name().unwrap();
@@ -102,7 +102,7 @@ impl CuddldStep {
         let mut command = Command::new(dest.join("a.out"));
         command.current_dir(&dest);
         for (key, value) in &self.run_env {
-            command.env(key, handle_interpolation(&ctx.src, &dest, value));
+            command.env(key, handle_interpolation(ctx.src, &dest, value));
         }
 
         runner.run("running", &mut command)
@@ -166,7 +166,7 @@ impl CuddldRustc {
         std::fs::create_dir_all(&dest)?;
 
         let cmd =
-            self.cmd.iter().map(|ps| handle_interpolation(&ctx.src, &dest, ps)).collect::<Vec<_>>();
+            self.cmd.iter().map(|ps| handle_interpolation(ctx.src, &dest, ps)).collect::<Vec<_>>();
 
         let mut command = Command::new("rustc");
         command.current_dir(&dest).arg(format!("-Clinker={}", env!("CARGO_BIN_EXE_ld.cuddld")));
@@ -255,7 +255,7 @@ fn copy_recursive(from: &Path, dest_dir: &Path) -> Result<(), std::io::Error> {
     let from_meta = std::fs::metadata(from)?;
     let name = from.file_name().expect("missing name");
     if from_meta.is_symlink() {
-        Err(std::io::Error::new(std::io::ErrorKind::Other, "cannot copy symlinks"))
+        Err(std::io::Error::other("cannot copy symlinks"))
     } else if from_meta.is_file() {
         std::fs::copy(from, dest_dir.join(name))?;
         Ok(())

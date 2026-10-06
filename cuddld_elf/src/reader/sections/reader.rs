@@ -31,7 +31,7 @@ impl SectionReader<'_, '_> {
         if self.content_entry_len == 0 {
             return Err(LoadError::EntrySizeZero);
         }
-        if self.content_len % self.content_entry_len != 0 {
+        if !self.content_len.is_multiple_of(self.content_entry_len) {
             return Err(LoadError::LenNotMultipleOfEntrySize {
                 len: self.content_len,
                 entry_len: self.content_entry_len,
@@ -99,11 +99,9 @@ impl SectionMetadata for HeaderMetadata<'_> {
             Ok(ElfDeduplication::ZeroTerminatedStrings)
         } else if self.header.flags.merge {
             match NonZeroU64::new(self.header.entries_size) {
-                None => {
-                    return Err(LoadError::FixedSizeChunksMergeWithZeroLenChunks {
-                        section_idx: self.section_id.index,
-                    });
-                }
+                None => Err(LoadError::FixedSizeChunksMergeWithZeroLenChunks {
+                    section_idx: self.section_id.index,
+                }),
                 Some(size) => Ok(ElfDeduplication::FixedSizeChunks { size }),
             }
         } else {

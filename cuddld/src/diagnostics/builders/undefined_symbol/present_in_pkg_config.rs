@@ -90,11 +90,11 @@ fn process_pkg_config(
             FileType::Ar => {
                 let archive = ArReader::new(reader)
                     .map_err(|e| ProcessPkgConfigError::ReadArchive(path.clone(), e))?;
-                if let Some(symbol_table) = archive.symbol_table() {
-                    if symbol_table.symbols.contains_key(search_for) {
-                        found = true;
-                        break;
-                    }
+                if let Some(symbol_table) = archive.symbol_table()
+                    && symbol_table.symbols.contains_key(search_for)
+                {
+                    found = true;
+                    break;
                 }
             }
         }

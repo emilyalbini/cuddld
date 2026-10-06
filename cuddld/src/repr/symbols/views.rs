@@ -56,13 +56,13 @@ impl SymbolsView for DynamicSymbolTable {
     }
 
     fn sort_ref(&self, symbols: &mut Vec<&Symbol>) {
-        let hasher = GnuHasher::new(self.class, symbols.iter().map(|s| *s));
-        symbols.sort_by_cached_key(|s| gnu_hash_sorting_key(*s, &hasher));
+        let hasher = GnuHasher::new(self.class, symbols.iter().copied());
+        symbols.sort_by_cached_key(|s| gnu_hash_sorting_key(s, &hasher));
     }
 
     fn sort_mut(&self, symbols: &mut Vec<&mut Symbol>) {
         let hasher = GnuHasher::new(self.class, symbols.iter().map(|s| &**s));
-        symbols.sort_by_cached_key(|s| gnu_hash_sorting_key(*s, &hasher));
+        symbols.sort_by_cached_key(|s| gnu_hash_sorting_key(s, &hasher));
     }
 }
 

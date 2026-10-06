@@ -14,9 +14,8 @@ pub(super) fn build_dynamic_section(
 ) -> ElfSectionContent {
     let mut string_table_id = None;
     for entry in builder.object.dynamic_entries.iter() {
-        match entry {
-            DynamicEntry::StringTable(section_id) => string_table_id = Some(*section_id),
-            _ => {}
+        if let DynamicEntry::StringTable(section_id) = entry {
+            string_table_id = Some(*section_id)
         }
     }
 

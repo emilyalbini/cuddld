@@ -39,7 +39,7 @@ impl<'a> ObjectsReader<'a> {
             let input = &self.remaining_inputs[0];
             self.remaining_inputs = &self.remaining_inputs[1..];
 
-            let resolved = resolve_cli_input(&self.search_paths, input)?;
+            let resolved = resolve_cli_input(self.search_paths, input)?;
 
             let mut r = BufReader::new(
                 File::open(&resolved.path)
@@ -135,17 +135,17 @@ impl<'a> PendingArchive<'a> {
         };
 
         for (symbol_name, member_id) in &symbol_table.symbols {
-            if let Ok(symbol) = symbols.get_global(intern(symbol_name)) {
-                if let SymbolValue::Undefined = symbol.value() {
-                    // We want to maintain the ordering of the ArMemberId to ensure determinism in the
-                    // linker output (aka we need to store it in a Vec). The HashSet is used as a quick
-                    // way to lookup, since it doesn't preserve ordering.
-                    //
-                    // This also prevents loading the same object file multiple times when scanning
-                    // the archive again for new required symbols.
-                    if self.loaded_members.insert(*member_id) {
-                        self.pending_members.push_back(*member_id);
-                    }
+            if let Ok(symbol) = symbols.get_global(intern(symbol_name))
+                && let SymbolValue::Undefined = symbol.value()
+            {
+                // We want to maintain the ordering of the ArMemberId to ensure determinism in the
+                // linker output (aka we need to store it in a Vec). The HashSet is used as a quick
+                // way to lookup, since it doesn't preserve ordering.
+                //
+                // This also prevents loading the same object file multiple times when scanning
+                // the archive again for new required symbols.
+                if self.loaded_members.insert(*member_id) {
+                    self.pending_members.push_back(*member_id);
                 }
             }
         }

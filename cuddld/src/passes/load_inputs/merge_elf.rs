@@ -132,7 +132,7 @@ pub(super) fn merge_elf(
     // This is loaded after the string tables are loaded by the previous iteration, as we need to
     // resolve the signature of section groups.
     for (id, group) in pending_groups {
-        section_groups.add_group(&strings, &symbol_tables, id, group)?;
+        section_groups.add_group(strings, &symbol_tables, id, group)?;
     }
 
     // This is loaded after the string tables are loaded by the previous iteration, as we need
@@ -149,7 +149,7 @@ pub(super) fn merge_elf(
             &mut symbol_conversion,
             intern(source.clone()),
             table,
-            &strings,
+            strings,
             &table_name,
         )?;
     }
@@ -257,10 +257,10 @@ fn merge_symbols(
         // really useful, as nothing can refer to that section and the SHT_GROUP wouldn't be loaded
         // in memory anyway. To avoid the linker crashing when it sees a symbol to the section that
         // wasn't loaded, we ignore all symbols pointing to a SHT_GROUP.
-        if let ElfSymbolDefinition::Section(section) = &elf_symbol.definition {
-            if section_groups.is_section_a_group_definition(*section) {
-                continue;
-            }
+        if let ElfSymbolDefinition::Section(section) = &elf_symbol.definition
+            && section_groups.is_section_a_group_definition(*section)
+        {
+            continue;
         }
 
         let id = symbols

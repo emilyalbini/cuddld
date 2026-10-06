@@ -128,7 +128,7 @@ impl<S: Ord + Eq + Clone + Copy> LayoutBuilder<'_, S> {
 
     fn add_part(&mut self, part: Part<S>, add_in_memory: bool) -> Result<(), LayoutError> {
         let len = part_len(self.details, part);
-        self.layout.parts.push(part.clone());
+        self.layout.parts.push(part);
 
         let memory = if add_in_memory {
             match self.current_memory_address {
@@ -157,14 +157,13 @@ impl<S: Ord + Eq + Clone + Copy> LayoutBuilder<'_, S> {
 
     fn align(&mut self, align: u64) -> Result<(), LayoutError> {
         // Align memory address.
-        match &mut self.current_memory_address {
-            Some(address) => *address = address.align(align)?,
-            None => {}
+        if let Some(address) = &mut self.current_memory_address {
+            *address = address.align(align)?
         }
 
         // Align file offset.
         let len = self.current_offset.extract() as u64;
-        if len % align == 0 {
+        if len.is_multiple_of(align) {
             return Ok(());
         }
         let bytes_to_pad = align - len % align;

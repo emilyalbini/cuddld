@@ -188,7 +188,7 @@ impl<R: BufRead + Seek> ArReader<R> {
 
     fn read_raw_file(&mut self) -> Result<(RawHeader, Vec<u8>), ArReadError> {
         let header: RawHeader = self.read_raw()?;
-        if header.end_magic != [b'`', b'\n'] {
+        if header.end_magic != *b"`\n" {
             return Err(ArReadError::InvalidEndMagic(header.end_magic));
         }
 

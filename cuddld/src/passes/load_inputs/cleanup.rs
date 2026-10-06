@@ -17,17 +17,17 @@ pub(super) fn run(object: &mut Object) {
             removed_gnu_stack = true;
             continue;
         }
-        if let SectionContent::Data(data) = &section.content {
-            if data.bytes.is_empty() {
-                sections_to_remove.push(section.id);
-                continue;
-            }
+        if let SectionContent::Data(data) = &section.content
+            && data.bytes.is_empty()
+        {
+            sections_to_remove.push(section.id);
+            continue;
         }
-        if let SectionContent::Uninitialized(uninit) = &section.content {
-            if uninit.len.extract() == 0 {
-                sections_to_remove.push(section.id);
-                continue;
-            }
+        if let SectionContent::Uninitialized(uninit) = &section.content
+            && uninit.len.extract() == 0
+        {
+            sections_to_remove.push(section.id);
+            continue;
         }
     }
 

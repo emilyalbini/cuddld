@@ -135,9 +135,7 @@ fn resolve_expression(
                     ResolvedExpression::Path(p) => {
                         resolved.push(ResolvedInterpolationChunk::Path(p))
                     }
-                    ResolvedExpression::ResolvedInterpolation(ps) => {
-                        resolved.extend(ps.0.into_iter())
-                    }
+                    ResolvedExpression::ResolvedInterpolation(ps) => resolved.extend(ps.0),
                     ResolvedExpression::Bool(_) => return Err(HclResolveError::BoolIntoString),
                     ResolvedExpression::List(_) => return Err(HclResolveError::ListIntoString),
                 }

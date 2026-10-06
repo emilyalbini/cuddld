@@ -85,10 +85,10 @@ struct Visitor {
 
 impl Visitor {
     fn add(&mut self, symbol: SymbolId) {
-        if let Some(&section_id) = self.symbols_to_sections.get(&symbol) {
-            if !self.to_save.contains(&section_id) {
-                self.queue.insert(section_id);
-            }
+        if let Some(&section_id) = self.symbols_to_sections.get(&symbol)
+            && !self.to_save.contains(&section_id)
+        {
+            self.queue.insert(section_id);
         }
     }
 

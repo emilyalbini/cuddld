@@ -34,8 +34,7 @@ impl HclDeserializer {
 
     pub fn field<T: FromHclStatement>(&mut self, field_name: &str) -> Result<T, ErasedError> {
         let statement = self.statements.remove(&(field_name.into(), None));
-        Ok(T::from_statement(statement)
-            .with_context(|| format!("failed to parse field {field_name}"))?)
+        T::from_statement(statement).with_context(|| format!("failed to parse field {field_name}"))
     }
 
     pub fn opt_field<T: FromHclStatement>(
@@ -57,7 +56,7 @@ impl HclDeserializer {
                 let mut name = name.clone();
                 if let Some(optional) = optional {
                     name.push('.');
-                    name.push_str(&optional);
+                    name.push_str(optional);
                 }
                 extra.push(name);
             }

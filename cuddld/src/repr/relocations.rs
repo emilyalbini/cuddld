@@ -114,7 +114,7 @@ impl Relocation {
         }
 
         match (self.type_.addend_type(), endian) {
-            (AddendType::None, _) => return Err(RelocationAddendError::NotSupported(self.type_)),
+            (AddendType::None, _) => Err(RelocationAddendError::NotSupported(self.type_)),
             (AddendType::I32, ElfEndian::Little) => {
                 Ok(i32::from_le_bytes(self.addend_bytes(data)?).into())
             }

@@ -34,7 +34,7 @@ pub(super) fn create_symbols(
         index: 0,
         section: section_id,
         section_ids,
-        strings: &string_tables
+        strings: string_tables
             .get(&symbols_section.strings)
             .expect("missing string table for symbol table"),
         symbols: BTreeMap::new(),

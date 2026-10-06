@@ -204,12 +204,11 @@ fn parse_length(
         Ok(short) => short,
         Err(err) => {
             // If we reached the end of the file, return a length of 0.
-            if let Some(source) = err.source() {
-                if let Some(io) = source.downcast_ref::<std::io::Error>() {
-                    if io.kind() == std::io::ErrorKind::UnexpectedEof {
-                        return Ok(0u64.into());
-                    }
-                }
+            if let Some(source) = err.source()
+                && let Some(io) = source.downcast_ref::<std::io::Error>()
+                && io.kind() == std::io::ErrorKind::UnexpectedEof
+            {
+                return Ok(0u64.into());
             }
             return Err(err.into());
         }
@@ -218,7 +217,7 @@ fn parse_length(
         // The spec says that if the u32 is 0xFFFF we should parse the next u64, but that means the
         // length of the length field is dynamic, and we are currently hardcoding it to be 4 when
         // calculating addresses in this file. We thus reject entries larger than 2GB.
-        return Err(ExceptionFramesError::EntryTooLarge);
+        Err(ExceptionFramesError::EntryTooLarge)
     } else {
         Ok(short.into())
     }

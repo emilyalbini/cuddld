@@ -79,7 +79,7 @@ impl LayoutDetailsProvider<SectionId> for Object {
                         self.symbols
                             .iter(strings.symbol_names_view())
                             .map(|s| s.name())
-                            .chain(file_names.into_iter())
+                            .chain(file_names)
                             .chain(
                                 strings.iter_custom_strings().map(|(_id, string)| intern(string)),
                             ),

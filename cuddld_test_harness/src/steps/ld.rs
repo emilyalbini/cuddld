@@ -19,14 +19,14 @@ impl Step for LdStep {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
         for input in &self.content {
-            std::fs::copy(ctx.maybe_relative_to_src(&input), dest.join(file_name(input)))?;
+            std::fs::copy(ctx.maybe_relative_to_src(input), dest.join(file_name(input)))?;
         }
 
         run(Command::new("ld")
             .current_dir(&dest)
             .arg("-o")
             .arg(&self.output)
-            .args(self.content.iter().map(|c| file_name(c)).collect::<Vec<_>>())
+            .args(self.content.iter().map(file_name).collect::<Vec<_>>())
             .args(if self.shared_library { &["-shared"] as &[_] } else { &[] })
             .arg("--hash-style=both")
             .args(match ctx.arch {

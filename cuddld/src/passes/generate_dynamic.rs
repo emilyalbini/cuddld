@@ -140,7 +140,7 @@ fn add_interpreter(
 
     // The interpreter needs to be a null-terminated string, so ensure that there are no other byte
     // zeroes before adding our own at the end.
-    if interpreter.iter().any(|&b| b == 0) {
+    if interpreter.contains(&0) {
         return Err(GenerateDynamicError::NullByteInInterpreter);
     }
     interpreter.push(0);

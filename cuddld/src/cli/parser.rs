@@ -63,7 +63,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
                         "sysv" => Ok(HashStyle::Sysv),
                         "gnu" => Ok(HashStyle::Gnu),
                         "both" => Ok(HashStyle::Both),
-                        other => return Err(CliError::UnsupportedHashStyle(other.into())),
+                        other => Err(CliError::UnsupportedHashStyle(other.into())),
                     }
                 })?;
             }
@@ -256,7 +256,7 @@ fn reject_duplicate<T, F: FnOnce() -> Result<T, CliError>>(
 
 fn reject_multiple_modes(storage: &mut Option<Mode>, new: Mode) -> Result<(), CliError> {
     match storage {
-        Some(_) => return Err(CliError::MultipleModeChanges),
+        Some(_) => Err(CliError::MultipleModeChanges),
         None => {
             *storage = Some(new);
             Ok(())

@@ -66,9 +66,7 @@ impl Symbols {
                             } else if let SymbolValue::Undefined = upcoming.value() {
                                 Ok(existing.id())
                             } else {
-                                return Err(LoadSymbolsError::DuplicateGlobalSymbol(
-                                    upcoming.name(),
-                                ));
+                                Err(LoadSymbolsError::DuplicateGlobalSymbol(upcoming.name()))
                             }
                         }
                     },
@@ -83,10 +81,10 @@ impl Symbols {
     pub(crate) fn remove(&mut self, id: SymbolId) {
         let old = std::mem::replace(&mut self.symbols[id.0], SymbolSlot::Removed);
 
-        if let SymbolSlot::Present(old) = old {
-            if let SymbolValue::Section { section } = old.value() {
-                self.section_symbols.remove(&section);
-            }
+        if let SymbolSlot::Present(old) = old
+            && let SymbolValue::Section { section } = old.value()
+        {
+            self.section_symbols.remove(&section);
         }
     }
 

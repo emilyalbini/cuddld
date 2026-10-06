@@ -50,54 +50,54 @@ impl Linker {
         let options = &self.options;
 
         self.object = Some(passes::load_inputs::run(options)?);
-        let mut object = self.object.as_mut().unwrap();
+        let object = self.object.as_mut().unwrap();
 
-        passes::inject_symbol_table::run(&mut object);
-        passes::inject_gnu_stack::run(&mut object);
-        callbacks.on_inputs_loaded(&object);
+        passes::inject_symbol_table::run(object);
+        passes::inject_gnu_stack::run(object);
+        callbacks.on_inputs_loaded(object);
 
-        passes::mark_shared_library_symbols::run(&mut object);
+        passes::mark_shared_library_symbols::run(object);
 
-        passes::merge_sections::run(&mut object)?;
+        passes::merge_sections::run(object)?;
 
         if options.gc_sections {
-            let removed = passes::gc_sections::run(&mut object);
-            callbacks.on_sections_removed_by_gc(&object, &removed);
+            let removed = passes::gc_sections::run(object);
+            callbacks.on_sections_removed_by_gc(object, &removed);
         }
 
         // This must run before relocation analysis, as it changes some relocation types.
-        passes::plt32_to_pc32::run(&mut object);
+        passes::plt32_to_pc32::run(object);
 
-        let relocs_analysis = passes::analyze_relocations::run(&object)?;
-        callbacks.on_relocations_analyzed(&object, &relocs_analysis);
+        let relocs_analysis = passes::analyze_relocations::run(object)?;
+        callbacks.on_relocations_analyzed(object, &relocs_analysis);
 
-        let dynamic = passes::generate_dynamic::run(&options, &mut object)?;
-        passes::generate_got::generate_got(&options, &mut object, &relocs_analysis, &dynamic)?;
-        passes::generate_plt::run(&mut object);
+        let dynamic = passes::generate_dynamic::run(options, object)?;
+        passes::generate_got::generate_got(options, object, &relocs_analysis, &dynamic)?;
+        passes::generate_plt::run(object);
 
-        passes::inject_eh_frame_hdr::run(&mut object)?;
-        passes::generate_gnu_property::run(&mut object);
+        passes::inject_eh_frame_hdr::run(object)?;
+        passes::generate_gnu_property::run(object);
 
-        passes::exclude_section_symbols_from_tables::remove(&mut object);
-        passes::demote_global_hidden_symbols::run(&mut object);
-        passes::create_segments::run(&mut object);
+        passes::exclude_section_symbols_from_tables::remove(object);
+        passes::demote_global_hidden_symbols::run(object);
+        passes::create_segments::run(object);
 
         // This must be executed after we create all sections marked as data.inside_relro=true.
-        passes::inject_gnu_relro::run(&mut object);
+        passes::inject_gnu_relro::run(object);
 
-        let layout = passes::layout::run(&object)?;
-        callbacks.on_layout_calculated(&object, &layout);
+        let layout = passes::layout::run(object)?;
+        callbacks.on_layout_calculated(object, &layout);
 
         let resolver = AddressResolver::new(&layout);
 
-        passes::relocate::run(&mut object, &resolver)?;
-        callbacks.on_relocations_applied(&object, &layout);
+        passes::relocate::run(object, &resolver)?;
+        callbacks.on_relocations_applied(object, &layout);
 
-        passes::convert_relocation_modes::run(&mut object)?;
-        passes::replace_section_relative_symbols::replace(&mut object, &resolver)?;
-        passes::populate_eh_frame_hdr::run(&mut object, &layout)?;
+        passes::convert_relocation_modes::run(object)?;
+        passes::replace_section_relative_symbols::replace(object, &resolver)?;
+        passes::populate_eh_frame_hdr::run(object, &layout)?;
 
-        let (elf, conversion_map) = passes::build_elf::run(&object, &layout, &resolver)?;
+        let (elf, conversion_map) = passes::build_elf::run(object, &layout, &resolver)?;
         callbacks.on_elf_built(&elf);
 
         let layout = layout.convert_ids(&conversion_map);

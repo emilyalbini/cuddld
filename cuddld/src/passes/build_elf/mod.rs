@@ -118,7 +118,7 @@ impl<'a> ElfBuilder<'a> {
         let Some(symbol_id) = self.object.entry_point else { return Ok(None) };
         let symbol = self.object.symbols.get(symbol_id);
         let resolved = symbol
-            .resolve(&self.resolver, 0.into())
+            .resolve(self.resolver, 0.into())
             .map_err(|e| ElfBuilderError::EntryPointResolution(e, WhileProcessingEntrypoint))?;
 
         match resolved {
@@ -224,7 +224,7 @@ impl<'a> ElfBuilder<'a> {
                 SectionContent::Relocations(relocations) => create_relocations(
                     self.object.relocation_mode(),
                     relocations.section(),
-                    relocations.relocations().into_iter(),
+                    relocations.relocations().iter(),
                     self.object.env.class,
                     *self.section_ids.get(&relocations.section()).unwrap(),
                     *self.section_ids.get(&relocations.symbols_table()).unwrap(),
@@ -233,7 +233,7 @@ impl<'a> ElfBuilder<'a> {
                         .get(&relocations.symbols_table())
                         .expect("missing symbol table")
                         .conversion,
-                    &self.resolver,
+                    self.resolver,
                 )?,
 
                 SectionContent::Dynamic(dynamic) => build_dynamic_section(self, dynamic),

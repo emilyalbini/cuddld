@@ -16,7 +16,7 @@ pub(super) fn read(
     let flags: RawGroupFlags = cursor.read_raw()?;
 
     let mut sections = Vec::new();
-    while cursor.current_position()? < reader.content_len as u64 {
+    while cursor.current_position()? < reader.content_len {
         sections.push(ElfSectionId { index: cursor.read_raw::<u32>()? });
     }
 

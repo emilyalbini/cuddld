@@ -34,7 +34,7 @@ pub(crate) fn generate_plt(got_plt: &Got, plt_symbol: SymbolId) -> GeneratePltAr
     }
 
     // Ensure alignment.
-    debug_assert!(codegen.len() % 16 == 0);
+    debug_assert!(codegen.len().is_multiple_of(16));
 
     let mut extra_got_plt_relocations = Vec::new();
     let mut offsets = BTreeMap::new();
@@ -80,7 +80,7 @@ pub(crate) fn generate_plt(got_plt: &Got, plt_symbol: SymbolId) -> GeneratePltAr
         }
 
         // Ensure alignment.
-        debug_assert!(codegen.len() % 16 == 0);
+        debug_assert!(codegen.len().is_multiple_of(16));
     }
 
     let (content, relocations) = codegen.finish();

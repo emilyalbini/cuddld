@@ -23,7 +23,7 @@ impl Step for AsmStep {
 
         let dest_name = match &self.output {
             Some(name) => name.clone(),
-            None => file_name(&source.with_extension("o")),
+            None => file_name(source.with_extension("o")),
         };
 
         let dest = ctx.dest.join(ctx.step_name);

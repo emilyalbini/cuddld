@@ -33,7 +33,7 @@ impl Names {
                     if string.is_empty() {
                         string = match (&symbol.definition, symbol.value) {
                             (ElfSymbolDefinition::Section(section), 0) => {
-                                format!("<section {}>", sections.get(&section).unwrap())
+                                format!("<section {}>", sections.get(section).unwrap())
                             }
                             _ => "<empty>".to_string(),
                         };

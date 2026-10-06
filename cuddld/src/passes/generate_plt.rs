@@ -33,7 +33,7 @@ pub(crate) fn run(object: &mut Object) {
     };
 
     let mut data = DataSection::new(ElfPermissions::RX, &output.content);
-    data.relocations.extend(output.relocations.into_iter());
+    data.relocations.extend(output.relocations);
 
     object.sections.builder(".plt", data).create_in_placeholder(plt_section);
 
@@ -43,7 +43,7 @@ pub(crate) fn run(object: &mut Object) {
     // Check the arch modules for an explaination on why they need this.
     match &mut object.sections.get_mut(got_plt_section).content {
         SectionContent::Data(data_section) => {
-            data_section.relocations.extend(output.extra_got_plt_relocations.into_iter());
+            data_section.relocations.extend(output.extra_got_plt_relocations);
         }
         _ => panic!(".got.plt must be a data section"),
     }

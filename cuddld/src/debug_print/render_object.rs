@@ -362,7 +362,7 @@ fn render_inputs(object: &Object) -> Box<dyn Widget> {
         }
     }
 
-    Box::new(WidgetGroup::new().name("inputs").add_iter(result.into_iter()))
+    Box::new(WidgetGroup::new().name("inputs").add_iter(result))
 }
 
 fn section_widget(names: &Names, section: &Section, kind: &str) -> WidgetGroup {

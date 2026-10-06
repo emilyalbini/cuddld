@@ -205,7 +205,7 @@ impl UpcomingSymbol<'_> {
                         return Err(LoadSymbolsError::UnsupportedUnknownSymbolType);
                     }
                 };
-                stt_file = new_stt_file.clone();
+                stt_file = *new_stt_file;
                 span = Some(*new_span);
             }
         };

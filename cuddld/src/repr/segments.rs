@@ -84,7 +84,7 @@ impl SegmentContent {
         match self {
             SegmentContent::ProgramHeader => layout.metadata(&Part::ProgramHeaders).clone(),
             SegmentContent::ElfHeader => layout.metadata(&Part::Header).clone(),
-            SegmentContent::Section(section) => layout.metadata_of_section(&section).clone(),
+            SegmentContent::Section(section) => layout.metadata_of_section(section).clone(),
         }
     }
 }

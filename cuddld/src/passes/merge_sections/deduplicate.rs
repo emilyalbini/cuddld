@@ -108,7 +108,7 @@ fn deduplicate(
     object
         .sections
         .builder(
-            &*name.resolve(),
+            &name.resolve(),
             DataSection {
                 perms,
                 deduplication: match split_rule {

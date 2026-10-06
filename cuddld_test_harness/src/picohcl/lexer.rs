@@ -111,13 +111,13 @@ impl Lexer<'_> {
                     return Ok(self.spanned(Token::OpenCurly));
                 }
                 Some('}') => {
-                    if let Some(state) = self.string_state.last_mut() {
-                        if let StringState::Interpolation(curly_level) = state {
-                            // Prevent the curly close at the wrong nesting depth to close.
-                            if *curly_level == self.curly_level {
-                                *state = StringState::Raw;
-                                continue 'lexer;
-                            }
+                    if let Some(state) = self.string_state.last_mut()
+                        && let StringState::Interpolation(curly_level) = state
+                    {
+                        // Prevent the curly close at the wrong nesting depth to close.
+                        if *curly_level == self.curly_level {
+                            *state = StringState::Raw;
+                            continue 'lexer;
                         }
                     }
                     self.curly_level = self.curly_level.saturating_sub(1);
@@ -152,10 +152,8 @@ impl Lexer<'_> {
                         if self.peek_char().is_none() {
                             return Err(self.err(LexerErrorKind::UnterminatedComment));
                         }
-                        if self.next_char() == Some('*') {
-                            if self.next_char() == Some('/') {
-                                continue 'lexer;
-                            }
+                        if self.next_char() == Some('*') && self.next_char() == Some('/') {
+                            continue 'lexer;
                         }
                     }
                 }
@@ -167,7 +165,7 @@ impl Lexer<'_> {
                         let next = self.next_char();
                         if next == Some('\n') {
                             return Ok(self.spanned(Token::Newline));
-                        } else if next == None {
+                        } else if next.is_none() {
                             return Ok(self.spanned(Token::EndOfInput));
                         }
                     }
@@ -179,7 +177,7 @@ impl Lexer<'_> {
     }
 
     pub(super) fn peek(&mut self) -> Result<Spanned<Token>, LexerError> {
-        if self.peeked_tokens.len() == 0 {
+        if self.peeked_tokens.is_empty() {
             let token = self.next();
             self.peeked_tokens.push_back(token);
         }

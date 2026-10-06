@@ -33,7 +33,7 @@ pub(super) fn create_gnu_hash<'a>(
     class: ElfClass,
 ) -> ElfSectionContent {
     let symbols = symbols.collect::<Vec<_>>();
-    let hasher = GnuHasher::new(class, symbols.iter().map(|s| *s));
+    let hasher = GnuHasher::new(class, symbols.iter().copied());
 
     let mut bloom = vec![0; hasher.bloom_bytes_count as usize];
     let mut symbols_offset = 0;
@@ -107,7 +107,7 @@ pub(crate) struct GnuHasher {
 
 impl GnuHasher {
     pub(crate) fn new<'a>(class: ElfClass, symbols: impl Iterator<Item = &'a Symbol>) -> Self {
-        let symbols_count = symbols.filter(|s| should_hash_symbol(*s)).count();
+        let symbols_count = symbols.filter(|s| should_hash_symbol(s)).count();
         let buckets_count = (symbols_count / LOAD_FACTOR + 1).try_into().expect("too many symbols");
 
         let bloom_entry_size = match class {

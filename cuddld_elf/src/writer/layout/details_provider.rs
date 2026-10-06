@@ -216,19 +216,19 @@ fn part_for_section(
 ) -> Result<Option<Part<ElfSectionId>>, LayoutError> {
     Ok(Some(match &section.content {
         ElfSectionContent::Null => return Ok(None),
-        ElfSectionContent::Program(_) => Part::ProgramSection(id.clone()),
-        ElfSectionContent::Uninitialized(_) => Part::UninitializedSection(id.clone()),
-        ElfSectionContent::SymbolTable(_) => Part::SymbolTable(id.clone()),
-        ElfSectionContent::StringTable(_) => Part::StringTable(id.clone()),
-        ElfSectionContent::Rel(_) => Part::Rel(id.clone()),
-        ElfSectionContent::Rela(_) => Part::Rela(id.clone()),
-        ElfSectionContent::Group(_) => Part::Group(id.clone()),
-        ElfSectionContent::Hash(_) => Part::Hash(id.clone()),
-        ElfSectionContent::Dynamic(_) => Part::Dynamic(id.clone()),
-        ElfSectionContent::GnuHash(_) => Part::GnuHash(id.clone()),
-        ElfSectionContent::EhFrameHdr(_) => Part::EhFrameHdr(id.clone()),
+        ElfSectionContent::Program(_) => Part::ProgramSection(id),
+        ElfSectionContent::Uninitialized(_) => Part::UninitializedSection(id),
+        ElfSectionContent::SymbolTable(_) => Part::SymbolTable(id),
+        ElfSectionContent::StringTable(_) => Part::StringTable(id),
+        ElfSectionContent::Rel(_) => Part::Rel(id),
+        ElfSectionContent::Rela(_) => Part::Rela(id),
+        ElfSectionContent::Group(_) => Part::Group(id),
+        ElfSectionContent::Hash(_) => Part::Hash(id),
+        ElfSectionContent::Dynamic(_) => Part::Dynamic(id),
+        ElfSectionContent::GnuHash(_) => Part::GnuHash(id),
+        ElfSectionContent::EhFrameHdr(_) => Part::EhFrameHdr(id),
 
-        ElfSectionContent::Note(_) => Part::Note(id.clone()),
+        ElfSectionContent::Note(_) => Part::Note(id),
         ElfSectionContent::Unknown(_) => {
             return Err(LayoutError::UnknownSection);
         }

@@ -30,10 +30,10 @@ fn render_error(diagnostic_context: GatheredContext<'static>, err: Box<dyn Error
     let mut diagnostic_builder = None;
     let mut current: Option<&(dyn Error + 'static)> = Some(&*err);
     while let Some(current_err) = current {
-        if let Some(extracted) = request_ref::<dyn DiagnosticBuilder>(current_err) {
-            if diagnostic_builder.is_none() {
-                diagnostic_builder = Some(extracted);
-            }
+        if let Some(extracted) = request_ref::<dyn DiagnosticBuilder>(current_err)
+            && diagnostic_builder.is_none()
+        {
+            diagnostic_builder = Some(extracted);
         }
         if let Some(extracted) = request_ref::<dyn DiagnosticContext>(current_err) {
             diagnostic_context.add_ref(extracted);

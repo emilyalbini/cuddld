@@ -16,7 +16,7 @@ impl Step for DirStep {
         std::fs::create_dir_all(&dest)?;
 
         for file in &self.files {
-            std::fs::copy(ctx.maybe_relative_to_src(&file), dest.join(file_name(&file)))?;
+            std::fs::copy(ctx.maybe_relative_to_src(file), dest.join(file_name(file)))?;
         }
 
         ctx.hcl.set_variable(ctx.step_name, ResolvedExpression::Path(dest));

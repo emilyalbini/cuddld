@@ -145,20 +145,20 @@ impl Attribute {
     }
 
     pub(crate) fn get_parenthesis_one_str(&self) -> Result<&str, Error> {
-        if let AttributeContent::ParenthesisList(list) = &self.content {
-            if let [AttributeValue::String(string)] = list.as_slice() {
-                return Ok(string);
-            }
+        if let AttributeContent::ParenthesisList(list) = &self.content
+            && let [AttributeValue::String(string)] = list.as_slice()
+        {
+            return Ok(string);
         }
         Err(Error::new("expected attribute to have one quoted string inside parenthesis")
             .span(self.span))
     }
 
     pub(crate) fn get_parenthesis_one_expr(&self) -> Result<&TokenStream, Error> {
-        if let AttributeContent::ParenthesisList(list) = &self.content {
-            if let [AttributeValue::Expr(expr)] = list.as_slice() {
-                return Ok(expr);
-            }
+        if let AttributeContent::ParenthesisList(list) = &self.content
+            && let [AttributeValue::Expr(expr)] = list.as_slice()
+        {
+            return Ok(expr);
         }
         Err(Error::new("expected attribute to have one expression inside parenthesis")
             .span(self.span))

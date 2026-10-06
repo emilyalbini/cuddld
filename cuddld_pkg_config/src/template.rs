@@ -90,9 +90,9 @@ impl Resolvable for Template {
         let mut output = String::new();
         for component in &self.components {
             let new = match component {
-                TemplateComponent::Text(text) => &*text,
+                TemplateComponent::Text(text) => text,
                 TemplateComponent::TextStatic(text) => *text,
-                TemplateComponent::Variable(var) => &*variables.get(var).ok_or_else(|| {
+                TemplateComponent::Variable(var) => variables.get(var).ok_or_else(|| {
                     ParseError::UndefinedVariable(var.clone(), while_resolving.clone())
                 })?,
             };

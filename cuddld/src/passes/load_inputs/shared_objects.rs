@@ -42,7 +42,7 @@ pub(super) fn load_shared_object(
                     name: intern(&symbol.name),
                     span,
                     visibility: symbol.visibility,
-                    binding: symbol.binding.clone(),
+                    binding: symbol.binding,
                 })
                 .map_err(SharedObjectError::AddSymbol)?;
         } else if let ElfSymbolBinding::Global = symbol.binding {
@@ -106,7 +106,7 @@ fn is_needed(
         }
 
         for symbol in &input_shared.undefined_global_symbols {
-            if provided_symbols.contains(&symbol) {
+            if provided_symbols.contains(symbol) {
                 return true;
             }
         }

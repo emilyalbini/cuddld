@@ -12,7 +12,7 @@ pub fn create_temp_dir() -> Result<PathBuf, Error> {
         }
     }
 
-    Err(Error::new(ErrorKind::Other, "all attempts to create a directory failed"))
+    Err(Error::other("all attempts to create a directory failed"))
 }
 
 fn random_name() -> String {

@@ -14,7 +14,7 @@ pub(super) fn render_perms(perms: &ElfPermissions) -> String {
     if output.trim().is_empty() { format!("{:1$}", "-", output.len()) } else { output }
 }
 
-pub(super) fn resolve_string<'a>(object: &'a ElfObject, id: ElfStringId) -> &'a str {
+pub(super) fn resolve_string(object: &ElfObject, id: ElfStringId) -> &str {
     let table = object.sections.get(&id.section).expect("invalid string section id");
     let ElfSectionContent::StringTable(table) = &table.content else {
         panic!("string section id is not a string table");

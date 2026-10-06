@@ -34,10 +34,10 @@ pub fn assert_snapshot(snapshot: &Path, expected: &str) {
         Ok(()) => {}
         Err(DiffError::Mismatch(output)) => {
             if std::env::var_os("UPDATE_EXPECT").is_some() {
-                if let Some(parent) = snapshot.parent() {
-                    if !parent.exists() {
-                        std::fs::create_dir_all(&parent).expect("failed to create parent dir");
-                    }
+                if let Some(parent) = snapshot.parent()
+                    && !parent.exists()
+                {
+                    std::fs::create_dir_all(parent).expect("failed to create parent dir");
                 }
                 std::fs::write(snapshot, expected.as_bytes()).expect("faileed to write snapshot");
                 return;

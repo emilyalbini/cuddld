@@ -209,7 +209,7 @@ fn render_section_hash(names: &Names, object: &ElfObject, hash: &ElfHash) -> Vec
     for mut entry in hash.buckets.iter().copied() {
         let mut items = Vec::new();
         while entry != 0 {
-            items.push(symbol_table.symbols.keys().skip(entry as usize).next().unwrap());
+            items.push(symbol_table.symbols.keys().nth(entry as usize).unwrap());
             entry = hash.chain[entry as usize];
         }
         buckets.push(items);
@@ -269,12 +269,7 @@ fn render_section_gnu_hash(
             .skip(((*start_symtab_index).saturating_sub(gnu_hash.symbols_offset)) as usize)
         {
             symbols.push((
-                symbol_table
-                    .symbols
-                    .keys()
-                    .skip(idx + gnu_hash.symbols_offset as usize)
-                    .next()
-                    .unwrap(),
+                symbol_table.symbols.keys().nth(idx + gnu_hash.symbols_offset as usize).unwrap(),
                 hash & 0xfffffffe,
             ));
 

@@ -78,7 +78,7 @@ impl<'a> Iterator for CliLexer<'a> {
                         option.strip_prefix(long_short_flag).and_then(|o| o.strip_prefix('='))
                     {
                         self.force_next = Some(CliToken::FlagValue(value));
-                        return Some(CliToken::LongShortFlag(*long_short_flag));
+                        return Some(CliToken::LongShortFlag(long_short_flag));
                     }
                 }
 

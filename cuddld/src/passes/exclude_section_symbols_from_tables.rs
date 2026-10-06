@@ -4,9 +4,8 @@ use crate::repr::symbols::views::AllSymbols;
 
 pub(crate) fn remove(object: &mut Object) {
     for symbol in object.symbols.iter_mut(&AllSymbols) {
-        match &symbol.value() {
-            SymbolValue::Section { .. } => symbol.mark_exclude_from_tables(),
-            _ => {}
+        if let SymbolValue::Section { .. } = &symbol.value() {
+            symbol.mark_exclude_from_tables()
         }
     }
 }

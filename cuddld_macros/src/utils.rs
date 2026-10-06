@@ -65,7 +65,7 @@ where
                 StructFields::None => {}
                 StructFields::TupleLike(fields) => {
                     for (idx, field) in fields.iter().enumerate() {
-                        let field_name = ident(&format!("f{idx}"));
+                        let field_name = ident(format!("f{idx}"));
                         declarations.push(quote! {
                             #[allow(unused)]
                             let #field_name = &self.#{ literal(idx) };
@@ -106,7 +106,7 @@ where
                     EnumVariantData::TupleLike(fields) => {
                         let mut declarations = Vec::new();
                         for (idx, field) in fields.iter().enumerate() {
-                            let field_name = ident(&format!("f{idx}"));
+                            let field_name = ident(format!("f{idx}"));
                             declarations.push(quote!(#field_name,));
                             unified.push(UnifiedField {
                                 attrs: &field.attrs,

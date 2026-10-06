@@ -9,7 +9,7 @@ pub(crate) fn resolve_cli_input(
     let mut names = Vec::new();
     match &input.value {
         CliInputValue::Path(path) => {
-            return Ok(ResolvedInput { path: path.clone(), library_name: path_to_string(&path)? });
+            return Ok(ResolvedInput { path: path.clone(), library_name: path_to_string(path)? });
         }
         CliInputValue::Library(name) => {
             if input.options.search_shared_objects {

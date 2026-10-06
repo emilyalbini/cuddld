@@ -3,7 +3,7 @@ use crate::interner::intern;
 use crate::repr::object::Object;
 use crate::repr::relocations::{Relocation, RelocationType};
 use crate::repr::sections::SectionContent;
-use crate::repr::symbols::{MissingGlobalSymbol, SymbolId, SymbolValue};
+use crate::repr::symbols::{SymbolId, SymbolValue};
 use cuddld_macros::{Display, Error};
 use std::collections::{BTreeMap, btree_map};
 
@@ -16,12 +16,13 @@ pub(crate) fn run(object: &Object) -> Result<RelocsAnalysis, RelocsAnalysisError
             match needs_got_entry(relocation.type_) {
                 NeedsGot::Got => add_got_reloc(&mut analysis.got, object, relocation),
                 NeedsGot::GotPlt => add_got_reloc(&mut analysis.got_plt, object, relocation),
-                NeedsGot::None => match object.symbols.get(relocation.symbol).value() {
-                    SymbolValue::ExternallyDefined => {
+                NeedsGot::None => {
+                    if let SymbolValue::ExternallyDefined =
+                        object.symbols.get(relocation.symbol).value()
+                    {
                         return Err(RelocsAnalysisError::DynamicRelocInNoPic);
                     }
-                    _ => {}
-                },
+                }
             }
             // Some relocations (like R_386_GOTOFF or R_386_GOT32) require a .got.plt to be present
             // even if no PLT entries are actually present. This is because they are relative to
@@ -34,9 +35,8 @@ pub(crate) fn run(object: &Object) -> Result<RelocsAnalysis, RelocsAnalysisError
     }
 
     // If something refers directly to the _GLOBAL_OFFSET_TABLE_ we need to ensure it's present.
-    match object.symbols.get_global(intern("_GLOBAL_OFFSET_TABLE_")) {
-        Ok(_) => ensure_got(&mut analysis.got_plt),
-        Err(MissingGlobalSymbol { .. }) => {}
+    if object.symbols.get_global(intern("_GLOBAL_OFFSET_TABLE_")).is_ok() {
+        ensure_got(&mut analysis.got_plt)
     }
 
     Ok(analysis)

@@ -16,7 +16,7 @@ impl Step for RustStep {
     fn run(&self, ctx: TestContext<'_>) -> Result<(), ErasedError> {
         let source = ctx.maybe_relative_to_src(&self.source);
         let source_name = file_name(&source);
-        let dest_name = format!("lib{}", file_name(&source.with_extension("a")));
+        let dest_name = format!("lib{}", file_name(source.with_extension("a")));
 
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;

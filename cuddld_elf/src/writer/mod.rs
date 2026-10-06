@@ -282,17 +282,17 @@ impl<'a> Writer<'a> {
                             &self.object.sections.get(&group.symbol_table).unwrap().content
                         else {
                             return Err(WriteError::WrongSectionTypeForGroupSymbolTable {
-                                group: id.clone(),
-                                symbol_table: group.symbol_table.clone(),
+                                group: *id,
+                                symbol_table: group.symbol_table,
                             });
                         };
                         symbol_table
                             .symbols
                             .iter()
                             .position(|(id, _)| *id == group.signature)
-                            .ok_or_else(|| WriteError::MissingGroupSignature {
-                                group: id.clone(),
-                                signature: group.signature.clone(),
+                            .ok_or(WriteError::MissingGroupSignature {
+                                group: *id,
+                                signature: group.signature,
                             })? as _
                     }
                     _ => 0,
@@ -710,7 +710,7 @@ impl<'a> Writer<'a> {
             .sections
             .keys()
             .enumerate()
-            .map(|(idx, id)| (id.clone(), idx as u16))
+            .map(|(idx, id)| (*id, idx as u16))
             .collect::<BTreeMap<_, _>>();
 
         let mut string_table_section_id = None;
@@ -718,7 +718,7 @@ impl<'a> Writer<'a> {
             match &string_table_section_id {
                 Some(existing_id) if section.name.section == *existing_id => {}
                 Some(_) => return Err(WriteError::InconsistentSectionNamesTableId),
-                None => string_table_section_id = Some(section.name.section.clone()),
+                None => string_table_section_id = Some(section.name.section),
             }
         }
 
