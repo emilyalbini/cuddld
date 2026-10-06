@@ -487,6 +487,22 @@ fn test_as_needed() {
 }
 
 #[test]
+fn test_no_dynamic_linker() {
+    assert_parse(
+        &["input.o", "--no-dynamic-linker"],
+        Ok(CliOptions { no_dynamic_linker: true, ..default_options_static() }),
+    );
+    assert_parse(
+        &["input.o", "--no-dynamic-linker", "--dynamic-linker", "foo"],
+        Ok(CliOptions {
+            no_dynamic_linker: true,
+            dynamic_linker: DynamicLinker::Custom("foo".into()),
+            ..default_options_static()
+        }),
+    );
+}
+
+#[test]
 fn test_unknown_flags() {
     assert_parse(&["--foo-bar"], Err(CliError::UnsupportedFlag("--foo-bar".into())));
 }
@@ -585,6 +601,7 @@ fn default_options_static() -> CliOptions {
         shared_object_name: None,
         hash_style: HashStyle::Both,
         eh_frame_hdr: false,
+        no_dynamic_linker: false,
         mode: Mode::PositionDependent,
     }
 }

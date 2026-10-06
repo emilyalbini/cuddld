@@ -34,6 +34,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
     let mut shared_object_name = None;
     let mut hash_style = None;
     let mut eh_frame_hdr = None;
+    let mut no_dynamic_linker = None;
     let mut input_options = CliInputOptions { search_shared_objects: true, as_needed: false };
     let mut debug_print = BTreeSet::new();
 
@@ -185,6 +186,10 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
                 reject_duplicate(&token, &mut eh_frame_hdr, || Ok(false))?
             }
 
+            CliToken::LongFlag("no-dynamic-linker") => {
+                reject_duplicate(&token, &mut no_dynamic_linker, || Ok(true))?
+            }
+
             // If the flag value was not consumed in the previous iteration when the flag itself
             // was parsed, it means the flag didn't accept a value and we should error out.
             CliToken::FlagValue(_) => {
@@ -213,6 +218,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
         hash_style: hash_style.unwrap_or(HashStyle::Both),
         mode,
         eh_frame_hdr: eh_frame_hdr.unwrap_or(false),
+        no_dynamic_linker: no_dynamic_linker.unwrap_or(false),
 
         entry: match mode {
             Mode::PositionDependent | Mode::PositionIndependent => match entry {

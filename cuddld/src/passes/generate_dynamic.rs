@@ -37,8 +37,10 @@ pub(crate) fn run(
 
     match object.mode {
         Mode::PositionDependent | Mode::PositionIndependent => {
-            let interpreter = add_interpreter(options, object);
-            segment_content.push(SegmentContent::Section(interpreter?));
+            if !options.no_dynamic_linker {
+                let interpreter = add_interpreter(options, object);
+                segment_content.push(SegmentContent::Section(interpreter?));
+            }
         }
         Mode::SharedLibrary => {}
     }

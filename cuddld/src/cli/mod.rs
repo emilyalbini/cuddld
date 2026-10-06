@@ -28,6 +28,7 @@ pub(crate) struct CliOptions {
     pub(crate) hash_style: HashStyle,
     pub(crate) mode: Mode,
     pub(crate) eh_frame_hdr: bool,
+    pub(crate) no_dynamic_linker: bool,
 }
 
 impl DiagnosticContext for CliOptions {}
