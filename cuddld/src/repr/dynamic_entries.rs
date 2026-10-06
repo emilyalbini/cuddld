@@ -25,8 +25,8 @@ impl DynamicEntries {
     pub(crate) fn iter(&self) -> impl Iterator<Item = &DynamicEntry> {
         self.entries
             .iter()
-            .chain(Some(&DynamicEntry::Flags).filter(|_| !self.flags.is_empty()))
-            .chain(Some(&DynamicEntry::Flags1).filter(|_| !self.flags1.is_empty()))
+            .chain((!self.flags.is_empty()).then_some(&DynamicEntry::Flags))
+            .chain((!self.flags1.is_empty()).then_some(&DynamicEntry::Flags1))
     }
 }
 

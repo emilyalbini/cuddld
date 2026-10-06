@@ -538,6 +538,7 @@ impl InputBuilder {
         self
     }
 
+    #[allow(clippy::wrong_self_convention)]
     fn as_needed(mut self, value: bool) -> Self {
         self.as_needed = value;
         self

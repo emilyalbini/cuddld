@@ -33,3 +33,4 @@ cuddld_utils = { path = "cuddld_utils" }
 [workspace.lints.clippy]
 new_without_default = "allow"
 len_without_is_empty = "allow"
+too_many_arguments = "allow"

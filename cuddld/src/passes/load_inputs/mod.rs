@@ -63,7 +63,7 @@ pub(crate) fn run(options: &CliOptions) -> Result<Object, LoadInputsError> {
                 object.sections.builder(".shstrtab", SectionContent::SectionNames).create();
 
                 load_object(&mut object, &mut strings, section_groups.for_object(), next)?;
-                State::WithContent { object, strings, section_groups, first_span: source }
+                State::WithContent { object: Box::new(object), strings, section_groups, first_span: source }
             }
             State::WithContent { mut object, mut strings, mut section_groups, first_span } => {
                 if object.env != next.reader.env() {
@@ -85,7 +85,7 @@ pub(crate) fn run(options: &CliOptions) -> Result<Object, LoadInputsError> {
         State::WithContent { mut object, .. } => {
             inject_version::run(&mut object);
             cleanup::run(&mut object);
-            Ok(object)
+            Ok(*object)
         }
     }
 }
@@ -137,7 +137,7 @@ enum State {
         section_groups: SectionGroups,
     },
     WithContent {
-        object: Object,
+        object: Box<Object>,
         strings: Strings,
         section_groups: SectionGroups,
         first_span: ObjectSpan,

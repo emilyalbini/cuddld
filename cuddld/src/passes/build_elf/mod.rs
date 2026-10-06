@@ -26,7 +26,7 @@ use cuddld_elf::{
     ElfSegment, ElfSegmentType, ElfStringTable, ElfType, ElfUninitializedSection,
 };
 use cuddld_macros::{Display, Error};
-use cuddld_utils::ints::{Address, ExtractNumber};
+use cuddld_utils::ints::ExtractNumber;
 use std::collections::BTreeMap;
 use std::num::NonZeroU64;
 
@@ -129,13 +129,8 @@ impl<'a> ElfBuilder<'a> {
                 Err(ElfBuilderError::EntryPointExternallyDefined(symbol.name()))
             }
             ResolvedSymbol::Address { memory_address, .. } => Ok(Some(
-                NonZeroU64::new(
-                    memory_address
-                        .extract()
-                        .try_into()
-                        .map_err(|_| ElfBuilderError::EntrypointIsOutOfBounds(memory_address))?,
-                )
-                .ok_or(ElfBuilderError::EntrypointIsZero(symbol.name()))?,
+                NonZeroU64::new(memory_address.extract())
+                    .ok_or(ElfBuilderError::EntrypointIsZero(symbol.name()))?,
             )),
         }
     }
@@ -366,8 +361,6 @@ pub(crate) enum ElfBuilderError {
     EntryPointExternallyDefined(Interned<String>),
     #[display("the entry point is zero")]
     EntrypointIsZero(Interned<String>),
-    #[display("the entry point address {f0} is out of bounds")]
-    EntrypointIsOutOfBounds(Address),
     #[display("no section names sections are present")]
     NoSectionNamesSection,
     #[display("more than one section names section is present")]

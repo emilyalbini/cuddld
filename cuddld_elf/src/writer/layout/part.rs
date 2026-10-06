@@ -72,10 +72,7 @@ impl<S> Part<S> {
     }
 
     pub(super) fn present_in_file(&self) -> bool {
-        match self {
-            Part::UninitializedSection(_) => false,
-            _ => true,
-        }
+        !matches!(self, Part::UninitializedSection(_))
     }
 }
 

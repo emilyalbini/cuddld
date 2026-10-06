@@ -166,7 +166,7 @@ fn render_uninitialized_section(
     )
 }
 
-fn render_symbols<'a>(
+fn render_symbols(
     object: &Object,
     names: &Names,
     title: &str,
@@ -243,7 +243,7 @@ fn render_strings_section(
     Box::new(
         section_widget(names, section, "string table")
             .add(Text::new(format!("symbol names for: {}", strings.symbol_names_view())))
-            .add_iter(Some(custom).filter(|_| custom_count > 0)),
+            .add_iter((custom_count > 0).then_some(custom)),
     )
 }
 
