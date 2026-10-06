@@ -91,7 +91,7 @@ impl Sections {
                     SymbolValue::Absolute { .. }
                     | SymbolValue::SectionNotLoaded
                     | SymbolValue::ExternallyDefined
-                    | SymbolValue::Undefined
+                    | SymbolValue::Undefined { .. }
                     | SymbolValue::Null => continue,
                 };
                 if section == id {

@@ -87,7 +87,9 @@ impl SymbolsView for DefinedSymbols {
             | SymbolValue::SectionRelative { .. }
             | SymbolValue::SectionVirtualAddress { .. }
             | SymbolValue::ExternallyDefined => true,
-            SymbolValue::SectionNotLoaded | SymbolValue::Undefined | SymbolValue::Null => false,
+            SymbolValue::SectionNotLoaded | SymbolValue::Undefined { .. } | SymbolValue::Null => {
+                false
+            }
         }
     }
 }

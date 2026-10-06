@@ -41,7 +41,7 @@ pub(super) fn run(object: &mut Object) {
             SymbolValue::Absolute { .. }
             | SymbolValue::ExternallyDefined
             | SymbolValue::SectionNotLoaded
-            | SymbolValue::Undefined
+            | SymbolValue::Undefined { .. }
             | SymbolValue::Null => None,
             SymbolValue::Section { section }
             | SymbolValue::SectionRelative { section, .. }

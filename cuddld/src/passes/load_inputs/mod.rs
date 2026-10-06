@@ -99,17 +99,25 @@ fn load_object(
     object: &mut Object,
     strings: &mut Strings,
     section_groups: SectionGroupsForObject<'_>,
-    NextObject { mut reader, source, library_name, options }: NextObject,
+    NextObject { mut reader, source, library_name, requirements, options }: NextObject,
 ) -> Result<(), LoadInputsError> {
     match reader.type_() {
         cuddld_elf::ElfType::Relocatable => {
             let elf = reader
                 .into_object()
                 .map_err(|e| LoadInputsError::ParseFailed(source.clone(), e))?;
+            for requirement in requirements {
+                if !requirement.matches(&elf) {
+                    return Ok(());
+                }
+            }
             merge_elf(object, strings, section_groups, elf, source.clone())
                 .map_err(|e| LoadInputsError::MergeFailed(source, e))
         }
         cuddld_elf::ElfType::SharedObject => {
+            if !requirements.is_empty() {
+                unimplemented!();
+            }
             load_shared_object(object, &mut reader, &library_name, options, source.clone())
                 .map_err(|e| LoadInputsError::SharedLoadFailed(source, e))
         }

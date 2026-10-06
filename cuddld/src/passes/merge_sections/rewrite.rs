@@ -81,7 +81,7 @@ pub(super) fn run(
             SymbolValue::Absolute { .. }
             | SymbolValue::SectionNotLoaded
             | SymbolValue::ExternallyDefined
-            | SymbolValue::Undefined
+            | SymbolValue::Undefined { .. }
             | SymbolValue::Null => continue,
         };
 

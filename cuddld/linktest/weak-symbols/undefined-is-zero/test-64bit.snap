@@ -1,0 +1,16 @@
+linking exited with exit status: 0
+
+no stdout present
+
+=== stderr ===
+debug print: loaded object
+ │
+ │    Symbols:
+ │  ╭───────────┬──────┬──────────┬───────────────┬──────────────────────────╮
+ │  │ Name      │ Type │ Source   │ Visibility    │ Value                    │
+ │  ├───────────┼──────┼──────────┼───────────────┼──────────────────────────┤
+ │  │ <empty>   │ none │ <cuddld> │ local         │ <null>                   │
+ │  │ _start    │ none │ test.o   │ global        │ .text + 0x0              │
+ │  │ undefined │ none │ test.o   │ global (weak) │ <undefined (default: 0)> │
+ │  ╰───────────┴──────┴──────────┴───────────────┴──────────────────────────╯
+ ┴

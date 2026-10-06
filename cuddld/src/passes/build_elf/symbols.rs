@@ -134,7 +134,10 @@ impl Converter<'_> {
                     }
                     SymbolValue::ExternallyDefined => ElfSymbolDefinition::Undefined,
                     SymbolValue::SectionNotLoaded => ElfSymbolDefinition::Undefined,
-                    SymbolValue::Undefined => ElfSymbolDefinition::Undefined,
+                    SymbolValue::Undefined { default_zero: false } => {
+                        ElfSymbolDefinition::Undefined
+                    }
+                    SymbolValue::Undefined { default_zero: true } => ElfSymbolDefinition::Absolute,
                     SymbolValue::Null => ElfSymbolDefinition::Undefined,
                 },
                 value: match symbol.value() {
@@ -150,7 +153,7 @@ impl Converter<'_> {
                     }
                     SymbolValue::ExternallyDefined => 0,
                     SymbolValue::SectionNotLoaded => 0,
-                    SymbolValue::Undefined => 0,
+                    SymbolValue::Undefined { default_zero: _ } => 0,
                     SymbolValue::Null => 0,
                 },
                 size: 0,

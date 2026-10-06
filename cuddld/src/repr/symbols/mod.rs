@@ -49,7 +49,7 @@ impl Symbols {
                 self.symbols.push(SymbolSlot::Present(symbol));
                 Ok(id)
             }
-            SymbolVisibility::Global { weak: false, hidden: _ } => {
+            SymbolVisibility::Global { weak, hidden: _ } => {
                 match self.global_symbols.entry(upcoming.name()) {
                     btree_map::Entry::Vacant(entry) => {
                         let id = SymbolId(self.symbols.len());
@@ -60,10 +60,18 @@ impl Symbols {
                     btree_map::Entry::Occupied(entry) => match &mut self.symbols[entry.get().0] {
                         SymbolSlot::Removed => panic!("global symbol points to a removed symbol"),
                         SymbolSlot::Present(existing) => {
-                            if let SymbolValue::Undefined = existing.value() {
+                            if let SymbolValue::Undefined { .. } = upcoming.value() {
+                                Ok(existing.id())
+                            } else if let SymbolValue::Undefined { .. } = existing.value() {
                                 *existing = upcoming.create(existing.id())?;
                                 Ok(existing.id())
-                            } else if let SymbolValue::Undefined = upcoming.value() {
+                            } else if existing.is_weak() && !weak {
+                                // Replace an existing weak symbol with a global symbol.
+                                *existing = upcoming.create(existing.id())?;
+                                Ok(existing.id())
+                            } else if weak {
+                                // A global or weak symbol already exists, since the new symbol is
+                                // weak too ignore it instead of emitting an error.
                                 Ok(existing.id())
                             } else {
                                 Err(LoadSymbolsError::DuplicateGlobalSymbol(upcoming.name()))
@@ -71,9 +79,6 @@ impl Symbols {
                         }
                     },
                 }
-            }
-            SymbolVisibility::Global { weak: true, hidden: _ } => {
-                todo!("weak symbols are not supported yet")
             }
         }
     }

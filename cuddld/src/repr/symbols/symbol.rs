@@ -72,11 +72,14 @@ impl Symbol {
             offset: Offset,
         ) -> Result<ResolvedSymbol, ResolveSymbolErrorKind> {
             match &symbol.value {
-                SymbolValue::Undefined => {
+                SymbolValue::Undefined { default_zero: false } => {
                     Err(ResolveSymbolErrorKind::Undefined(UndefinedSymbolDiagnostic {
                         name: symbol.name(),
                         expected_visibility: symbol.visibility(),
                     }))
+                }
+                SymbolValue::Undefined { default_zero: true } => {
+                    Ok(ResolvedSymbol::Absolute(0u8.into()))
                 }
                 SymbolValue::Absolute { value } => {
                     assert!(offset == Offset::from(0));
@@ -115,6 +118,10 @@ impl Symbol {
     pub(crate) fn is_null_symbol(&self) -> bool {
         self.id == NULL_SYMBOL_ID
     }
+
+    pub(crate) fn is_weak(&self) -> bool {
+        matches!(self.visibility(), SymbolVisibility::Global { weak: true, .. })
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -139,7 +146,7 @@ pub(crate) enum SymbolValue {
     SectionVirtualAddress { section: SectionId, memory_address: Address },
     SectionNotLoaded,
     ExternallyDefined,
-    Undefined,
+    Undefined { default_zero: bool },
     Null,
 }
 
@@ -274,7 +281,7 @@ impl UpcomingSymbol<'_> {
     pub(super) fn value(&self) -> SymbolValue {
         match self {
             UpcomingSymbol::Null => SymbolValue::Null,
-            UpcomingSymbol::GlobalUnknown { .. } => SymbolValue::Undefined,
+            UpcomingSymbol::GlobalUnknown { .. } => SymbolValue::Undefined { default_zero: false },
             UpcomingSymbol::GlobalHidden { value, .. } => *value,
             UpcomingSymbol::Section { section, .. } => SymbolValue::Section { section: *section },
             UpcomingSymbol::ExternallyDefined { .. } => SymbolValue::ExternallyDefined,
@@ -285,7 +292,9 @@ impl UpcomingSymbol<'_> {
                 elf,
                 ..
             } => match elf.definition {
-                ElfSymbolDefinition::Undefined => SymbolValue::Undefined,
+                ElfSymbolDefinition::Undefined => SymbolValue::Undefined {
+                    default_zero: matches!(elf.binding, ElfSymbolBinding::Weak),
+                },
                 ElfSymbolDefinition::Absolute => SymbolValue::Absolute { value: elf.value.into() },
                 ElfSymbolDefinition::Common => todo!(),
                 ElfSymbolDefinition::Section(section) => {

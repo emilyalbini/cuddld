@@ -18,7 +18,7 @@ pub(crate) fn run(object: &mut Object) -> Vec<RemovedSection> {
                 SymbolValue::ExternallyDefined => None,
                 SymbolValue::SectionNotLoaded => None,
                 SymbolValue::Absolute { .. } => None,
-                SymbolValue::Undefined => None,
+                SymbolValue::Undefined { .. } => None,
                 SymbolValue::Null => None,
             })
             .collect(),

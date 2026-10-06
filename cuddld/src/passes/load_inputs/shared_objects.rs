@@ -86,7 +86,7 @@ fn is_needed(
 
     // First, check if any global non-weak undefined symbol is provided by the shared library.
     for sym in object.symbols.iter(&AllSymbols) {
-        let SymbolValue::Undefined = &sym.value() else { continue };
+        let SymbolValue::Undefined { .. } = &sym.value() else { continue };
         let SymbolVisibility::Global { weak: false, .. } = sym.visibility() else { continue };
 
         if provided_symbols.contains(&sym.name()) {

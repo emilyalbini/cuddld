@@ -206,7 +206,8 @@ fn render_symbols(
             }
             SymbolValue::ExternallyDefined => "<externally defined>".into(),
             SymbolValue::SectionNotLoaded => "<section not loaded>".into(),
-            SymbolValue::Undefined => "<undefined>".into(),
+            SymbolValue::Undefined { default_zero: false } => "<undefined>".into(),
+            SymbolValue::Undefined { default_zero: true } => "<undefined (default: 0)>".into(),
             SymbolValue::Null => "<null>".into(),
         };
         table.add_body([

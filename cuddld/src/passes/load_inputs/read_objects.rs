@@ -1,14 +1,14 @@
 use crate::cli::{CliInput, CliInputOptions};
 use crate::diagnostics::builders::NoSymbolNameAtArchiveStartDiagnostic;
-use crate::interner::intern;
+use crate::interner::{Interned, intern};
 use crate::repr::symbols::{SymbolValue, Symbols};
 use crate::utils::file_type::{FileType, FileTypeError};
 use crate::utils::resolve_cli_input::{ResolveCliInputError, resolve_cli_input};
 use cuddld_ar::{ArFile, ArMemberId, ArReadError, ArReader};
 use cuddld_diagnostics::ObjectSpan;
-use cuddld_elf::{ElfReader, LoadError};
+use cuddld_elf::{ElfObject, ElfReader, ElfSectionContent, ElfSymbolBinding, LoadError};
 use cuddld_macros::{Display, Error};
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fs::File;
 use std::io::{BufReader, Cursor};
 use std::path::PathBuf;
@@ -50,6 +50,7 @@ impl<'a> ObjectsReader<'a> {
                     return Ok(Some(NextObject {
                         source: ObjectSpan::new_file(&resolved.path),
                         library_name: LibraryName::Known(resolved.library_name),
+                        requirements: vec![],
                         reader: ElfReader::new_owned(Box::new(r)).map_err(|e| {
                             ReadObjectsError::FileParseFailed(resolved.path.clone(), e)
                         })?,
@@ -74,19 +75,22 @@ impl<'a> ObjectsReader<'a> {
     ) -> Result<Option<NextObject>, ReadObjectsError> {
         let Some(pending_archive) = &mut self.current_archive else { return Ok(None) };
         match pending_archive.next(symbols)? {
-            Some(file) => match ElfReader::new_owned(Box::new(Cursor::new(file.content))) {
-                Ok(reader) => Ok(Some(NextObject {
-                    source: ObjectSpan::new_archive_member(&pending_archive.path, &file.name),
-                    library_name: LibraryName::InsideArchive,
-                    reader,
-                    options: pending_archive.options.clone(),
-                })),
-                Err(err) => Err(ReadObjectsError::ArchiveFileParseFailed(
-                    file.name,
-                    pending_archive.path.clone(),
-                    err,
-                )),
-            },
+            Some((file, requirements)) => {
+                match ElfReader::new_owned(Box::new(Cursor::new(file.content))) {
+                    Ok(reader) => Ok(Some(NextObject {
+                        source: ObjectSpan::new_archive_member(&pending_archive.path, &file.name),
+                        library_name: LibraryName::InsideArchive,
+                        requirements,
+                        reader,
+                        options: pending_archive.options.clone(),
+                    })),
+                    Err(err) => Err(ReadObjectsError::ArchiveFileParseFailed(
+                        file.name,
+                        pending_archive.path.clone(),
+                        err,
+                    )),
+                }
+            }
             None => {
                 self.current_archive = None;
                 Ok(None)
@@ -98,7 +102,7 @@ impl<'a> ObjectsReader<'a> {
 struct PendingArchive<'a> {
     path: PathBuf,
     reader: ArReader<BufReader<File>>,
-    pending_members: VecDeque<ArMemberId>,
+    pending_members: VecDeque<(ArMemberId, Vec<ObjectRequirement>)>,
     loaded_members: HashSet<ArMemberId>,
     options: &'a CliInputOptions,
 }
@@ -134,33 +138,59 @@ impl<'a> PendingArchive<'a> {
             });
         };
 
+        let mut ordered = Vec::new();
+        let mut require_symbols = HashMap::new();
         for (symbol_name, member_id) in &symbol_table.symbols {
             if let Ok(symbol) = symbols.get_global(intern(symbol_name))
-                && let SymbolValue::Undefined = symbol.value()
+                && let SymbolValue::Undefined { ..} = symbol.value()
             {
-                // We want to maintain the ordering of the ArMemberId to ensure determinism in the
-                // linker output (aka we need to store it in a Vec). The HashSet is used as a quick
-                // way to lookup, since it doesn't preserve ordering.
-                //
-                // This also prevents loading the same object file multiple times when scanning
-                // the archive again for new required symbols.
-                if self.loaded_members.insert(*member_id) {
-                    self.pending_members.push_back(*member_id);
+                if !require_symbols.contains_key(member_id) {
+                    ordered.push(*member_id);
                 }
+                require_symbols
+                    .entry(*member_id)
+                    .or_insert_with(HashSet::new)
+                    .insert(symbol.name());
+            }
+        }
+
+        for member_id in ordered {
+            // We want to maintain the ordering of the ArMemberId to ensure determinism in the
+            // linker output (aka we need to store it in a Vec). The HashSet is used as a quick
+            // way to lookup, since it doesn't preserve ordering.
+            //
+            // This also prevents loading the same object file multiple times when scanning
+            // the archive again for new required symbols.
+            if self.loaded_members.insert(member_id) {
+                self.pending_members.push_back((
+                    member_id,
+                    // The elf spec says that we shouldn't load an archive if it only contains weak
+                    // symbols, so we require that at least one of the symbols in it is global.
+                    // Unfortunately we have to defer this step to later using a requirement,
+                    // because the information we have access to right now (the symbols cache in the
+                    // archive) doesn't specify whether the symbol is weak or not.
+                    vec![ObjectRequirement::HasGlobalSymbol(
+                        require_symbols.remove(&member_id).unwrap_or_default(),
+                    )],
+                ));
             }
         }
 
         Ok(())
     }
 
-    fn next(&mut self, symbols: &Symbols) -> Result<Option<ArFile>, ReadObjectsError> {
+    fn next(
+        &mut self,
+        symbols: &Symbols,
+    ) -> Result<Option<(ArFile, Vec<ObjectRequirement>)>, ReadObjectsError> {
         loop {
-            if let Some(member_id) = self.pending_members.pop_front() {
-                return Ok(Some(
+            if let Some((member_id, require_symbols)) = self.pending_members.pop_front() {
+                return Ok(Some((
                     self.reader
                         .read_member_by_id(&member_id)
                         .map_err(|e| ReadObjectsError::ExtractFailed(self.path.clone(), e))?,
-                ));
+                    require_symbols,
+                )));
             }
 
             // After loading the archive, new undefined symbols that can be satisfied by the
@@ -178,6 +208,7 @@ impl<'a> PendingArchive<'a> {
 pub(super) struct NextObject {
     pub(super) reader: ElfReader<'static>,
     pub(super) library_name: LibraryName,
+    pub(super) requirements: Vec<ObjectRequirement>,
     pub(super) source: ObjectSpan,
     pub(super) options: CliInputOptions,
 }
@@ -185,6 +216,55 @@ pub(super) struct NextObject {
 pub(super) enum LibraryName {
     Known(String),
     InsideArchive,
+}
+
+pub(super) enum ObjectRequirement {
+    HasGlobalSymbol(HashSet<Interned<String>>),
+}
+
+impl ObjectRequirement {
+    pub(super) fn matches(&self, elf: &ElfObject) -> bool {
+        match self {
+            ObjectRequirement::HasGlobalSymbol(names) => {
+                for section in elf.sections.values() {
+                    // We need to resolve the symbol names, and at this point we don't have access
+                    // to the merged string table, so we have to find it in the elf file and keep
+                    // track of it.
+                    let mut strings = None;
+
+                    let ElfSectionContent::SymbolTable(table) = &section.content else { continue };
+                    for symbol in table.symbols.values() {
+                        match symbol.binding {
+                            ElfSymbolBinding::Local
+                            | ElfSymbolBinding::Weak
+                            | ElfSymbolBinding::Unknown(_) => continue,
+                            ElfSymbolBinding::Global => {}
+                        }
+
+                        let strings = match &strings {
+                            Some(s) => s,
+                            None => {
+                                let Some(section) = elf.sections.get(&symbol.name.section) else {
+                                    continue;
+                                };
+                                let ElfSectionContent::StringTable(table) = &section.content else {
+                                    continue;
+                                };
+                                strings = Some(table);
+                                table
+                            }
+                        };
+                        let Some(name) = strings.get(symbol.name.offset) else { continue };
+                        let name: Interned<String> = intern(name);
+                        if names.contains(&name) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
 }
 
 #[derive(Debug, Error, Display)]
