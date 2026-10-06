@@ -35,6 +35,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
     let mut hash_style = None;
     let mut eh_frame_hdr = None;
     let mut no_dynamic_linker = None;
+    let mut deny_textrel = None;
     let mut input_options = CliInputOptions { search_shared_objects: true, as_needed: false };
     let mut debug_print = BTreeSet::new();
 
@@ -143,6 +144,10 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
                 "lazy" => {
                     reject_duplicate("-z now or -z lazy", &mut read_only_got_plt, || Ok(false))?
                 }
+                "text" => reject_duplicate("-z text or -z notext", &mut deny_textrel, || Ok(true))?,
+                "notext" => {
+                    reject_duplicate("-z text or -z notext", &mut deny_textrel, || Ok(false))?
+                }
                 other => return Err(CliError::UnsupportedFlag(format!("-z {other}"))),
             },
 
@@ -219,6 +224,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
         mode,
         eh_frame_hdr: eh_frame_hdr.unwrap_or(false),
         no_dynamic_linker: no_dynamic_linker.unwrap_or(false),
+        deny_textrel: deny_textrel.unwrap_or(false),
 
         entry: match mode {
             Mode::PositionDependent | Mode::PositionIndependent => match entry {

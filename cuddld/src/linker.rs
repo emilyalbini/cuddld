@@ -97,7 +97,7 @@ impl Linker {
         passes::replace_section_relative_symbols::replace(object, &resolver)?;
         passes::populate_eh_frame_hdr::run(object, &layout)?;
 
-        let (elf, conversion_map) = passes::build_elf::run(object, &layout, &resolver)?;
+        let (elf, conversion_map) = passes::build_elf::run(object, options, &layout, &resolver)?;
         callbacks.on_elf_built(&elf);
 
         let layout = layout.convert_ids(&conversion_map);

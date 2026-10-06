@@ -555,6 +555,8 @@ pub enum ElfDynamicDirective {
 #[bitfield_repr(u64)]
 #[bitfield_display_comma_separated]
 pub struct ElfDynamicFlags {
+    #[bit(2)]
+    pub relocations_will_modify_text: bool,
     #[bit(3)]
     pub bind_now: bool,
 }

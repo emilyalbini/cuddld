@@ -5,7 +5,7 @@ mod strings;
 mod symbols;
 pub(crate) mod sysv_hash;
 
-use crate::cli::Mode;
+use crate::cli::{CliOptions, Mode};
 use crate::diagnostics::contexts::WhileProcessingEntrypoint;
 use crate::interner::Interned;
 use crate::passes::build_elf::dynamic::build_dynamic_section;
@@ -34,6 +34,7 @@ type SectionConversion = BTreeMap<SectionId, ElfSectionId>;
 
 pub(crate) fn run(
     object: &Object,
+    cli: &CliOptions,
     layout: &Layout<SectionId>,
     resolver: &AddressResolver<'_>,
 ) -> Result<(ElfObject, SectionConversion), ElfBuilderError> {
@@ -44,6 +45,7 @@ pub(crate) fn run(
         layout,
         resolver,
         object,
+        cli,
         pending_string_tables: BTreeMap::new(),
         pending_symbol_tables: BTreeMap::new(),
     };
@@ -52,6 +54,7 @@ pub(crate) fn run(
 
 struct ElfBuilder<'a> {
     object: &'a Object,
+    cli: &'a CliOptions,
     layout: &'a Layout<SectionId>,
     resolver: &'a AddressResolver<'a>,
 
@@ -231,7 +234,7 @@ impl<'a> ElfBuilder<'a> {
                     self.resolver,
                 )?,
 
-                SectionContent::Dynamic(dynamic) => build_dynamic_section(self, dynamic),
+                SectionContent::Dynamic(dynamic) => build_dynamic_section(self, dynamic)?,
 
                 SectionContent::Notes(notes) => {
                     ElfSectionContent::Note(ElfNotesTable { notes: notes.notes.clone() })
@@ -367,4 +370,6 @@ pub(crate) enum ElfBuilderError {
     MoreThanOneSectionNamesSection,
     #[display("failed to create a relocations section")]
     RelaCreation(#[from] RelaCreationError),
+    #[display("text relocations are present but -ztext denies them")]
+    TextRelocationsPresent,
 }

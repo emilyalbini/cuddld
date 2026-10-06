@@ -503,6 +503,18 @@ fn test_no_dynamic_linker() {
 }
 
 #[test]
+fn test_deny_textrel() {
+    assert_parse(
+        &["input.o", "-ztext"],
+        Ok(CliOptions { deny_textrel: true, ..default_options_static() }),
+    );
+    assert_parse(
+        &["input.o", "-znotext"],
+        Ok(CliOptions { deny_textrel: false, ..default_options_static() }),
+    );
+}
+
+#[test]
 fn test_unknown_flags() {
     assert_parse(&["--foo-bar"], Err(CliError::UnsupportedFlag("--foo-bar".into())));
 }
@@ -602,6 +614,7 @@ fn default_options_static() -> CliOptions {
         hash_style: HashStyle::Both,
         eh_frame_hdr: false,
         no_dynamic_linker: false,
+        deny_textrel: false,
         mode: Mode::PositionDependent,
     }
 }

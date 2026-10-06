@@ -1,17 +1,19 @@
-use crate::passes::build_elf::ElfBuilder;
+use crate::passes::build_elf::{ElfBuilder, ElfBuilderError};
 use crate::repr::dynamic_entries::DynamicEntry;
 use crate::repr::relocations::RelocationMode;
 use crate::repr::sections::{DynamicSection, SectionId, UpcomingStringId};
 use cuddld_elf::raw::{RawRel, RawRela, RawSymbol};
 use cuddld_elf::writer::layout::PartMemory;
-use cuddld_elf::{ElfDynamic, ElfDynamicDirective, ElfPLTRelocationsMode, ElfSectionContent};
+use cuddld_elf::{
+    ElfDynamic, ElfDynamicDirective, ElfDynamicFlags, ElfPLTRelocationsMode, ElfSectionContent,
+};
 use cuddld_utils::ints::ExtractNumber;
 use cuddld_utils::raw_types::SizedRawType;
 
 pub(super) fn build_dynamic_section(
     builder: &mut ElfBuilder,
     dynamic: &DynamicSection,
-) -> ElfSectionContent {
+) -> Result<ElfSectionContent, ElfBuilderError> {
     let mut string_table_id = None;
     for entry in builder.object.dynamic_entries.iter() {
         if let DynamicEntry::StringTable(section_id) = entry {
@@ -110,10 +112,26 @@ pub(super) fn build_dynamic_section(
     // Section must be null-terminated.
     directives.push(ElfDynamicDirective::Null);
 
-    ElfSectionContent::Dynamic(ElfDynamic {
+    // Check at the end that nothing emitted text relocations. At the time of writing this cuddld
+    // doesn't support text relocations at all, but let's add the check just to be sure.
+    if builder.cli.deny_textrel {
+        for directive in &directives {
+            match directive {
+                ElfDynamicDirective::RelocationsWillModifyText => {}
+                ElfDynamicDirective::Flags(ElfDynamicFlags {
+                    relocations_will_modify_text: true,
+                    ..
+                }) => {}
+                _ => continue,
+            }
+            return Err(ElfBuilderError::TextRelocationsPresent);
+        }
+    }
+
+    Ok(ElfSectionContent::Dynamic(ElfDynamic {
         string_table: *builder.section_ids.get(&dynamic.strings()).unwrap(),
         directives,
-    })
+    }))
 }
 
 fn string_offset(builder: &ElfBuilder, table_id: Option<SectionId>, id: UpcomingStringId) -> u64 {
