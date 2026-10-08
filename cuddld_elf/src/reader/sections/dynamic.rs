@@ -22,7 +22,7 @@ pub(crate) fn read_directives(
     let mut stop = false;
     while !stop {
         let (tag, value): (u64, u64) = match cursor.bits() {
-            Bits::Bits32 => (cursor.read_raw::<i32>()? as _, cursor.read_raw::<u32>()? as _),
+            Bits::Bits32 => (cursor.read_raw::<u32>()?.into(), cursor.read_raw::<u32>()?.into()),
             Bits::Bits64 => (cursor.read_raw()?, cursor.read_raw()?),
         };
         directives.push(match tag {

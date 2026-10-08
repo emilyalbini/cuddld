@@ -152,7 +152,7 @@ macro_rules! impl_bitfieldrepr_for {
                 }
 
                 fn first_set_bit_idx(&self) -> u64 {
-                    self.trailing_zeros() as _
+                    self.trailing_zeros().into()
                 }
 
                 fn and(&self, rhs: &Self) -> Self {

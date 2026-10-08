@@ -112,7 +112,7 @@ macro_rules! impl_pointersized_for_int {
 
                 fn read(ctx: &PointerSize<'_>, reader: &mut dyn Read) -> Result<Self, RawReadError> {
                     match ctx.0.bits {
-                        Bits::Bits32 => <$smallint as RawType>::read(ctx.0, reader).map(|v| v as _),
+                        Bits::Bits32 => <$smallint as RawType>::read(ctx.0, reader).map(|v| v.into()),
                         Bits::Bits64 => <$int as RawType>::read(ctx.0, reader),
                     }
                 }

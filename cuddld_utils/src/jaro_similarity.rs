@@ -49,9 +49,9 @@ pub fn jaro_similarity(lhs: &str, rhs: &str) -> f64 {
         .count();
 
     (1.0 / 3.0)
-        * (matches as f64 / lhs_len as f64
-            + matches as f64 / rhs_len as f64
-            + (matches as f64 - transpositions as f64 / 2.0) / matches as f64)
+        * (f64::from(matches) / lhs_len as f64
+            + f64::from(matches) / rhs_len as f64
+            + (f64::from(matches) - transpositions as f64 / 2.0) / f64::from(matches))
 }
 
 #[cfg(test)]

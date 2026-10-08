@@ -34,3 +34,6 @@ cuddld_utils = { path = "cuddld_utils" }
 new_without_default = "allow"
 len_without_is_empty = "allow"
 too_many_arguments = "allow"
+
+# `as` conversions:
+cast_lossless = "warn"

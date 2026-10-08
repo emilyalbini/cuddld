@@ -27,11 +27,11 @@ fn read_note(
 ) -> Result<ElfNote, LoadError> {
     let header: RawNoteHeader = cursor.read_raw()?;
 
-    let mut name_bytes = cursor.read_vec(header.name_size as _)?;
+    let mut name_bytes = cursor.read_vec(header.name_size.into())?;
     name_bytes.pop(); // Zero-terminated string
     cursor.align_with_padding(4)?;
 
-    let value = cursor.read_vec(header.value_size as _)?;
+    let value = cursor.read_vec(header.value_size.into())?;
     cursor.align_with_padding(4)?;
 
     match (name_bytes.as_slice(), header.type_) {

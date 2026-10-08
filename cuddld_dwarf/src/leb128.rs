@@ -10,7 +10,7 @@ pub fn decode_unsigned_leb128(reader: &mut dyn Read) -> Result<u128, Leb128Error
         let mut buf = [0];
         reader.read_exact(&mut buf)?;
 
-        result += ((buf[0] & 0x7f) as u128).checked_shl(shift).ok_or(Leb128Error::Overflow)?;
+        result += u128::from(buf[0] & 0x7f).checked_shl(shift).ok_or(Leb128Error::Overflow)?;
         shift += 7;
 
         if buf[0] & 0x80 == 0 {
@@ -28,7 +28,7 @@ pub fn decode_signed_leb128(reader: &mut dyn Read) -> Result<i128, Leb128Error> 
         buf = [0];
         reader.read_exact(&mut buf)?;
 
-        result += ((buf[0] & 0x7f) as i128).checked_shl(shift).ok_or(Leb128Error::Overflow)?;
+        result += i128::from(buf[0] & 0x7f).checked_shl(shift).ok_or(Leb128Error::Overflow)?;
         shift += 7;
 
         if buf[0] & 0x80 == 0 {

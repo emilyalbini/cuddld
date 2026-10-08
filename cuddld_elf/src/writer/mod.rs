@@ -429,7 +429,7 @@ impl<'a> Writer<'a> {
     }
 
     fn relocation_type_to_info(&self, type_: ElfRelocationType, symbol: ElfSymbolId) -> u64 {
-        let raw_type = match type_ {
+        let raw_type: u64 = match type_ {
             ElfRelocationType::X86_None => 0,
             ElfRelocationType::X86_32 => 1,
             ElfRelocationType::X86_PC32 => 2,
@@ -487,10 +487,10 @@ impl<'a> Writer<'a> {
             ElfRelocationType::X86_64_Code_6_GOTPCRelX => 49,
             ElfRelocationType::X86_64_Code_6_GOTPCOff => 50,
             ElfRelocationType::X86_64_Code_6_GOTPC32_TLSDesc => 51,
-            ElfRelocationType::Unknown(other) => other as u64,
+            ElfRelocationType::Unknown(other) => other.into(),
         };
 
-        let symbol = symbol.index as u64;
+        let symbol: u64 = symbol.index.into();
         match self.object.env.class {
             ElfClass::Elf32 => raw_type | (symbol << 8),
             ElfClass::Elf64 => raw_type | (symbol << 32),

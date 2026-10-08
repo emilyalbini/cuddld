@@ -81,7 +81,7 @@ fn elf_hash(data: &[u8]) -> u32 {
     let mut h = 0;
     let mut g;
     for byte in data {
-        h = (h << 4) + *byte as u32;
+        h = (h << 4) + u32::from(*byte);
         g = h & 0xf0000000;
         if g != 0 {
             h ^= g >> 24;

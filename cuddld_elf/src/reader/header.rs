@@ -13,7 +13,7 @@ pub(crate) fn read_header(cursor: &mut ReadCursor<'_>) -> Result<ReadHeader, Loa
         return Err(LoadError::BadMagic(identification.magic));
     }
     if identification.version != 1 {
-        return Err(LoadError::BadVersion(identification.version as _));
+        return Err(LoadError::BadVersion(identification.version.into()));
     }
 
     let class = match identification.class {
@@ -58,7 +58,8 @@ pub(crate) fn read_header(cursor: &mut ReadCursor<'_>) -> Result<ReadHeader, Loa
     if header.section_headers_offset != 0 {
         for idx in 0..header.section_header_count {
             cursor.seek_to(
-                header.section_headers_offset + (header.section_header_size as u64 * idx as u64),
+                header.section_headers_offset
+                    + (u64::from(header.section_header_size) * u64::from(idx)),
             )?;
             let raw: RawSectionHeader = cursor.read_raw().map_err(|e| {
                 LoadError::FailedToParseSectionHeader { idx: idx.into(), inner: Box::new(e) }
@@ -71,7 +72,8 @@ pub(crate) fn read_header(cursor: &mut ReadCursor<'_>) -> Result<ReadHeader, Loa
     if header.program_headers_offset != 0 {
         for idx in 0..header.program_header_count {
             cursor.seek_to(
-                header.program_headers_offset + (header.program_header_size as u64 * idx as u64),
+                header.program_headers_offset
+                    + (u64::from(header.program_header_size) * u64::from(idx)),
             )?;
             segments.push(read_program_header(cursor)?);
         }

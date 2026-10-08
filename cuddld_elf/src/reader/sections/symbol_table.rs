@@ -59,7 +59,7 @@ fn read_symbol(
             0x0000 => ElfSymbolDefinition::Undefined, // SHN_UNDEF
             0xFFF1 => ElfSymbolDefinition::Absolute,  // SHN_ABS
             0xFFF2 => ElfSymbolDefinition::Common,    // SHN_COMMON
-            other => ElfSymbolDefinition::Section(ElfSectionId { index: other as _ }),
+            other => ElfSymbolDefinition::Section(ElfSectionId { index: other.into() }),
         },
         value: symbol.value,
         size: symbol.size,

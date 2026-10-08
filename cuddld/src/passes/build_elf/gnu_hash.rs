@@ -153,7 +153,7 @@ pub(crate) enum GnuHashResult {
 fn gnu_hash(data: &[u8]) -> u32 {
     let mut h: u32 = 5381;
     for byte in data {
-        h = h.wrapping_mul(33).wrapping_add(*byte as u32);
+        h = h.wrapping_mul(33).wrapping_add(u32::from(*byte));
     }
     h
 }

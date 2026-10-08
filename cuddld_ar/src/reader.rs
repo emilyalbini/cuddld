@@ -175,7 +175,7 @@ impl<R: BufRead + Seek> ArReader<R> {
             raw = &raw[end + 1..];
             symbols.insert(
                 name.to_string(),
-                ArMemberId { reader_serial: self.serial, header_offset: offset as _ },
+                ArMemberId { reader_serial: self.serial, header_offset: offset.into() },
             );
         }
 
