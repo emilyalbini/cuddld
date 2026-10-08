@@ -2,6 +2,7 @@ use crate::bitfields::BitfieldReadError;
 use crate::{Bits, Endian, OsAbi};
 use std::ffi::CString;
 use std::io::{Read, Write};
+use std::num::TryFromIntError;
 
 #[derive(Debug, Clone, Copy)]
 pub struct RawTypeContext {
@@ -119,7 +120,11 @@ macro_rules! impl_pointersized_for_int {
 
                 fn write(&self, ctx: &PointerSize<'_>, writer: &mut dyn Write) -> Result<(), RawWriteError> {
                     match ctx.0.bits {
-                        Bits::Bits32 => <$smallint as RawType>::write(&(*self as _), ctx.0, writer),
+                        Bits::Bits32 => {
+                            let value = $smallint::try_from(*self)
+                                .map_err(RawWriteError::truncated_int::<Self>)?;
+                            <$smallint as RawType>::write(&value, ctx.0, writer)
+                        }
                         Bits::Bits64 => <$int as RawType>::write(self, ctx.0, writer),
                     }
                 }
@@ -268,6 +273,13 @@ impl RawWriteError {
         }
     }
 
+    pub fn truncated_int<T>(err: TryFromIntError) -> Self {
+        Self {
+            source: ErrorSource::Type(std::any::type_name::<T>()),
+            inner: RawWriteErrorInner::TruncatedInt(err),
+        }
+    }
+
     pub fn wrap_type<T, R>(result: Result<R, RawWriteError>) -> Result<R, RawWriteError> {
         match result {
             Ok(ok) => Ok(ok),
@@ -297,6 +309,7 @@ impl std::error::Error for RawWriteError {
         match &self.inner {
             RawWriteErrorInner::Itself(itself) => Some(itself),
             RawWriteErrorInner::IO(io) => Some(io),
+            RawWriteErrorInner::TruncatedInt(err) => Some(err),
             RawWriteErrorInner::Custom(custom) => Some(custom),
         }
     }
@@ -312,6 +325,7 @@ impl std::fmt::Display for RawWriteError {
 enum RawWriteErrorInner {
     Itself(Box<RawWriteError>),
     IO(std::io::Error),
+    TruncatedInt(TryFromIntError),
     Custom(CustomError),
 }
 
