@@ -77,7 +77,7 @@ impl<R: BitfieldRepr> BitfieldReader<R> {
         Self { value, mask: R::empty() }
     }
 
-    pub fn bit(&mut self, idx: u64) -> bool {
+    pub fn bit(&mut self, idx: usize) -> bool {
         if idx >= R::MAX_BITS {
             panic!("bitfield cannot fit idx {idx}");
         }
@@ -104,7 +104,7 @@ impl<R: BitfieldRepr> BitfieldWriter<R> {
         Self { value: R::empty() }
     }
 
-    pub fn set_bit(&mut self, idx: u64, value: bool) {
+    pub fn set_bit(&mut self, idx: usize, value: bool) {
         if idx >= R::MAX_BITS {
             panic!("bitfield cannot fit idx {idx}");
         }
@@ -119,12 +119,12 @@ impl<R: BitfieldRepr> BitfieldWriter<R> {
 }
 
 pub trait BitfieldRepr: PartialEq {
-    const MAX_BITS: u64;
+    const MAX_BITS: usize;
 
     fn empty() -> Self;
 
-    fn is_bit_set(&self, idx: u64) -> bool;
-    fn set_bit(&mut self, idx: u64);
+    fn is_bit_set(&self, idx: usize) -> bool;
+    fn set_bit(&mut self, idx: usize);
     fn first_set_bit_idx(&self) -> u64;
 
     fn invert(&self) -> Self;
@@ -136,18 +136,18 @@ macro_rules! impl_bitfieldrepr_for {
     ($($ty:ty),*) => {
         $(
             impl BitfieldRepr for $ty {
-                const MAX_BITS: u64 = std::mem::size_of::<$ty>() as u64 * 8;
+                const MAX_BITS: usize = std::mem::size_of::<$ty>() * 8;
 
                 fn empty() -> Self {
                     0
                 }
 
-                fn is_bit_set(&self, idx: u64) -> bool {
+                fn is_bit_set(&self, idx: usize) -> bool {
                     let mask = 0x1 << idx;
                     *self & mask > 0
                 }
 
-                fn set_bit(&mut self, idx: u64) {
+                fn set_bit(&mut self, idx: usize) {
                     *self |= 0x1 << idx;
                 }
 
