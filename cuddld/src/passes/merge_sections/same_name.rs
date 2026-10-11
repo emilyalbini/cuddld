@@ -13,22 +13,35 @@ pub(super) fn run(
     let mut grouped_sections: BTreeMap<_, Vec<_>> = BTreeMap::new();
     for section in object.sections.iter() {
         let SectionContent::Data(data) = &section.content else { continue };
-        match data.kind {
-            ElfProgramSectionKind::Program => {}
-            ElfProgramSectionKind::InitArray | ElfProgramSectionKind::FiniArray => continue,
-        }
+        let (name, sort_order) = match data.kind {
+            ElfProgramSectionKind::Program => (section.name, 0),
+            // For .init_array and .fini_array, we need to consider all .{init,fini}_array.*
+            // sections (like .init_array.98) to be the same, and merge them in order according to
+            // the number after the dot.
+            ElfProgramSectionKind::InitArray => (
+                intern(".init_array"),
+                init_fini_sort_order("init array", ".init_array", &*section.name.resolve())?,
+            ),
+            ElfProgramSectionKind::FiniArray => (
+                intern(".fini_array"),
+                init_fini_sort_order("fini array", ".fini_array", &*section.name.resolve())?,
+            ),
+        };
         grouped_sections
             .entry(GroupKey {
                 kind: data.kind,
-                name: section.name,
+                name,
                 perms: data.perms,
                 deduplication: data.deduplication,
                 inside_relro: data.inside_relro,
             })
             .or_default()
-            .push(GroupValue { id: section.id, source: section.source.clone() });
+            .push(GroupValue { id: section.id, source: section.source.clone(), sort_order });
     }
     grouped_sections.retain(|_name, sections| sections.len() > 1);
+    for sections in grouped_sections.values_mut() {
+        sections.sort_by_key(|s| s.sort_order);
+    }
 
     let mut merged = BTreeMap::new();
     for (key, sections) in grouped_sections {
@@ -82,6 +95,21 @@ pub(super) fn run(
     Ok(merged)
 }
 
+fn init_fini_sort_order(
+    kind_for_error: &'static str,
+    prefix: &str,
+    name: &str,
+) -> Result<u64, MergeSameNameError> {
+    if name == prefix {
+        return Ok(u64::MAX);
+    } else if let Some(num) = name.strip_prefix(prefix).and_then(|s| s.strip_prefix('.')) {
+        if let Ok(num) = num.parse() {
+            return Ok(num);
+        }
+    }
+    Err(MergeSameNameError::UnexpectedInitFiniName(kind_for_error, name.into()))
+}
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct GroupKey {
     kind: ElfProgramSectionKind,
@@ -94,6 +122,7 @@ struct GroupKey {
 struct GroupValue {
     id: SectionId,
     source: ObjectSpan,
+    sort_order: u64,
 }
 
 #[derive(Debug)]
@@ -107,4 +136,6 @@ pub(super) struct SameNameMerge {
 pub(crate) enum MergeSameNameError {
     #[transparent]
     OutOfBounds(OutOfBoundsError),
+    #[display("unexpected name for {f0} section: {f1}")]
+    UnexpectedInitFiniName(&'static str, String),
 }
