@@ -180,6 +180,7 @@ impl<'a> ElfBuilder<'a> {
         for section in self.object.sections.iter() {
             let content = match &section.content {
                 SectionContent::Data(data) => ElfSectionContent::Program(ElfProgramSection {
+                    kind: data.kind,
                     perms: data.perms,
                     deduplication: data.deduplication,
                     raw: data.bytes.clone(),

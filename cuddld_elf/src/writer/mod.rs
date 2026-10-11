@@ -15,8 +15,8 @@ use crate::writer::write_counter::WriteCounter;
 use crate::{
     ElfABI, ElfClass, ElfDeduplication, ElfDynamicDirective, ElfEndian, ElfGnuProperty, ElfMachine,
     ElfNote, ElfObject, ElfPLTRelocationsMode, ElfPermissions, ElfProgramSection,
-    ElfRelocationType, ElfSectionContent, ElfSegmentType, ElfSymbolBinding, ElfSymbolDefinition,
-    ElfSymbolTable, ElfSymbolType, ElfSymbolVisibility, ElfType,
+    ElfProgramSectionKind, ElfRelocationType, ElfSectionContent, ElfSegmentType, ElfSymbolBinding,
+    ElfSymbolDefinition, ElfSymbolTable, ElfSymbolType, ElfSymbolVisibility, ElfType,
 };
 use cuddld_utils::bitfields::Bitfield;
 use cuddld_utils::ints::ExtractNumber;
@@ -200,7 +200,11 @@ impl<'a> Writer<'a> {
                     continue;
                 }
 
-                ElfSectionContent::Program(_) => 1,
+                ElfSectionContent::Program(program) => match program.kind {
+                    ElfProgramSectionKind::Program => 1,
+                    ElfProgramSectionKind::InitArray => 14,
+                    ElfProgramSectionKind::FiniArray => 15,
+                },
                 ElfSectionContent::SymbolTable(ElfSymbolTable { dynsym: false, .. }) => 2,
                 ElfSectionContent::SymbolTable(ElfSymbolTable { dynsym: true, .. }) => 11,
                 ElfSectionContent::StringTable(_) => 3,

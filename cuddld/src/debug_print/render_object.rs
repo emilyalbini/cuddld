@@ -12,7 +12,7 @@ use crate::repr::symbols::views::{AllSymbols, DynamicSymbolTable, SymbolsView};
 use crate::repr::symbols::{SymbolType, SymbolValue, SymbolVisibility};
 use cuddld_diagnostics::widgets::{HexDump, Table, Text, Widget, WidgetGroup};
 use cuddld_diagnostics::{Diagnostic, DiagnosticKind};
-use cuddld_elf::ElfDeduplication;
+use cuddld_elf::{ElfDeduplication, ElfProgramSectionKind};
 use cuddld_elf::render_elf::render_note;
 use cuddld_elf::writer::layout::Layout;
 
@@ -114,11 +114,18 @@ fn render_data_section(
         Some(render_relocations(names, "Relocations:", &data.relocations))
     };
 
+    let kind = match data.kind {
+        ElfProgramSectionKind::Program => "",
+        ElfProgramSectionKind::InitArray => "init array, ",
+        ElfProgramSectionKind::FiniArray => "fini array, ",
+    };
+
     Box::new(
         WidgetGroup::new()
             .name(format!(
-                "section {} ({}) in {}",
+                "section {} ({}{}) in {}",
                 names.section(section.id),
+                kind,
                 permissions(&data.perms),
                 section.source
             ))

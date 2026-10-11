@@ -5,8 +5,9 @@ use crate::render_elf::utils::render_perms;
 use crate::{
     ElfClass, ElfDeduplication, ElfDynamic, ElfDynamicDirective, ElfEhFrameHdr, ElfGnuHash,
     ElfGnuProperty, ElfGroup, ElfHash, ElfNote, ElfNotesTable, ElfObject, ElfPLTRelocationsMode,
-    ElfProgramSection, ElfRelTable, ElfRelaTable, ElfSection, ElfSectionContent, ElfStringTable,
-    ElfSymbolDefinition, ElfSymbolTable, ElfSymbolType, ElfUninitializedSection, ElfUnknownSection,
+    ElfProgramSection, ElfProgramSectionKind, ElfRelTable, ElfRelaTable, ElfSection,
+    ElfSectionContent, ElfStringTable, ElfSymbolDefinition, ElfSymbolTable, ElfSymbolType,
+    ElfUninitializedSection, ElfUnknownSection,
 };
 use cuddld_diagnostics::widgets::{HexDump, Table, Text, Widget, WidgetGroup};
 use cuddld_dwarf::exception_frames::{
@@ -63,7 +64,12 @@ pub(super) fn render_section(
 }
 
 fn render_section_program(program: &ElfProgramSection) -> Vec<Box<dyn Widget>> {
-    let mut intro = format!("program data | permissions: {}", render_perms(&program.perms));
+    let kind = match program.kind {
+        ElfProgramSectionKind::Program => "",
+        ElfProgramSectionKind::InitArray => " | init array",
+        ElfProgramSectionKind::FiniArray => " | fini array",
+    };
+    let mut intro = format!("program data{kind} | permissions: {}", render_perms(&program.perms));
 
     match program.deduplication {
         ElfDeduplication::Disabled => {}

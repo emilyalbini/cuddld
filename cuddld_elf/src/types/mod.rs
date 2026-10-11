@@ -165,9 +165,17 @@ pub enum ElfDeduplication {
 
 #[derive(Debug)]
 pub struct ElfProgramSection {
+    pub kind: ElfProgramSectionKind,
     pub perms: ElfPermissions,
     pub deduplication: ElfDeduplication,
     pub raw: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ElfProgramSectionKind {
+    Program,
+    InitArray,
+    FiniArray,
 }
 
 #[derive(Debug)]

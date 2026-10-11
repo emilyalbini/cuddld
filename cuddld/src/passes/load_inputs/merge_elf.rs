@@ -181,6 +181,7 @@ pub(super) fn merge_elf(
             .builder(
                 strings.get(name).map_err(|err| MergeElfError::MissingSectionName { id, err })?,
                 DataSection {
+                    kind: program.kind,
                     perms: program.perms,
                     deduplication: program.deduplication,
                     bytes: program.raw,

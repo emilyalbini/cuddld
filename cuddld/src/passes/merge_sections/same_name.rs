@@ -2,7 +2,7 @@ use crate::interner::{Interned, intern};
 use crate::repr::object::Object;
 use crate::repr::sections::{DataSection, SectionContent, SectionId};
 use cuddld_diagnostics::ObjectSpan;
-use cuddld_elf::{ElfDeduplication, ElfPermissions};
+use cuddld_elf::{ElfDeduplication, ElfPermissions, ElfProgramSectionKind};
 use cuddld_macros::{Display, Error};
 use cuddld_utils::ints::{Length, Offset, OutOfBoundsError};
 use std::collections::BTreeMap;
@@ -13,8 +13,13 @@ pub(super) fn run(
     let mut grouped_sections: BTreeMap<_, Vec<_>> = BTreeMap::new();
     for section in object.sections.iter() {
         let SectionContent::Data(data) = &section.content else { continue };
+        match data.kind {
+            ElfProgramSectionKind::Program => {}
+            ElfProgramSectionKind::InitArray | ElfProgramSectionKind::FiniArray => continue,
+        }
         grouped_sections
             .entry(GroupKey {
+                kind: data.kind,
                 name: section.name,
                 perms: data.perms,
                 deduplication: data.deduplication,
@@ -29,6 +34,7 @@ pub(super) fn run(
     for (key, sections) in grouped_sections {
         let id = object.sections.reserve_placeholder();
         let mut data = DataSection {
+            kind: key.kind,
             perms: key.perms,
             deduplication: key.deduplication,
             bytes: Vec::new(),
@@ -78,6 +84,7 @@ pub(super) fn run(
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct GroupKey {
+    kind: ElfProgramSectionKind,
     name: Interned<String>,
     perms: ElfPermissions,
     deduplication: ElfDeduplication,

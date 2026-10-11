@@ -18,7 +18,9 @@ use crate::raw::RawSectionHeader;
 use crate::reader::ReadCursor;
 use crate::reader::sections::reader::HeaderMetadata;
 pub(super) use crate::reader::sections::reader::{SectionMetadata, SectionReader};
-use crate::{ElfDeduplication, ElfSection, ElfSectionContent, ElfStringTable};
+use crate::{
+    ElfDeduplication, ElfProgramSectionKind, ElfSection, ElfSectionContent, ElfStringTable,
+};
 
 pub(super) fn read_section(
     cursor: &mut ReadCursor<'_>,
@@ -57,6 +59,8 @@ fn read_section_inner(
         7 => SectionType::Note,
         8 => SectionType::Uninit,
         9 => SectionType::Rel,
+        14 => SectionType::InitArray,
+        15 => SectionType::FiniArray,
         11 => SectionType::SymbolTable { dynsym: true },
         17 => SectionType::Group,
         0x6ffffff6 => SectionType::GnuHash,
@@ -114,7 +118,21 @@ fn read_section_inner(
 
     let content = match ty {
         SectionType::Null => ElfSectionContent::Null,
-        SectionType::Program => ElfSectionContent::Program(program::read(&mut reader, &meta)?),
+        SectionType::Program => ElfSectionContent::Program(program::read(
+            &mut reader,
+            &meta,
+            ElfProgramSectionKind::Program,
+        )?),
+        SectionType::InitArray => ElfSectionContent::Program(program::read(
+            &mut reader,
+            &meta,
+            ElfProgramSectionKind::InitArray,
+        )?),
+        SectionType::FiniArray => ElfSectionContent::Program(program::read(
+            &mut reader,
+            &meta,
+            ElfProgramSectionKind::FiniArray,
+        )?),
         SectionType::SymbolTable { dynsym } => {
             ElfSectionContent::SymbolTable(symbol_table::read(&mut reader, &meta, dynsym)?)
         }
@@ -166,6 +184,8 @@ enum SectionType {
     Hash,
     GnuHash,
     Dynamic,
-    Unknown(u32),
     EhFrameHdr,
+    InitArray,
+    FiniArray,
+    Unknown(u32),
 }

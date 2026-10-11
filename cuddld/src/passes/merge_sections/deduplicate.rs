@@ -3,7 +3,7 @@ use crate::repr::object::Object;
 use crate::repr::sections::{DataSection, SectionContent, SectionId};
 use crate::repr::symbols::LoadSymbolsError;
 use cuddld_diagnostics::ObjectSpan;
-use cuddld_elf::{ElfDeduplication, ElfPermissions};
+use cuddld_elf::{ElfDeduplication, ElfPermissions, ElfProgramSectionKind};
 use cuddld_macros::{Display, Error};
 use cuddld_utils::ints::{Length, Offset, OutOfBoundsError};
 use std::collections::BTreeMap;
@@ -17,6 +17,10 @@ pub(super) fn run(
         let SectionContent::Data(data) = &section.content else {
             continue;
         };
+        match data.kind {
+            ElfProgramSectionKind::Program => {}
+            ElfProgramSectionKind::InitArray | ElfProgramSectionKind::FiniArray => continue,
+        }
 
         let split_rule = match data.deduplication {
             ElfDeduplication::Disabled => continue,
@@ -33,13 +37,13 @@ pub(super) fn run(
             });
         }
 
-        groups.entry((section.name, data.perms, split_rule)).or_default().push(section.id);
+        groups.entry((data.kind, section.name, data.perms, split_rule)).or_default().push(section.id);
     }
 
     let mut deduplications = BTreeMap::new();
-    for ((name, perms, split_rule), section_ids) in groups {
+    for ((kind, name, perms, split_rule), section_ids) in groups {
         if section_ids.len() > 1 {
-            deduplicate(&mut deduplications, object, name, perms, split_rule, &section_ids)
+            deduplicate(&mut deduplications, object, kind, name, perms, split_rule, &section_ids)
                 .map_err(|kind| DeduplicationError { section_name: name, kind })?;
         }
     }
@@ -50,6 +54,7 @@ pub(super) fn run(
 fn deduplicate(
     deduplications: &mut BTreeMap<SectionId, Deduplication>,
     object: &mut Object,
+    kind: ElfProgramSectionKind,
     name: Interned<String>,
     perms: ElfPermissions,
     split_rule: SplitRule,
@@ -110,6 +115,7 @@ fn deduplicate(
         .builder(
             &name.resolve(),
             DataSection {
+                kind,
                 perms,
                 deduplication: match split_rule {
                     SplitRule::ZeroTerminatedString => ElfDeduplication::ZeroTerminatedStrings,
