@@ -60,6 +60,10 @@ pub(crate) fn read_directives(
             22 => ElfDynamicDirective::RelocationsWillModifyText,
             23 => ElfDynamicDirective::JumpRel { address: value },
             24 => ElfDynamicDirective::BindNow,
+            25 => ElfDynamicDirective::InitArray { address: value },
+            26 => ElfDynamicDirective::FiniArray { address: value },
+            27 => ElfDynamicDirective::InitArraySize { bytes: value },
+            28 => ElfDynamicDirective::FiniArraySize { bytes: value },
             30 => ElfDynamicDirective::Flags(
                 ElfDynamicFlags::read(value, reader.parent_cursor.raw_type_ctx().into())
                     .map_err(LoadError::DynamicFlags)?,

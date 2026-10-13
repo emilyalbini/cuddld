@@ -567,6 +567,18 @@ fn render_section_dynamic(
                 ("Jump PLT relocations", Value::Addr(address))
             }
             ElfDynamicDirective::BindNow => ("Bind now", Value::None),
+            ElfDynamicDirective::InitArray { address } => {
+                ("Initialization array", Value::Addr(address))
+            }
+            ElfDynamicDirective::FiniArray { address } => {
+                ("Finalization array", Value::Addr(address))
+            }
+            ElfDynamicDirective::InitArraySize { bytes } => {
+                ("Initialization array size", Value::Bytes(bytes))
+            }
+            ElfDynamicDirective::FiniArraySize { bytes } => {
+                ("Finalization array size", Value::Bytes(bytes))
+            }
             ElfDynamicDirective::Flags(flags) => ("Flags", Value::Str(flags.to_string())),
             ElfDynamicDirective::Flags1(flags1) => ("Flags1", Value::Str(flags1.to_string())),
             ElfDynamicDirective::Unknown { tag, value } => {

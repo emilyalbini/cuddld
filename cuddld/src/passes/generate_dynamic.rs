@@ -9,7 +9,7 @@ use crate::repr::sections::{
 use crate::repr::segments::{Segment, SegmentContent, SegmentId, SegmentType};
 use crate::repr::symbols::views::DynamicSymbolTable;
 use crate::repr::symbols::{LoadSymbolsError, SymbolId, SymbolValue, UpcomingSymbol};
-use cuddld_elf::{ElfClass, ElfPermissions};
+use cuddld_elf::{ElfClass, ElfPermissions, ElfProgramSectionKind};
 use cuddld_macros::{Display, Error, Getters};
 use cuddld_utils::ints::Offset;
 use cuddld_utils::raw_types::{PointerSize, SizedRawType};
@@ -87,6 +87,19 @@ pub(crate) fn run(
             GnuHashSection::new(DynamicSymbolTable { class }, dynsym).into(),
             DynamicEntry::GnuHash,
         );
+    }
+
+    for section in object.sections.iter() {
+        let SectionContent::Data(data) = &section.content else { continue };
+        match data.kind {
+            ElfProgramSectionKind::Program => continue,
+            ElfProgramSectionKind::InitArray => {
+                object.dynamic_entries.add(DynamicEntry::InitArray(section.id));
+            }
+            ElfProgramSectionKind::FiniArray => {
+                object.dynamic_entries.add(DynamicEntry::FiniArray(section.id));
+            },
+        }
     }
 
     let dynamic = object.sections.builder(".dynamic", DynamicSection::new(dynstr)).create();

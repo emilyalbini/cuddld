@@ -142,7 +142,7 @@ impl<'a> PendingArchive<'a> {
         let mut require_symbols = HashMap::new();
         for (symbol_name, member_id) in &symbol_table.symbols {
             if let Ok(symbol) = symbols.get_global(intern(symbol_name))
-                && let SymbolValue::Undefined { ..} = symbol.value()
+                && let SymbolValue::Undefined { .. } = symbol.value()
             {
                 if !require_symbols.contains_key(member_id) {
                     ordered.push(*member_id);

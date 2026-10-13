@@ -609,6 +609,10 @@ impl<'a> Writer<'a> {
                 ElfDynamicDirective::RelocationsWillModifyText => (22, 0),
                 ElfDynamicDirective::JumpRel { address } => (23, *address),
                 ElfDynamicDirective::BindNow => (24, 0),
+                ElfDynamicDirective::InitArray { address } => (25, *address),
+                ElfDynamicDirective::FiniArray { address } => (26, *address),
+                ElfDynamicDirective::InitArraySize { bytes } => (27, *bytes),
+                ElfDynamicDirective::FiniArraySize { bytes } => (28, *bytes),
                 ElfDynamicDirective::Flags(flags) => {
                     (30, Bitfield::write(flags, self.raw_ctx.into()))
                 }

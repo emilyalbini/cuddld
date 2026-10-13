@@ -56,6 +56,16 @@ pub(super) fn build_dynamic_section(
                 let mem = layout(builder, id, "gnu hash");
                 directives.push(ElfDynamicDirective::GnuHash { address: mem.address.extract() });
             }
+            DynamicEntry::InitArray(id) => {
+                let mem = layout(builder, id, "init array");
+                directives.push(ElfDynamicDirective::InitArray { address: mem.address.extract() });
+                directives.push(ElfDynamicDirective::InitArraySize { bytes: mem.len.extract() });
+            }
+            DynamicEntry::FiniArray(id) => {
+                let mem = layout(builder, id, "fini array");
+                directives.push(ElfDynamicDirective::FiniArray { address: mem.address.extract() });
+                directives.push(ElfDynamicDirective::FiniArraySize { bytes: mem.len.extract() });
+            }
             DynamicEntry::GotReloc(id) => {
                 let mem = layout(builder, id, "got relocations table");
                 match builder.object.relocation_mode() {
