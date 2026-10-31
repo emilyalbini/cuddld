@@ -21,6 +21,7 @@ dependencies = [
 name = "cuddld_ar"
 version = "0.0.0"
 dependencies = [
+ "cuddld_error",
  "cuddld_macros",
  "cuddld_utils",
 ]
@@ -36,6 +37,7 @@ dependencies = [
 name = "cuddld_dwarf"
 version = "0.0.0"
 dependencies = [
+ "cuddld_error",
  "cuddld_macros",
  "cuddld_utils",
 ]
@@ -90,3 +92,6 @@ dependencies = [
 [[package]]
 name = "cuddld_utils"
 version = "0.0.0"
+dependencies = [
+ "cuddld_error",
+]

@@ -7,7 +7,7 @@ use crate::interner::Interned;
 use crate::repr::symbols::SymbolVisibility;
 use cuddld_diagnostics::{Diagnostic, DiagnosticBuilder, DiagnosticKind, GatheredContext};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct UndefinedSymbolDiagnostic {
     pub(crate) name: Interned<String>,
     pub(crate) expected_visibility: SymbolVisibility,

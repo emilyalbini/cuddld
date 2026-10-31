@@ -1,9 +1,7 @@
-#![feature(error_generic_member_access)]
-
 use crate::debug_print::DebugCallbacks;
 use crate::linker::Linker;
 use cuddld_diagnostics::{DiagnosticBuilder, DiagnosticContext, GatheredContext};
-use std::error::{Error, request_ref};
+use cuddld_error::{Error, request};
 use std::process::ExitCode;
 
 mod arch;
@@ -30,13 +28,13 @@ fn render_error(diagnostic_context: GatheredContext<'static>, err: Box<dyn Error
     let mut diagnostic_builder = None;
     let mut current: Option<&(dyn Error + 'static)> = Some(&*err);
     while let Some(current_err) = current {
-        if let Some(extracted) = request_ref::<dyn DiagnosticBuilder>(current_err)
+        if let Some(extracted) = request::<Box<dyn DiagnosticBuilder>>(current_err)
             && diagnostic_builder.is_none()
         {
             diagnostic_builder = Some(extracted);
         }
-        if let Some(extracted) = request_ref::<dyn DiagnosticContext>(current_err) {
-            diagnostic_context.add_ref(extracted);
+        if let Some(extracted) = request::<Box<dyn DiagnosticContext>>(current_err) {
+            diagnostic_context.add_boxed(extracted);
         }
         current = current_err.source();
     }

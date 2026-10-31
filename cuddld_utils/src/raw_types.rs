@@ -230,8 +230,8 @@ impl std::fmt::Display for RawReadError {
     }
 }
 
-impl std::error::Error for RawReadError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl cuddld_error::Error for RawReadError {
+    fn source(&self) -> Option<&(dyn cuddld_error::Error + 'static)> {
         match &self.inner {
             RawReadErrorInner::IO(io) => Some(io),
             RawReadErrorInner::Bitfield(bitfield) => Some(bitfield),
@@ -250,7 +250,7 @@ impl std::fmt::Display for CustomError {
     }
 }
 
-impl std::error::Error for CustomError {}
+impl cuddld_error::Error for CustomError {}
 
 #[derive(Debug)]
 pub struct RawWriteError {
@@ -304,8 +304,8 @@ impl RawWriteError {
     }
 }
 
-impl std::error::Error for RawWriteError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+impl cuddld_error::Error for RawWriteError {
+    fn source(&self) -> Option<&(dyn cuddld_error::Error + 'static)> {
         match &self.inner {
             RawWriteErrorInner::Itself(itself) => Some(itself),
             RawWriteErrorInner::IO(io) => Some(io),

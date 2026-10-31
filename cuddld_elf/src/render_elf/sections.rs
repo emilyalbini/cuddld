@@ -409,7 +409,7 @@ fn render_section_eh_frame(
         }
         Err(err) => {
             let mut err_str = String::new();
-            let mut source = Some(&err as &dyn std::error::Error);
+            let mut source = Some(&err as &dyn cuddld_error::Error);
             while let Some(err) = source {
                 if !err_str.is_empty() {
                     err_str.push_str(": ");

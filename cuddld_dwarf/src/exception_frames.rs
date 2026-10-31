@@ -4,10 +4,10 @@
 
 use crate::eh_encoding::DwarfEhEncoding;
 use crate::leb128::Leb128;
+use cuddld_error::Error as _;
 use cuddld_macros::{Display, Error};
 use cuddld_utils::ints::{Address, ExtractNumber as _, Length, Offset, OutOfBoundsError};
 use cuddld_utils::raw_types::{ContextFrom as _, RawReadError, RawType, RawTypeContext};
-use std::error::Error as _;
 use std::ffi::CString;
 use std::io::prelude::Read;
 
@@ -267,7 +267,8 @@ impl<R: Read> CountReads<R> {
 impl<R: Read> Read for CountReads<R> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         let len = self.reader.read(buf)?;
-        self.count = self.count.add(len.into()).map_err(std::io::Error::other)?;
+        self.count =
+            self.count.add(len.into()).map_err(|err| std::io::Error::other(err.to_string()))?;
         Ok(len)
     }
 }

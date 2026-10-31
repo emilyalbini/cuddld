@@ -6,9 +6,9 @@ use crate::{
     ElfGnuProperty, ElfNote, ElfNotesTable, ElfUnknownGnuProperty, ElfUnknownNote, ElfX86Features1,
     ElfX86Features2, ElfX86Isa,
 };
+use cuddld_error::Error;
 use cuddld_utils::Bits;
 use cuddld_utils::bitfields::Bitfield;
-use std::error::Error;
 
 pub(super) fn read(reader: &mut SectionReader<'_, '_>) -> Result<ElfNotesTable, LoadError> {
     let mut cursor = reader.content_cursor()?;

@@ -178,7 +178,7 @@ pub enum BitfieldReadError {
     UnknownBit(u64),
 }
 
-impl std::error::Error for BitfieldReadError {}
+impl cuddld_error::Error for BitfieldReadError {}
 
 impl std::fmt::Display for BitfieldReadError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

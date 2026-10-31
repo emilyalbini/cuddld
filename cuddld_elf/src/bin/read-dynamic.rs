@@ -1,10 +1,10 @@
 use cuddld_diagnostics::WidgetWriter;
 use cuddld_diagnostics::widgets::{Table, Text, Widget};
 use cuddld_elf::ElfReader;
-use std::error::Error;
+use cuddld_error::ErasedError;
 use std::fs::File;
 
-fn actual_main(args: &[String]) -> Result<(), Box<dyn Error>> {
+fn actual_main(args: &[String]) -> Result<(), ErasedError> {
     let path = match args {
         [path] => path,
         _ => usage(),
@@ -70,14 +70,7 @@ impl Widget for MultipleWidgets {
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<_>>();
     if let Err(err) = actual_main(&args) {
-        eprintln!("error: {err}");
-
-        let mut source = err.source();
-        while let Some(s) = source {
-            eprintln!("  cause: {s}");
-            source = s.source();
-        }
-
+        eprintln!("{}", err.format_chain());
         std::process::exit(1);
     }
 }

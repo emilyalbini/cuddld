@@ -133,7 +133,7 @@ pub trait ExtractNumber {
 #[derive(Debug, PartialEq, Eq)]
 pub struct OutOfBoundsError;
 
-impl std::error::Error for OutOfBoundsError {}
+impl cuddld_error::Error for OutOfBoundsError {}
 
 impl std::fmt::Display for OutOfBoundsError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -2,7 +2,7 @@ use cuddld_diagnostics::widgets::{QuotedText, Text};
 use cuddld_diagnostics::{Diagnostic, DiagnosticBuilder, DiagnosticKind, GatheredContext};
 use std::path::PathBuf;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct NoSymbolNameAtArchiveStartDiagnostic {
     pub(crate) archive_path: PathBuf,
 }

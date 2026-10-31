@@ -1,13 +1,13 @@
+use crate::Error;
 use std::collections::VecDeque;
-use std::error::Error as StdError;
 
 pub struct ErasedError {
-    inner: Box<dyn StdError + Send + Sync + 'static>,
+    inner: Box<dyn Error>,
     contexts: VecDeque<String>,
 }
 
 impl ErasedError {
-    pub fn from_boxed_error(inner: Box<dyn StdError + Send + Sync + 'static>) -> Self {
+    pub fn from_boxed_error(inner: Box<dyn Error>) -> Self {
         ErasedError { inner, contexts: VecDeque::new() }
     }
 
@@ -60,10 +60,7 @@ impl std::fmt::Debug for ErasedError {
     }
 }
 
-impl<E> From<E> for ErasedError
-where
-    E: StdError + Send + Sync + 'static,
-{
+impl<E: Error> From<E> for ErasedError {
     fn from(value: E) -> Self {
         ErasedError { inner: Box::new(value), contexts: VecDeque::new() }
     }
@@ -74,10 +71,7 @@ pub trait ErasedContext<T> {
     fn context(self, context: impl Into<String>) -> Result<T, ErasedError>;
 }
 
-impl<T, E> ErasedContext<T> for Result<T, E>
-where
-    E: StdError + Send + Sync + 'static,
-{
+impl<T, E: Error> ErasedContext<T> for Result<T, E> {
     fn context(self, context: impl Into<String>) -> Result<T, ErasedError> {
         self.with_context(|| context.into())
     }

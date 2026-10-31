@@ -100,7 +100,7 @@ impl<'a> Iterator for CliLexer<'a> {
 #[derive(Debug, PartialEq, Eq)]
 pub struct MissingValueForFlag(pub String);
 
-impl std::error::Error for MissingValueForFlag {}
+impl cuddld_error::Error for MissingValueForFlag {}
 
 impl std::fmt::Display for MissingValueForFlag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

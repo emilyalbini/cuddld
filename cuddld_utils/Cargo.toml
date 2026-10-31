@@ -5,3 +5,6 @@ version.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+cuddld_error.workspace = true

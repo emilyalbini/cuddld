@@ -25,8 +25,12 @@ impl<'a> GatheredContext<'a> {
     }
 
     pub fn add_owned<T: DiagnosticContext>(&mut self, ctx: T) {
-        let id = ctx.type_id();
-        if self.inner.insert(id, ContextValue::Box(Box::new(ctx))).is_some() {
+        self.add_boxed(Box::new(ctx))
+    }
+
+    pub fn add_boxed(&mut self, ctx: Box<dyn DiagnosticContext>) {
+        let id = (*ctx).type_id();
+        if self.inner.insert(id, ContextValue::Box(ctx)).is_some() {
             panic!("the same type was added twice to the context");
         }
     }

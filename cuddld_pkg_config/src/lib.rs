@@ -1,5 +1,3 @@
-#![feature(error_generic_member_access)]
-
 mod discover;
 mod lexer;
 mod parser;

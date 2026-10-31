@@ -16,7 +16,7 @@ pub(crate) fn derive(tokens: TokenStream) -> Result<TokenStream, Error> {
 fn generate_error_impl(item: &Item) -> Result<TokenStream, Error> {
     Ok(generate_impl_for(
         item,
-        Some("std::error::Error"),
+        Some("cuddld_error::Error"),
         quote! {
             #{ generate_error_source(item)? }
             #{ generate_error_provide(item)? }
@@ -28,7 +28,7 @@ fn generate_error_source(item: &Item) -> Result<TokenStream, Error> {
     let body = generate_for_each_variant(item, |_span, attrs, fields| {
         match ParsedAttrs::parse(attrs, fields)? {
             ParsedAttrs::Transparent { field } => Ok(quote! {
-                <#{ &field.ty } as std::error::Error>::source(#{ &field.access_ref })
+                <#{ &field.ty } as cuddld_error::Error>::source(#{ &field.access_ref })
             }),
             ParsedAttrs::Other { source: Some(source), .. } => {
                 Ok(quote!(Some(#{ &source.access_ref })))
@@ -38,7 +38,7 @@ fn generate_error_source(item: &Item) -> Result<TokenStream, Error> {
     })?;
 
     Ok(quote! {
-        fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        fn source(&self) -> Option<&(dyn cuddld_error::Error + 'static)> {
             #body
         }
     })
@@ -54,15 +54,15 @@ fn generate_error_provide(item: &Item) -> Result<TokenStream, Error> {
                 let mut provided = Vec::new();
                 if let Some(diagnostic) = diagnostic {
                     provided.push(quote! {
-                        request.provide_ref::<dyn cuddld_diagnostics::DiagnosticBuilder>(
-                            #{ &diagnostic.access_ref } as &dyn cuddld_diagnostics::DiagnosticBuilder
+                        request.provide::<Box<dyn cuddld_diagnostics::DiagnosticBuilder>>(||
+                            Box::new((*#{ &diagnostic.access_ref }).clone())
                         );
                     });
                 }
                 if let Some(diagnostic_context) = diagnostic_context {
                     provided.push(quote! {
-                        request.provide_ref::<dyn cuddld_diagnostics::DiagnosticContext>(
-                            #{ &diagnostic_context.access_ref } as &dyn cuddld_diagnostics::DiagnosticContext
+                        request.provide::<Box<dyn cuddld_diagnostics::DiagnosticContext>>(||
+                            Box::new((*#{ &diagnostic_context.access_ref }).clone())
                         );
                     });
                 }
@@ -72,7 +72,7 @@ fn generate_error_provide(item: &Item) -> Result<TokenStream, Error> {
     })?;
 
     Ok(quote! {
-        fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {
+        fn provide(&self, request: &mut cuddld_error::Request) {
             #body
         }
     })
