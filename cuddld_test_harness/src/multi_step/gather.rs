@@ -1,7 +1,7 @@
-use crate::Step;
+use crate::multi_step::Step;
+use crate::multi_step::tests::{Arch, Test, TestStep};
 use crate::picohcl::ast::Statement;
 use crate::picohcl::{FromHcl, HclContext, HclDeserializer, HclResolver, parse_picohcl};
-use crate::tests::{Arch, Test, TestStep};
 use crate::utils::err_str;
 use cuddld_error::{ErasedContext as _, ErasedError, bail, erased};
 use std::collections::BTreeMap;
@@ -187,13 +187,13 @@ pub struct DefineSteps {
 
 impl DefineSteps {
     pub fn define_builtins(&mut self) -> Result<&mut Self, ErasedError> {
-        self.define::<crate::steps::asm::AsmStep>("asm")?
-            .define::<crate::steps::ld::LdStep>("ld")?
-            .define::<crate::steps::c::CStep>("c")?
-            .define::<crate::steps::rust::RustStep>("rust")?
-            .define::<crate::steps::ar::ArStep>("ar")?
-            .define::<crate::steps::rename::RenameStep>("rename")?
-            .define::<crate::steps::dir::DirStep>("dir")
+        self.define::<crate::multi_step::steps::asm::AsmStep>("asm")?
+            .define::<crate::multi_step::steps::ld::LdStep>("ld")?
+            .define::<crate::multi_step::steps::c::CStep>("c")?
+            .define::<crate::multi_step::steps::rust::RustStep>("rust")?
+            .define::<crate::multi_step::steps::ar::ArStep>("ar")?
+            .define::<crate::multi_step::steps::rename::RenameStep>("rename")?
+            .define::<crate::multi_step::steps::dir::DirStep>("dir")
     }
 
     // Deserializing the Value into the concrete type cannot be done through dynamic dispatching.

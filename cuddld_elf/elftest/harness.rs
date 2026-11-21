@@ -2,8 +2,8 @@ use cuddld_elf::ElfReader;
 use cuddld_elf::writer::Writer;
 use cuddld_elf::writer::layout::Layout;
 use cuddld_error::{ErasedError, erased};
+use cuddld_test_harness::multi_step::{Step, TestContext};
 use cuddld_test_harness::picohcl::{FromHcl, HclDeserializer};
-use cuddld_test_harness::{Step, TestContext};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
@@ -119,7 +119,7 @@ impl FromHcl for ReadDynamicStep {
 
 fn main() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("elftest");
-    cuddld_test_harness::main(&path, |steps| {
+    cuddld_test_harness::multi_step::main(&path, |steps| {
         steps
             .define_builtins()?
             .define::<ReadElfStep>("read-elf")?

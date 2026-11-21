@@ -1,4 +1,4 @@
-use crate::Step;
+use crate::multi_step::Step;
 use crate::picohcl::ast::ResolvedExpression;
 use crate::picohcl::{FromHcl, HclDeserializer};
 use crate::utils::file_name;
@@ -11,7 +11,7 @@ pub(crate) struct DirStep {
 }
 
 impl Step for DirStep {
-    fn run(&self, ctx: crate::TestContext<'_>) -> Result<(), ErasedError> {
+    fn run(&self, ctx: crate::multi_step::TestContext<'_>) -> Result<(), ErasedError> {
         let dest = ctx.dest.join(ctx.step_name);
         std::fs::create_dir_all(&dest)?;
 

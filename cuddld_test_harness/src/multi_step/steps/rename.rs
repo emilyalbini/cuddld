@@ -1,6 +1,6 @@
+use crate::multi_step::{Step, TestContext};
 use crate::picohcl::ast::ResolvedExpression;
 use crate::picohcl::{FromHcl, HclDeserializer};
-use crate::{Step, TestContext};
 use cuddld_error::ErasedError;
 use std::path::PathBuf;
 

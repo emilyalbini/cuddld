@@ -1,7 +1,7 @@
+use crate::multi_step::{Arch, Step, TestContext};
 use crate::picohcl::ast::ResolvedExpression;
 use crate::picohcl::{FromHcl, HclDeserializer};
 use crate::utils::{file_name, run};
-use crate::{Arch, Step, TestContext};
 use cuddld_error::ErasedError;
 use std::path::PathBuf;
 use std::process::Command;

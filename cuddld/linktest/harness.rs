@@ -1,8 +1,8 @@
 use cuddld_error::{ErasedError, bail, erased};
+use cuddld_test_harness::multi_step::{Arch, Step, TestContext};
 use cuddld_test_harness::picohcl::ast::{ResolvedInterpolation, ResolvedInterpolationChunk};
 use cuddld_test_harness::picohcl::{FromHcl, FromHclString, HclDeserializer};
 use cuddld_test_harness::utils::RunAndSnapshot;
-use cuddld_test_harness::{Step, TestContext};
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -220,8 +220,8 @@ fn dynamic_linker(ctx: &TestContext<'_>) -> Result<String, ErasedError> {
     // to use dynamicly linked programs built outside of Nix). We thus need to set the correct
     // linker for it, which is provided by flake.nix through the environment variable.
     let dynamic_linker_var = match &ctx.arch {
-        cuddld_test_harness::Arch::X86 => "CUDDLD_TEST_DYNAMIC_LINKER_32",
-        cuddld_test_harness::Arch::X86_64 => "CUDDLD_TEST_DYNAMIC_LINKER_64",
+        Arch::X86 => "CUDDLD_TEST_DYNAMIC_LINKER_32",
+        Arch::X86_64 => "CUDDLD_TEST_DYNAMIC_LINKER_64",
     };
     Ok(std::env::var_os(dynamic_linker_var)
         .ok_or_else(|| erased!("missing environment variable {dynamic_linker_var}"))?
@@ -272,7 +272,7 @@ fn copy_recursive(from: &Path, dest_dir: &Path) -> Result<(), std::io::Error> {
 
 fn main() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("linktest");
-    cuddld_test_harness::main(&path, |definer| {
+    cuddld_test_harness::multi_step::main(&path, |definer| {
         definer
             .define_builtins()?
             .define::<CuddldStep>("cuddld")?

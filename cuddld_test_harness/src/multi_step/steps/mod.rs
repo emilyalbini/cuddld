@@ -6,7 +6,7 @@ pub(crate) mod ld;
 pub(crate) mod rename;
 pub(crate) mod rust;
 
-use crate::TestContext;
+use crate::multi_step::TestContext;
 use cuddld_error::ErasedError;
 use std::fmt::Debug;
 
