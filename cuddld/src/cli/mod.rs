@@ -1,4 +1,3 @@
-mod lexer;
 mod parser;
 #[cfg(test)]
 mod tests;
@@ -9,6 +8,7 @@ use crate::interner::Interned;
 use cuddld_diagnostics::DiagnosticContext;
 use cuddld_elf::render_elf::{RenderElfFilters, RenderElfFiltersParseError};
 use cuddld_macros::{Display, Error};
+use cuddld_utils::cli_lexer::MissingValueForFlag;
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
@@ -126,8 +126,8 @@ pub(crate) enum CliError {
     MultipleModeChanges,
     #[display("flag {f0} does not accept values")]
     FlagDoesNotAcceptValues(String),
-    #[display("missing value for flag {f0}")]
-    MissingValueForFlag(String),
+    #[transparent]
+    MissingValueForFlag(MissingValueForFlag),
     #[display("setting the shared object name is only supported when building shared objects")]
     UnsupportedSharedObjectName,
     #[display("sysroot-relative library paths are not supported yet")]

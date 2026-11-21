@@ -1,4 +1,3 @@
-use crate::cli::lexer::{CliLexer, CliToken};
 use crate::cli::{
     CliError, CliInput, CliInputOptions, CliInputValue, CliOptions, DebugPrint, DynamicLinker,
     EntryPoint, HashStyle, Mode,
@@ -6,6 +5,7 @@ use crate::cli::{
 use crate::debug_print::filters::ObjectsFilter;
 use crate::interner::intern;
 use cuddld_elf::render_elf::RenderElfFilters;
+use cuddld_utils::cli_lexer::{CliLexer, CliToken};
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
@@ -48,15 +48,17 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
             }),
 
             CliToken::LongFlag("output") | CliToken::ShortFlag("o") => {
-                reject_duplicate(&token, &mut output, || lexer.expect_flag_value(&token))?;
+                reject_duplicate(&token, &mut output, || Ok(lexer.expect_flag_value(&token)?))?;
             }
 
             CliToken::LongFlag("entry") | CliToken::ShortFlag("e") => {
-                reject_duplicate(&token, &mut entry, || lexer.expect_flag_value(&token))?;
+                reject_duplicate(&token, &mut entry, || Ok(lexer.expect_flag_value(&token)?))?;
             }
 
             CliToken::LongFlag("dynamic-linker") => {
-                reject_duplicate(&token, &mut dynamic_linker, || lexer.expect_flag_value(&token))?;
+                reject_duplicate(&token, &mut dynamic_linker, || {
+                    Ok(lexer.expect_flag_value(&token)?)
+                })?;
             }
 
             CliToken::LongFlag("hash-style") => {
@@ -72,7 +74,7 @@ pub(crate) fn parse<S: Into<String>, I: Iterator<Item = S>>(
 
             CliToken::LongShortFlag("soname") | CliToken::ShortFlag("h") => {
                 reject_duplicate("-soname or -h", &mut shared_object_name, || {
-                    lexer.expect_flag_value(&token)
+                    Ok(lexer.expect_flag_value(&token)?)
                 })?;
             }
 

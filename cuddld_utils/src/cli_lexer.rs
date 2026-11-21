@@ -1,7 +1,5 @@
-use crate::cli::CliError;
-
 #[derive(Debug, PartialEq, Eq)]
-pub(super) enum CliToken<'a> {
+pub enum CliToken<'a> {
     StandaloneValue(&'a str),
     FlagValue(&'a str),
     ShortFlag(&'a str),
@@ -20,7 +18,7 @@ impl std::fmt::Display for CliToken<'_> {
     }
 }
 
-pub(super) struct CliLexer<'a> {
+pub struct CliLexer<'a> {
     long_short_flags: &'static [&'static str],
     iter: std::slice::Iter<'a, String>,
     verbatim: bool,
@@ -28,15 +26,18 @@ pub(super) struct CliLexer<'a> {
 }
 
 impl<'a> CliLexer<'a> {
-    pub(super) fn new(args: &'a [String], long_short_flags: &'static [&'static str]) -> Self {
+    pub fn new(args: &'a [String], long_short_flags: &'static [&'static str]) -> Self {
         Self { long_short_flags, iter: args.iter(), verbatim: false, force_next: None }
     }
 
-    pub(super) fn expect_flag_value(&mut self, flag: &CliToken<'_>) -> Result<&'a str, CliError> {
+    pub fn expect_flag_value(
+        &mut self,
+        flag: &CliToken<'_>,
+    ) -> Result<&'a str, MissingValueForFlag> {
         match self.next() {
             Some(CliToken::FlagValue(value)) if !value.is_empty() => Ok(value),
             Some(CliToken::StandaloneValue(value)) if !value.is_empty() => Ok(value),
-            _ => Err(CliError::MissingValueForFlag(flag.to_string())),
+            _ => Err(MissingValueForFlag(flag.to_string())),
         }
     }
 }
@@ -93,6 +94,17 @@ impl<'a> Iterator for CliLexer<'a> {
 
             return Some(CliToken::StandaloneValue(token));
         }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct MissingValueForFlag(pub String);
+
+impl std::error::Error for MissingValueForFlag {}
+
+impl std::fmt::Display for MissingValueForFlag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "missing value for flag {}", self.0)
     }
 }
 

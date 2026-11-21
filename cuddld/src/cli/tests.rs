@@ -4,6 +4,7 @@ use crate::cli::{
 };
 use crate::debug_print::filters::ObjectsFilter;
 use crate::interner::intern;
+use cuddld_utils::cli_lexer::MissingValueForFlag;
 use std::collections::BTreeSet;
 
 #[test]
@@ -348,11 +349,14 @@ fn test_multiple_search_paths() {
 
 #[test]
 fn test_search_path_flag_without_value() {
-    assert_parse(&["input.o", "-L"], Err(CliError::MissingValueForFlag("-L".into())));
+    assert_parse(
+        &["input.o", "-L"],
+        Err(CliError::MissingValueForFlag(MissingValueForFlag("-L".into()))),
+    );
 
     assert_parse_multiple(
         &[&["input.o", "--library-path"], &["input.o", "--library-path", ""]],
-        Err(CliError::MissingValueForFlag("--library-path".into())),
+        Err(CliError::MissingValueForFlag(MissingValueForFlag("--library-path".into()))),
     );
 }
 
