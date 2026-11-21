@@ -1,18 +1,17 @@
 use crate::multi_step::Step;
 use crate::multi_step::tests::{Arch, Test, TestStep};
+use crate::nextest::Test as NextestTest;
 use crate::picohcl::ast::Statement;
 use crate::picohcl::{FromHcl, HclContext, HclDeserializer, HclResolver, parse_picohcl};
-use crate::utils::err_str;
 use cuddld_error::{ErasedContext as _, ErasedError, bail, erased};
 use std::collections::BTreeMap;
 use std::path::Path;
-use test::{ShouldPanic, TestDesc, TestDescAndFn, TestFn, TestName, TestType};
 
 pub(crate) fn gather(
     path: &Path,
     prefix: &str,
     define_steps: DefineStepsFn,
-) -> Result<Vec<TestDescAndFn>, ErasedError> {
+) -> Result<Vec<NextestTest>, ErasedError> {
     let mut tests = Vec::new();
 
     for entry in path.read_dir()? {
@@ -39,7 +38,7 @@ pub(crate) fn gather(
 }
 
 fn create_tests(
-    tests: &mut Vec<TestDescAndFn>,
+    tests: &mut Vec<NextestTest>,
     prefix: &str,
     path: &Path,
     define_steps: DefineStepsFn,
@@ -89,22 +88,10 @@ fn create_tests(
 
             let test = Test { arch, steps, source_dir: source_dir.into() };
 
-            tests.push(TestDescAndFn {
-                desc: TestDesc {
-                    name: TestName::DynTestName(format!("{name} ({leaf_name}{arch})")),
-                    ignore: hcl.ignore.is_some(),
-                    ignore_message: hcl.ignore.clone().map(leak),
-                    source_file: "",
-                    start_line: 0,
-                    start_col: 0,
-                    end_line: 0,
-                    end_col: 0,
-                    should_panic: ShouldPanic::No,
-                    compile_fail: false,
-                    no_run: false,
-                    test_type: TestType::IntegrationTest,
-                },
-                testfn: TestFn::DynTestFn(Box::new(move || err_str(test.run()))),
+            tests.push(NextestTest {
+                name: format!("{name} ({leaf_name}{arch})"),
+                ignored: hcl.ignore.is_some(),
+                exec: Box::new(move || test.run()),
             });
         }
     }
@@ -112,26 +99,14 @@ fn create_tests(
     Ok(())
 }
 
-fn create_failing_test(tests: &mut Vec<TestDescAndFn>, file: &Path, err: ErasedError) {
-    tests.push(TestDescAndFn {
-        desc: TestDesc {
-            name: TestName::DynTestName(file.to_string_lossy().to_string()),
-            ignore: false,
-            ignore_message: None,
-            source_file: "",
-            start_line: 0,
-            start_col: 0,
-            end_line: 0,
-            end_col: 0,
-            should_panic: ShouldPanic::No,
-            compile_fail: false,
-            no_run: false,
-            test_type: TestType::IntegrationTest,
-        },
-        testfn: TestFn::DynTestFn(Box::new(move || {
+fn create_failing_test(tests: &mut Vec<NextestTest>, file: &Path, err: ErasedError) {
+    tests.push(NextestTest {
+        name: file.to_string_lossy().to_string(),
+        ignored: false,
+        exec: Box::new(move || {
             eprintln!("{}", err.format_chain());
             panic!("test file failed to initialize");
-        })),
+        }),
     })
 }
 
@@ -235,8 +210,4 @@ impl DefineSteps {
         }
         Ok(self)
     }
-}
-
-fn leak(string: String) -> &'static str {
-    Box::leak(Box::new(string)).as_str()
 }

@@ -117,12 +117,12 @@ impl FromHcl for ReadDynamicStep {
     }
 }
 
-fn main() {
+fn main() -> Result<(), ErasedError> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("elftest");
     cuddld_test_harness::multi_step::main(&path, |steps| {
         steps
             .define_builtins()?
             .define::<ReadElfStep>("read-elf")?
             .define::<ReadDynamicStep>("read-dynamic")
-    });
+    })
 }

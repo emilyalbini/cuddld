@@ -80,15 +80,3 @@ impl RunAndSnapshot {
 pub(crate) fn file_name(path: impl AsRef<Path>) -> String {
     path.as_ref().file_name().unwrap().to_str().unwrap().to_string()
 }
-
-#[track_caller]
-pub(crate) fn err_str<T>(result: Result<T, ErasedError>) -> Result<T, String> {
-    match result {
-        Ok(ok) => Ok(ok),
-        Err(err) => {
-            let formatted = err.format_chain();
-            eprintln!("{formatted}");
-            Err(formatted)
-        }
-    }
-}

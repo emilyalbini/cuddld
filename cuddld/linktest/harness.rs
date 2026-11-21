@@ -270,12 +270,12 @@ fn copy_recursive(from: &Path, dest_dir: &Path) -> Result<(), std::io::Error> {
     }
 }
 
-fn main() {
+fn main() -> Result<(), ErasedError> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("linktest");
     cuddld_test_harness::multi_step::main(&path, |definer| {
         definer
             .define_builtins()?
             .define::<CuddldStep>("cuddld")?
             .define::<CuddldRustc>("cuddld-rustc")
-    });
+    })
 }

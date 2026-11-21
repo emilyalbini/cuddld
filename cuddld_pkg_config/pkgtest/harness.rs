@@ -1,15 +1,10 @@
-#![feature(test)]
-
-extern crate test;
-
 use cuddld_error::ErasedError;
 use cuddld_pkg_config::PkgConfig;
+use cuddld_test_harness::nextest::Test;
 use cuddld_test_harness::snapshot::assert_snapshot;
 use cuddld_utils::posix_shell_quote;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
-use std::process::exit;
-use test::{ShouldPanic, TestDesc, TestDescAndFn, TestFn, TestName, TestType, test_main};
 
 fn test(path: PathBuf) -> Result<(), ErasedError> {
     let rendered = match PkgConfig::parse(&read_to_string(&path)?) {
@@ -76,47 +71,22 @@ fn test(path: PathBuf) -> Result<(), ErasedError> {
     Ok(())
 }
 
-fn gather(path: &Path) -> Result<Vec<TestDescAndFn>, ErasedError> {
+fn gather(path: &Path) -> Result<Vec<Test>, ErasedError> {
     let mut tests = Vec::new();
     for file in path.read_dir()? {
         let entry = file?.path();
         let name = entry.file_name().unwrap().to_str().unwrap().to_string();
 
         if entry.extension().and_then(|s| s.to_str()) == Some("pc") {
-            tests.push(TestDescAndFn {
-                desc: TestDesc {
-                    name: TestName::DynTestName(name),
-                    ignore: false,
-                    ignore_message: None,
-                    source_file: "",
-                    start_line: 0,
-                    start_col: 0,
-                    end_line: 0,
-                    end_col: 0,
-                    should_panic: ShouldPanic::No,
-                    compile_fail: false,
-                    no_run: false,
-                    test_type: TestType::IntegrationTest,
-                },
-                testfn: TestFn::DynTestFn(Box::new(move || match test(entry) {
-                    Ok(()) => Ok(()),
-                    Err(err) => panic!("{}", err.format_chain()),
-                })),
-            });
+            tests.push(Test { name, ignored: false, exec: Box::new(move || test(entry)) });
         }
     }
     Ok(tests)
 }
 
-fn main() {
-    let args = std::env::args().collect::<Vec<_>>();
+fn main() -> Result<(), ErasedError> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("pkgtest");
+    let tests = gather(&path)?;
 
-    match gather(&path) {
-        Ok(tests) => test_main(&args, tests, None),
-        Err(err) => {
-            eprintln!("{}", err.format_chain());
-            exit(1);
-        }
-    }
+    cuddld_test_harness::nextest::main(tests)
 }
