@@ -26,49 +26,14 @@ fn generate_error_impl(item: &Item) -> Result<TokenStream, Error> {
 
 fn generate_error_source(item: &Item) -> Result<TokenStream, Error> {
     let body = generate_for_each_variant(item, |_span, attrs, fields| {
-        if let Some(attr) = attrs.get("transparent")? {
-            attr.must_be_empty()?;
-
-            match fields {
-                [field] => {
-                    for attr_name in ["from", "source"] {
-                        if field.attrs.get(attr_name)?.is_some() {
-                            return Err(Error::new(format!(
-                                "#[transparent] is incompatible with #[{attr_name}]"
-                            ))
-                            .span(attr.span));
-                        }
-                    }
-                    Ok(quote! {
-                        <#{ &field.ty } as std::error::Error>::source(#{ &field.access_ref })
-                    })
-                }
-                _ => {
-                    Err(Error::new("#[transparent] items must have exactly one field")
-                        .span(attr.span))
-                }
+        match ParsedAttrs::parse(attrs, fields)? {
+            ParsedAttrs::Transparent { field } => Ok(quote! {
+                <#{ &field.ty } as std::error::Error>::source(#{ &field.access_ref })
+            }),
+            ParsedAttrs::Other { source: Some(source), .. } => {
+                Ok(quote!(Some(#{ &source.access_ref })))
             }
-        } else {
-            let mut source = None;
-            for field in fields {
-                for attr_name in ["from", "source"] {
-                    if let Some(attr) = field.attrs.get(attr_name)? {
-                        attr.must_be_empty()?;
-                        match source {
-                            None => source = Some(field),
-                            Some(_) => {
-                                return Err(Error::new("multiple error sources").span(attr.span));
-                            }
-                        }
-                    }
-                }
-            }
-
-            if let Some(source) = source {
-                Ok(quote! { Some(#{ &source.access_ref }) })
-            } else {
-                Ok(quote! { None })
-            }
+            _ => Ok(quote!(None)),
         }
     })?;
 
@@ -81,53 +46,28 @@ fn generate_error_source(item: &Item) -> Result<TokenStream, Error> {
 
 fn generate_error_provide(item: &Item) -> Result<TokenStream, Error> {
     let body = generate_for_each_variant(item, |_span, attrs, fields| {
-        let get_attribute = |name| -> Result<Option<&UnifiedField>, Error> {
-            let mut result = None;
-            for field in fields {
-                if let Some(attr) = field.attrs.get(name)? {
-                    attr.must_be_empty()?;
-
-                    if attrs.get("transparent")?.is_some() {
-                        return Err(Error::new(format!(
-                            "#[transparent] and #[{name}] are not compatible"
-                        ))
-                        .span(attr.span));
-                    } else if result.is_some() {
-                        return Err(Error::new(format!("multiple #[{name}] are not supported"))
-                            .span(attr.span));
-                    }
-                    result = Some(field);
+        match ParsedAttrs::parse(attrs, fields)? {
+            ParsedAttrs::Transparent { field } => {
+                Ok(quote!(#{ &field.access_ref }.provide(request)))
+            }
+            ParsedAttrs::Other { diagnostic, diagnostic_context, .. } => {
+                let mut provided = Vec::new();
+                if let Some(diagnostic) = diagnostic {
+                    provided.push(quote! {
+                        request.provide_ref::<dyn cuddld_diagnostics::DiagnosticBuilder>(
+                            #{ &diagnostic.access_ref } as &dyn cuddld_diagnostics::DiagnosticBuilder
+                        );
+                    });
                 }
+                if let Some(diagnostic_context) = diagnostic_context {
+                    provided.push(quote! {
+                        request.provide_ref::<dyn cuddld_diagnostics::DiagnosticContext>(
+                            #{ &diagnostic_context.access_ref } as &dyn cuddld_diagnostics::DiagnosticContext
+                        );
+                    });
+                }
+                Ok(quote!({ #provided }))
             }
-            Ok(result)
-        };
-
-        let diagnostic = get_attribute("diagnostic")?;
-        let diagnostic_context = get_attribute("diagnostic_context")?;
-
-        if let Some(attr) = attrs.get("transparent")? {
-            let [field] = fields else {
-                return Err(Error::new("#[transparent] is only supported with exactly one field")
-                    .span(attr.span));
-            };
-            Ok(quote!(#{ &field.access_ref }.provide(request)))
-        } else {
-            let mut provided = Vec::new();
-            if let Some(diagnostic) = diagnostic {
-                provided.push(quote! {
-                    request.provide_ref::<dyn cuddld_diagnostics::DiagnosticBuilder>(
-                        #{ &diagnostic.access_ref } as &dyn cuddld_diagnostics::DiagnosticBuilder
-                    );
-                });
-            }
-            if let Some(diagnostic_context) = diagnostic_context {
-                provided.push(quote! {
-                    request.provide_ref::<dyn cuddld_diagnostics::DiagnosticContext>(
-                        #{ &diagnostic_context.access_ref } as &dyn cuddld_diagnostics::DiagnosticContext
-                    );
-                });
-            }
-            Ok(quote!({ #provided }))
         }
     })?;
 
@@ -247,4 +187,76 @@ fn generate_from_impls(item: &Item) -> Result<Vec<TokenStream>, Error> {
         }
     }
     Ok(generated)
+}
+
+enum ParsedAttrs<'a> {
+    Transparent {
+        field: &'a UnifiedField<'a>,
+    },
+    Other {
+        source: Option<&'a UnifiedField<'a>>,
+        diagnostic: Option<&'a UnifiedField<'a>>,
+        diagnostic_context: Option<&'a UnifiedField<'a>>,
+    },
+}
+
+impl<'a> ParsedAttrs<'a> {
+    fn parse(attrs: &'a Attributes, fields: &'a [UnifiedField<'a>]) -> Result<Self, Error> {
+        if let Some(attr) = attrs.get("transparent")? {
+            attr.must_be_empty()?;
+
+            if let [field] = fields {
+                for forbidden in ["from", "source", "diagnostic", "diagnostic_context"] {
+                    if field.attrs.get(forbidden)?.is_some() {
+                        return Err(Error::new(format!(
+                            "#[transparent] is incompatible with #[{forbidden}]"
+                        ))
+                        .span(attr.span));
+                    }
+                }
+
+                Ok(ParsedAttrs::Transparent { field })
+            } else {
+                Err(Error::new("#[transparent] items must have exactly one field").span(attr.span))
+            }
+        } else {
+            let mut source = None;
+            let mut diagnostic = None;
+            let mut diagnostic_context = None;
+            for field in fields {
+                for attr_name in ["from", "source"] {
+                    if let Some(attr) = field.attrs.get(attr_name)? {
+                        attr.must_be_empty()?;
+                        match source {
+                            None => source = Some(field),
+                            Some(_) => {
+                                return Err(Error::new("multiple error sources").span(attr.span));
+                            }
+                        }
+                    }
+                }
+                if let Some(attr) = field.attrs.get("diagnostic")? {
+                    attr.must_be_empty()?;
+                    if diagnostic.is_none() {
+                        diagnostic = Some(field);
+                    } else {
+                        return Err(
+                            Error::new("multiple #[diagnostic] are not supported").span(attr.span)
+                        );
+                    }
+                }
+                if let Some(attr) = field.attrs.get("diagnostic_context")? {
+                    attr.must_be_empty()?;
+                    if diagnostic_context.is_none() {
+                        diagnostic_context = Some(field);
+                    } else {
+                        return Err(Error::new("multiple #[diagnostic_context] are not supported")
+                            .span(attr.span));
+                    }
+                }
+            }
+
+            Ok(ParsedAttrs::Other { source, diagnostic, diagnostic_context })
+        }
+    }
 }
