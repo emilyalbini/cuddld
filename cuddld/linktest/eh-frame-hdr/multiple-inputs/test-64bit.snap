@@ -5,7 +5,7 @@ no stdout present
 === stderr ===
 debug print: loaded object
  │
- │  section .eh_frame#0 (perms: r) in libhello.hello.bbd34e56055a0961-cgu.0.rcgu.o inside archive libhello.a
+ │  section .eh_frame#0 (perms: r) in libhello.hello.16de5dc535c10a51-cgu.0.rcgu.o inside archive libhello.a
  │   │
  │   │  ╭─────────────────────────────────────────────────┬──────────────────╮
  │   │  │ 14 00 00 00 00 00 00 00 01 7a 52 00 01 78 10 01 │ .........zR..x.. │
@@ -18,7 +18,7 @@ debug print: loaded object
  │   │  ╭────────────┬────────────────────────────────────────────────────────────────┬────────┬────────╮
  │   │  │ Type       │ Symbol                                                         │ Offset │ Addend │
  │   │  ├────────────┼────────────────────────────────────────────────────────────────┼────────┼────────┤
- │   │  │ Relative32 │ <section .text._RNvCsjjZ7o4X8YX3_7___rustc17rust_begin_unwind> │ 0x20   │ 0x0    │
+ │   │  │ Relative32 │ <section .text._RNvCs2eEgBfQ44QM_7___rustc17rust_begin_unwind> │ 0x20   │ 0x0    │
  │   │  │ Relative32 │ <section .text._start>                                         │ 0x34   │ 0x0    │
  │   │  ╰────────────┴────────────────────────────────────────────────────────────────┴────────┴────────╯
  │   ┴
@@ -58,7 +58,7 @@ debug print: calculated layout
  │  │ .eh_frame                                            │ 0x1000      │ 0x78        │ 0x400000       │ 0x78          │
  │  │ .eh_frame_hdr                                        │ 0x1078      │ 0x24        │ 0x400078       │ 0x24          │
  │  │ <padding>                                            │ 0x109c      │ 0xf64       │ -              │ -             │
- │  │ .text._RNvCsjjZ7o4X8YX3_7___rustc17rust_begin_unwind │ 0x2000      │ 0x4         │ 0x401000       │ 0x4           │
+ │  │ .text._RNvCs2eEgBfQ44QM_7___rustc17rust_begin_unwind │ 0x2000      │ 0x4         │ 0x401000       │ 0x4           │
  │  │ .text._start                                         │ 0x2004      │ 0x4         │ 0x401004       │ 0x4           │
  │  │ .text                                                │ 0x2008      │ 0x7         │ 0x401008       │ 0x7           │
  │  ╰──────────────────────────────────────────────────────┴─────────────┴─────────────┴────────────────┴───────────────╯
@@ -69,7 +69,7 @@ debug print: calculated layout
  │  ├──────────┼────────┼──────────────┼───────┼──────────────────────────────────────────────────────┤
  │  │ 0x400000 │ 0x1000 │ program      │ R     │ .eh_frame                                            │
  │  │          │        │              │       │ .eh_frame_hdr                                        │
- │  │ 0x401000 │ 0x1000 │ program      │ RX    │ .text._RNvCsjjZ7o4X8YX3_7___rustc17rust_begin_unwind │
+ │  │ 0x401000 │ 0x1000 │ program      │ RX    │ .text._RNvCs2eEgBfQ44QM_7___rustc17rust_begin_unwind │
  │  │          │        │              │       │ .text._start                                         │
  │  │          │        │              │       │ .text                                                │
  │  │ 0x400078 │ 0x4    │ GNU EH frame │ R     │ .eh_frame_hdr                                        │
@@ -79,7 +79,7 @@ debug print: calculated layout
 
 debug print: object after relocations are applied
  │
- │  section .eh_frame (perms: r) in mix of libhello.hello.bbd34e56055a0961-cgu.0.rcgu.o inside archive libhello.a and hello.o
+ │  section .eh_frame (perms: r) in mix of libhello.hello.16de5dc535c10a51-cgu.0.rcgu.o inside archive libhello.a and hello.o
  │   │
  │   │  address: 0x400000
  │   │
