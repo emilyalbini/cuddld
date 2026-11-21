@@ -84,7 +84,7 @@ fn gather(path: &Path) -> Result<Vec<Test>, ErasedError> {
     Ok(tests)
 }
 
-fn main() -> Result<(), ErasedError> {
+fn main() -> Result<!, ErasedError> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("pkgtest");
     let tests = gather(&path)?;
 

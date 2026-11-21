@@ -7,7 +7,7 @@ pub struct Test {
     pub exec: Box<dyn FnOnce() -> Result<(), ErasedError>>,
 }
 
-pub fn main(tests: Vec<Test>) -> Result<(), ErasedError> {
+pub fn main(tests: Vec<Test>) -> Result<!, ErasedError> {
     if std::env::var_os("NEXTEST").is_none() {
         bail!("the test suite can only be run through nextest");
     }
@@ -53,7 +53,7 @@ pub fn main(tests: Vec<Test>) -> Result<(), ErasedError> {
                     }
                 }
             }
-            Ok(())
+            bail!("missing test {test_name}");
         }
         Some(CliMode::List) => {
             let ignored = ignored.0.unwrap_or(false);

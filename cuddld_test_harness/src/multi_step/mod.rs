@@ -10,7 +10,7 @@ use self::gather::{DefineStepsFn, gather};
 use cuddld_error::ErasedError;
 use std::path::Path;
 
-pub fn main(path: &Path, define_steps: DefineStepsFn) -> Result<(), ErasedError> {
+pub fn main(path: &Path, define_steps: DefineStepsFn) -> Result<!, ErasedError> {
     let tests = gather(path, "", define_steps)?;
     crate::nextest::main(tests)
 }
