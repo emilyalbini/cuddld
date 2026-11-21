@@ -4,7 +4,9 @@ use crate::repr::symbols::views::{AllSymbols, SymbolsView};
 use crate::repr::symbols::{SymbolValue, Symbols};
 use cuddld_diagnostics::ObjectSpan;
 use cuddld_dwarf::eh_encoding::{DwarfEhApplication, DwarfEhEncoding, DwarfEhValueFormat};
-use cuddld_elf::{ElfClass, ElfDeduplication, ElfEhFrameHdrEntry, ElfNote, ElfPermissions, ElfProgramSectionKind};
+use cuddld_elf::{
+    ElfClass, ElfDeduplication, ElfEhFrameHdrEntry, ElfNote, ElfPermissions, ElfProgramSectionKind,
+};
 use cuddld_macros::Getters;
 use cuddld_utils::ints::Length;
 use std::collections::VecDeque;

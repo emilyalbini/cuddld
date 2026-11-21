@@ -98,7 +98,7 @@ pub(crate) fn run(
             }
             ElfProgramSectionKind::FiniArray => {
                 object.dynamic_entries.add(DynamicEntry::FiniArray(section.id));
-            },
+            }
         }
     }
 

@@ -12,9 +12,9 @@ use crate::repr::symbols::views::{AllSymbols, DynamicSymbolTable, SymbolsView};
 use crate::repr::symbols::{SymbolType, SymbolValue, SymbolVisibility};
 use cuddld_diagnostics::widgets::{HexDump, Table, Text, Widget, WidgetGroup};
 use cuddld_diagnostics::{Diagnostic, DiagnosticKind};
-use cuddld_elf::{ElfDeduplication, ElfProgramSectionKind};
 use cuddld_elf::render_elf::render_note;
 use cuddld_elf::writer::layout::Layout;
+use cuddld_elf::{ElfDeduplication, ElfProgramSectionKind};
 
 pub(super) fn render_object(
     message: &str,

@@ -37,7 +37,10 @@ pub(super) fn run(
             });
         }
 
-        groups.entry((data.kind, section.name, data.perms, split_rule)).or_default().push(section.id);
+        groups
+            .entry((data.kind, section.name, data.perms, split_rule))
+            .or_default()
+            .push(section.id);
     }
 
     let mut deduplications = BTreeMap::new();
