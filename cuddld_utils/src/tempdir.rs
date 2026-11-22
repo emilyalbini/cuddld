@@ -1,10 +1,10 @@
-use std::io::{Error, ErrorKind};
+use std::fs::File;
+use std::io::{Error, ErrorKind, Read};
 use std::path::PathBuf;
-use std::random::{Rng as _, SystemRng};
 
 pub fn create_temp_dir() -> Result<PathBuf, Error> {
     for _ in 0..10 {
-        let path = std::env::temp_dir().join(random_name());
+        let path = std::env::temp_dir().join(random_name()?);
         match std::fs::create_dir(&path) {
             Ok(()) => return Ok(path),
             Err(err) if err.kind() == ErrorKind::AlreadyExists => continue,
@@ -15,11 +15,12 @@ pub fn create_temp_dir() -> Result<PathBuf, Error> {
     Err(Error::other("all attempts to create a directory failed"))
 }
 
-fn random_name() -> String {
+fn random_name() -> Result<String, Error> {
     let mut buf = [0; 8];
-    SystemRng.fill_bytes(&mut buf);
+    let mut rng = File::open("/dev/urandom")?;
+    rng.read_exact(&mut buf)?;
 
-    format!("cuddld-{}", hex_encode(&buf))
+    Ok(format!("cuddld-{}", hex_encode(&buf)))
 }
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -42,7 +43,7 @@ mod tests {
 
     #[test]
     fn test_random_name() {
-        assert_ne!(random_name(), random_name());
+        assert_ne!(random_name().unwrap(), random_name().unwrap());
     }
 
     #[test]
