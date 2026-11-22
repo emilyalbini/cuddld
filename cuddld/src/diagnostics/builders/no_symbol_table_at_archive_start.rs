@@ -8,7 +8,7 @@ pub(crate) struct NoSymbolNameAtArchiveStartDiagnostic {
 }
 
 impl DiagnosticBuilder for NoSymbolNameAtArchiveStartDiagnostic {
-    fn build(&self, _ctx: &GatheredContext<'_>) -> Diagnostic {
+    fn build(&self, _ctx: &GatheredContext) -> Diagnostic {
         Diagnostic::new(
             DiagnosticKind::Error,
             "the first member of the archive is not a symbol table",

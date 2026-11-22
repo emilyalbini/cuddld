@@ -14,7 +14,7 @@ pub(crate) struct UndefinedSymbolDiagnostic {
 }
 
 impl DiagnosticBuilder for UndefinedSymbolDiagnostic {
-    fn build(&self, ctx: &GatheredContext<'_>) -> Diagnostic {
+    fn build(&self, ctx: &GatheredContext) -> Diagnostic {
         Diagnostic::new(DiagnosticKind::Error, format!("undefined symbol: {}", self.name))
             .add_iter(different_visibility::generate(self, ctx))
             .add_iter(similar_symbols::generate(self, ctx))

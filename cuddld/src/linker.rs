@@ -34,13 +34,13 @@ impl Linker {
     pub(crate) fn run(
         mut self,
         callbacks: &dyn LinkerCallbacks,
-        diagnostic_context: &mut GatheredContext<'static>,
+        diagnostic_context: &mut GatheredContext,
     ) -> Result<(), LinkerError> {
         let result = self.run_inner(callbacks);
 
-        diagnostic_context.add_owned(self.options);
+        diagnostic_context.add(self.options);
         if let Some(object) = self.object {
-            diagnostic_context.add_owned(object);
+            diagnostic_context.add(object);
         }
 
         result

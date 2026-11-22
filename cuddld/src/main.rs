@@ -14,7 +14,7 @@ mod passes;
 mod repr;
 mod utils;
 
-fn app(diagnostic_context: &mut GatheredContext<'static>) -> Result<(), Box<dyn Error>> {
+fn app(diagnostic_context: &mut GatheredContext) -> Result<(), Box<dyn Error>> {
     let options = cli::parse(std::env::args().skip(1))?;
 
     let callbacks = DebugCallbacks { print: options.debug_print.clone() };
@@ -23,8 +23,7 @@ fn app(diagnostic_context: &mut GatheredContext<'static>) -> Result<(), Box<dyn 
     Ok(())
 }
 
-fn render_error(diagnostic_context: GatheredContext<'static>, err: Box<dyn Error>) -> ExitCode {
-    let mut diagnostic_context = diagnostic_context.remove_static_lifetime();
+fn render_error(mut diagnostic_context: GatheredContext, err: Box<dyn Error>) -> ExitCode {
     let mut diagnostic_builder = None;
     let mut current: Option<&(dyn Error + 'static)> = Some(&*err);
     while let Some(current_err) = current {

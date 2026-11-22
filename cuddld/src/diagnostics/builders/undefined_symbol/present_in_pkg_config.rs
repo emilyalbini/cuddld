@@ -16,7 +16,7 @@ use std::path::{Path, PathBuf};
 
 pub(super) fn generate(
     diagnostic: &UndefinedSymbolDiagnostic,
-    _ctx: &GatheredContext<'_>,
+    _ctx: &GatheredContext,
 ) -> Vec<Box<dyn Widget>> {
     let packages = match PkgConfigEnv::from_env().and_then(|env| discover(&env)) {
         Ok(packages) => packages,

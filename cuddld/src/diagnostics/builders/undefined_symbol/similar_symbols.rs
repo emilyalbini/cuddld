@@ -7,7 +7,7 @@ use cuddld_utils::jaro_similarity;
 
 pub(super) fn generate(
     diagnostic: &UndefinedSymbolDiagnostic,
-    ctx: &GatheredContext<'_>,
+    ctx: &GatheredContext,
 ) -> Vec<Box<dyn Widget>> {
     let object: &Object = ctx.required();
 

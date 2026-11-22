@@ -6,7 +6,7 @@ use cuddld_diagnostics::widgets::{Text, Widget};
 
 pub(super) fn generate(
     diagnostic: &UndefinedSymbolDiagnostic,
-    ctx: &GatheredContext<'_>,
+    ctx: &GatheredContext,
 ) -> Vec<Box<dyn Widget>> {
     let mut widgets: Vec<Box<dyn Widget>> = Vec::new();
 
